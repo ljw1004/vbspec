@@ -25,3 +25,66 @@ So here's my step-by-step plan...
 
 
 
+Here's a small experiment...
+
+VB inline code `Dim x As Integer = 5`
+
+C# inline code `int x = 5;`
+
+ANTRL inline code `Start: Left | Right | 'a'`
+
+VB brace code "vb"
+```vb
+Dim x As Integer = 5
+Dim y As String = "hello"
+```
+
+VB brace code "vb.net"
+```vb.net
+Dim x As Integer = 5
+Dim y As String = "hello"
+```
+
+VB indented code
+
+    Dim x As Integer = 5
+    Dim y As String = "hello"
+
+C# brace code "cs"
+```cs
+int x = 5;
+string y = "hello";
+```
+
+C# brace code "csharp"
+```csharp
+int x = 5;
+string y = "hello";
+```
+
+C# indented code
+
+    int x = 5;
+    string y = "hello";
+
+ANTLR brace code "antlr"
+```antlr
+Start: Left | Right | 'hello';
+Left: 'world';
+Right: 'there';
+```
+
+ANTLR brace code "ANTLR"
+```ANTLR
+Start: Left | Right | 'hello';
+Left: 'world';
+Right: 'there';
+```
+
+ANTLR indented code
+
+    Start: Left | Right | 'hello';
+    Left: 'world';
+    Right: 'there';
+
+End of experiments.
