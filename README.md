@@ -1,0 +1,2 @@
+# vbspec
+VB language specification
