@@ -25,6 +25,44 @@ So here's my step-by-step plan...
 
 
 
+# Conventions
+
+Notes are like this:
+```
+> __Note__
+> Here is the body of the note
+```
+
+Annotations are like this:
+```
+> __Annotation__
+> Here is the body of the annotation
+```
+
+VB code blocks are like this:
+```
+``vb
+Dim x = "Hello"
+``
+```
+
+Grammar blocks are like this:
+```
+``antlr
+Start:  Left | Right;
+Left:   'hello';
+Right:  'world';
+
+Multiline: 'Sub' Identifier Linebreak
+          Body
+          'End Sub'
+
+Longline:  Option1 | Option2 | Option3
+       |  Option4 | Option5
+```
+
+The following experiment shows we must use brace codeblocks, not indented codeblocks. The brace languages I'll use will be "vb" and "antlr".
+
 Here's a small experiment...
 
 VB inline code `Dim x As Integer = 5`
