@@ -1,6 +1,6 @@
 # Preprocessing Directives
 
-Once a file has been lexically analyzed, several kinds of source preprocessing occur. The most important, conditional compilation, determines which source is processed by the syntactic grammar; two other types of directives — external source directives and region directives — provide meta-information about the source but have no effect on compilation.
+Once a file has been lexically analyzed, several kinds of source preprocessing occur. The most important, conditional compilation, determines which source is processed by the syntactic grammar; two other types of directives -- external source directives and region directives -- provide meta-information about the source but have no effect on compilation.
 
 ## Conditional Compilation
 
@@ -8,7 +8,7 @@ Conditional compilation controls whether sequences of logical lines are translat
 
 For example, the program
 
-```VB.net
+```vb
 #Const A = True
 #Const B = False
 
@@ -35,7 +35,7 @@ End Class
 
 produces the exact same sequence of tokens as the program
 
-```VB.net
+```vb
 Class C
     Sub F()
     End Sub
@@ -49,53 +49,34 @@ The constant expressions allowed in conditional compilation directives are a sub
 
 The preprocessor allows whitespace and explicit line continuations before and after every token.
 
-<pre>Start  ::=  [  CCStatement+  ]</pre>
-
-<pre>CCStatement  ::=
-    CCConstantDeclaration  |
-    CCIfGroup  |
-    LogicalLine</pre>
-
-<pre>CCExpression  ::=
-    LiteralExpression  |
-    CCParenthesizedExpression  |
-    CCSimpleNameExpression  |
-    CCCastExpression  |
-    CCOperatorExpression  |
-    CCConditionalExpression</pre>
-
-<pre>CCParenthesizedExpression  ::=  <b>(</b>  CCExpression  <b>)</b></pre>
-
-<pre>CCSimpleNameExpression  ::=  Identifier</pre>
-
-<pre>CCCastExpression  ::=  
-<b>DirectCast</b><b>(</b>  CCExpression  <b>,</b>  TypeName  <b>)</b>  |
-<b>TryCast</b><b>(</b>  CCExpression  <b>,</b>  TypeName  <b>)</b>  |
-<b>CType</b><b>(</b>  CCExpression  <b>,</b>  TypeName  <b>)</b>  |
-    CastTarget  <b>(</b>  CCExpression  <b>)</b></pre>
-
-<pre>CCOperatorExpression  ::=
-    CCUnaryOperator  CCExpression
-    CCExpression  CCBinaryOperator  CCExpression</pre>
-
-<pre>CCUnaryOperator  ::=  <b>+</b>  |  <b>-</b>  |  <b>Not</b></pre>
-
-<pre>CCBinaryOperator  ::=  <b>+</b>  |  <b>-</b>  |  <b>*</b>  |  <b>/</b>  |  <b>\</b>  |  <b>Mod</b>  |  <b>^</b>  |  <b>=</b>  |  <b><</b><b>></b>  |  <b><</b>  |  <b>></b>  |
-<b><</b><b>=</b>  |  <b>></b><b>=</b>  |  <b>&</b>  |  <b>And</b>  |  <b>Or</b>  |  <b>Xor</b>  |  <b>AndAlso</b>  |  <b>OrElse</b>  |  <b><</b><b><</b>  |  <b>></b><b>></b></pre>
-
-<pre>CCConditionalExpression  ::=  
-<b>If</b><b>(</b>  CCExpression  <b>,</b>  CCExpression  <b>,</b>  CCExpression  <b>)</b>  |
-<b>If</b><b>(</b>  CCExpression  <b>,</b>  CCExpression  <b>)</b></pre>
-
+```antlr
+CCStart:                   CCStatement*;
+CCStatement:               CCConstantDeclaration | CCIfGroup | LogicalLine;
+CCExpression:              LiteralExpression | CCParenthesizedExpression | CCSimpleNameExpression
+                           | CCCastExpression | CCOperatorExpression | CCConditionalExpression;
+CCParenthesizedExpression: '(' CCExpression ')';
+CCSimpleNameExpression:    Identifier;
+CCCastExpression:          'DirectCast' '(' CCExpression ',' TypeName ')'
+                           | 'TryCast' '(' CCExpression ',' TypeName ')'
+                           | 'CType' '(' CCExpression ',' TypeName ')'
+                           | CastTarget '(' CCExpression ')';
+CCOperatorExpression:      CCUnaryOperator CCExpression | CCExpression CCBinaryOperator CCExpression;
+CCUnaryOperator:           '+' | '-' | 'Not';
+CCBinaryOperator:          '+' | '-' | '*' | '/' | '\\' | 'Mod' | '^' | '=' | '<' '>' | '<' | '>'
+                           | '<' '=' | '>' '=' | '&' | 'And' | 'Or' | 'Xor' | 'AndAlso' | 'OrElse'
+                           | '<' '<' | '>' '>';
+CCConditionalExpression:   'If' '(' CCExpression ',' CCExpression ',' CCExpression ')'
+                           | 'If' '(' CCExpression ',' CCExpression ')';
+```
 ### Conditional Constant Directives
 
-Conditional constant statements define constants that exist in a separate conditional compilation declaration space scoped to the source file. The declaration space is special in that no explicit declaration of conditional compilation constants is necessary – conditional constants can be implicitly defined in a conditional compilation directive.
+Conditional constant statements define constants that exist in a separate conditional compilation declaration space scoped to the source file. The declaration space is special in that no explicit declaration of conditional compilation constants is necessary -- conditional constants can be implicitly defined in a conditional compilation directive.
 
 Prior to being assigned a value, a conditional compilation constant has the value `Nothing`. When a conditional compilation constant is assigned a value, which must be a constant expression, the type of the constant becomes the type of the value being assigned to it. A conditional compilation constant may be redefined multiple times throughout a source file.
 
 For example, the following code prints only the string `about to print value` and the value of `Test`.
 
-```VB.net
+```vb
 Module M1
     Sub PrintValue(Test As Integer)
 
@@ -119,7 +100,9 @@ End Module
 
 The compilation environment may also define conditional constants in a conditional compilation declaration space.
 
-<pre>CCConstantDeclaration  ::=  <b>#</b><b>Const</b>  Identifier  <b>=</b>  CCExpression  LineTerminator</pre>
+```antlr
+CCConstantDeclaration:  '#' 'Const' Identifier '=' CCExpression LineTerminator;
+```
 
 ### Conditional Compilation Directives
 
@@ -129,7 +112,7 @@ All lines enclosed by the group, including nested conditional compilation direct
 
 In this example, the call to `WriteToLog` in the `Trace` conditional compilation directive is not processed because the surrounding `Debug` conditional compilation directive evaluates to `False`.
 
-```VB.net
+```vb
 #Const Debug = False   ' Debugging off
 #Const Trace = True    ' Tracing on
 
@@ -147,26 +130,18 @@ Class PurchaseTransaction
 End Class
 ```
 
-<pre>CCIfGroup  ::=
-<b>#</b><b>If</b>  CCExpression  [  <b>Then</b>  ]  LineTerminator
-    [  CCStatement+  ]
-    [  CCElseIfGroup+  ]
-    [  CCElseGroup  ]
-<b>#</b><b>End</b><b>If</b>  LineTerminator</pre>
-
-<pre>CCElseIfGroup  ::=
-<b>#</b>  ElseIf  CCExpression  [  <b>Then</b>  ]  LineTerminator
-    [  CCStatement+  ]</pre>
-
-<pre>CCElseGroup  ::=
-<b>#</b><b>Else</b>  LineTerminator
-    [  CCStatement+  ]</pre>
+```antlr
+CCIfGroup:      '#' 'If' CCExpression 'Then'? LineTerminator CCStatement*
+                CCElseIfGroup* CCElseGroup? '#' 'End' 'If' LineTerminator;
+CCElseIfGroup:  '#' ElseIf CCExpression 'Then'? LineTerminator CCStatement*;
+CCElseGroup:    '#' 'Else' LineTerminator CCStatement*;
+```
 
 ## External Source Directives
 
 A source file may include external source directives that indicate a mapping between source lines and text external to the source. External source directives have no effect on compilation and may not be nested. For example:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
 
@@ -178,21 +153,20 @@ Module Test
 End Module
 ```
 
-<pre>Start  ::=  [  ExternalSourceStatement+  ]</pre>
-
-<pre>ExternalSourceStatement  ::=  ExternalSourceGroup  |  LogicalLine</pre>
-
-<pre>ExternalSourceGroup  ::=
-<b>#</b><b>ExternalSource</b><b>(</b>  StringLiteral  <b>,</b>  IntLiteral  <b>)</b>  LineTerminator
-    [  LogicalLine+  ]
-<b>#</b><b>End</b><b>ExternalSource</b>  LineTerminator</pre>
+```antlr
+ESDStart:                 ExternalSourceStatement*;
+ExternalSourceStatement:  ExternalSourceGroup | LogicalLine;
+ExternalSourceGroup:      '#' 'ExternalSource' '(' StringLiteral ',' IntLiteral ')' LineTerminator
+                          LogicalLine* '#' 'End' 'ExternalSource' LineTerminator;
+```
 
 ## Region Directives
 
 Region directives group lines of source code but have no other effect on compilation. The entire group can be collapsed and hidden, or expanded and viewed, in the integrated development environment (IDE). Regions may be nested. Region directives are special in that they can neither start nor terminate within a method body, and they must respect the block structure of the program. For example:
 
-```VB.net
-Module Test#Region "Startup code – do not edit"
+```vb
+Module Test
+#Region "Startup code -- do not edit"
     Sub Main()
     End Sub
 #End Region
@@ -207,14 +181,13 @@ End Class
 #End Region
 ```
 
-<pre>Start  ::=  [  RegionStatement+  ]</pre>
-
-<pre>RegionStatement  ::=  RegionGroup  |  LogicalLine</pre>
-
-<pre>RegionGroup  ::=
-<b>#</b><b>Region</b>  StringLiteral  LineTerminator
-    [  RegionStatement+  ]
-<b>#</b><b>End</b><b>Region</b>  LineTerminator</pre>
+```antlr
+RegionStart:      RegionStatement*;
+RegionStatement:  RegionGroup | LogicalLine;
+RegionGroup:      '#' 'Region' StringLiteral LineTerminator
+                  RegionStatement*
+                  '#' 'End' 'Region' LineTerminator;
+```
 
 ## External Checksum Directives
 
@@ -226,7 +199,7 @@ An external file may have multiple external checksum directives associated with 
 
 For example:
 
-```VB.net
+```vb
 #ExternalChecksum("c:\wwwroot\inetpub\test.aspx", _
     "{12345678-1234-1234-1234-123456789abc}", _
     "1a2b3c4e5f617239a49b9a9c0391849d34950f923fab9484")
@@ -242,7 +215,7 @@ Module Test
 End Module
 ```
 
-<pre>Start  ::=  [  ExternalChecksumStatement+  ]</pre>
-
-<pre>ExternalChecksumStatement  ::=
-<b>#</b><b>External</b><b>Checksum</b><b>(</b>  StringLiteral  <b>,</b>  StringLiteral  <b>,</b>  StringLiteral  <b>)</b>  LineTerminator</pre>
+```antlr
+ExternalChecksumStart:      ExternalChecksumStatement*;
+ExternalChecksumStatement:  '#' 'ExternalChecksum' '(' StringLiteral ',' StringLiteral ',' StringLiteral ')' LineTerminator;
+```

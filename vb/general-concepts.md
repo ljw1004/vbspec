@@ -13,12 +13,11 @@ An entity that can contain other entities defines a *declaration space*. Entitie
 Except in the case of overloaded type members, it is invalid for declarations to introduce identically named entities of the same kind into the same declaration context. Additionally, a declaration space may never contain different kinds of entities with the same name; for example, a declaration space may never contain a variable and a method by the same name.
 
 > __Annotation__
-
 > It may be possible in other languages to create a declaration space that contains different kinds of entities with the same name (for example, if the language is case sensitive and allows different declarations based on casing). In that situation, the most accessible entity is considered bound to that name; if more than one type of entity is most accessible then the name is ambiguous. `Public` is more accessible than `Protected Friend`, `Protected Friend` is more accessible than `Protected` or `Friend`, and `Protected` or `Friend` is more accessible than `Private`.
 
 The declaration space of a namespace is "open ended," so two namespace declarations with the same fully qualified name contribute to the same declaration space. In the example below, the two namespace declarations contribute to the same declaration space, in this case declaring two classes with the fully qualified names `Data.Customer` and `Data.Order:`
 
-```VB.net
+```vb
 Namespace Data
     Class Customer
     End Class
@@ -52,7 +51,7 @@ Constraints on a type parameter.
 
 The following example shows a set of overloaded method declarations along with their signatures. This declaration would not be valid since several of the method declarations have identical signatures.
 
-```VB.net
+```vb
 Interface ITest
     Sub F1()                              ' Signature is ().
     Sub F2(x As Integer)                  ' Signature is (Integer).
@@ -72,7 +71,7 @@ End Interface
 
 It is valid to define a generic type that may contain members with identical signatures based on the type arguments supplied. Overload resolution rules are used to try and disambiguate between such overloads, although there may be situations in which it is impossible to disambiguate. For example:
 
-```VB.net
+```vb
 Class C(Of T)
     Sub F(x As Integer)
     End Sub
@@ -104,7 +103,7 @@ Shadowing through nesting occurs in namespaces or types nested within namespaces
 
 In the following example, within the `F` method, the instance variable `i` is shadowed by the local variable `i`, but within the `G` method, `i` still refers to the instance variable.
 
-```VB.net
+```vb
 Class Test
     Private i As Integer = 0
 
@@ -120,7 +119,7 @@ End Class
 
 When a name in an inner scope hides a name in an outer scope, it shadows all overloaded occurrences of that name. In the following example, the call `F(1)` invokes the `F` declared in `Inner` because all outer occurrences of `F` are hidden by the inner declaration. For the same reason, the call `F("Hello")` is in error.
 
-```VB.net
+```vb
 Class Outer
     Shared Sub F(i As Integer)
     End Sub
@@ -144,7 +143,7 @@ End Class
 
 An inheritance relationship is one in which one type (the *derived* type) derives from another (the *base* type), such that the derived type's declaration space implicitly contains the accessible non-constructor type members and nested types of its base type. In the following example, class `A` is the base class of `B`, and `B` is derived from `A`.
 
-```VB.net
+```vb
 Class A
 End Class
 
@@ -171,7 +170,7 @@ A type may not directly or indirectly derive from a type nested within it.
 
 The following example produces a compile-time error because the classes circularly depend on each other.
 
-```VB.net
+```vb
 Class A
     Inherits B
 End Class
@@ -187,7 +186,7 @@ End Class
 
 The following example also produces a compile-time error because `B` indirectly derives from its nested class `C` through class `A`.
 
-```VB.net
+```vb
 Class A
     Inherits B.C
 End Class
@@ -202,7 +201,7 @@ End Class
 
 The next example does not produce an error because class `A` does not derive from class `B`.
 
-```VB.net
+```vb
 Class A
     Class B
         Inherits A
@@ -216,7 +215,7 @@ A `MustInherit` class is an incomplete type that can act only as a base type. A 
 
 When a regular class is derived from a `MustInherit` class, the regular class must override all inherited `MustOverride` members. For example:
 
-```VB.net
+```vb
 MustInherit Class A
     Public MustOverride Sub F()
 End Class
@@ -242,7 +241,7 @@ A `NotInheritable` class is a class from which another class cannot be derived. 
 
 In this example, class `B` is in error because it attempts to derive from the `NotInheritable` class `A`. A class cannot be marked both `MustInherit` and `NotInheritable`.
 
-```VB.net
+```vb
 NotInheritable Class A
 End Class
 
@@ -258,7 +257,7 @@ Unlike other types, which only derive from a single base type, an interface may 
 
 In the following example, the first two statements cause compile-time errors because the multiply-inherited member `Count` is not available in interface `IListCounter`:
 
-```VB.net
+```vb
 Interface IList
     Property Count() As Integer
 End Interface
@@ -286,7 +285,7 @@ As illustrated by the example, the ambiguity is resolved by casting `x` to the a
 
 When a single type member is inherited from the same base interface through multiple paths, the type member is treated as if it were only inherited once. In other words, the derived interface only contains one instance of each type member inherited from a particular base interface. For example:
 
-```VB.net
+```vb
 Interface IBase
     Sub F(i As Integer)
 End Interface
@@ -314,7 +313,7 @@ End Class
 
 If a type member name is shadowed in one path through the inheritance hierarchy, then the name is shadowed in all paths. In the following example, the `IBase.F` member is shadowed by the `ILeft.F` member, but is not shadowed in `IRight`:
 
-```VB.net
+```vb
 Interface IBase
     Sub F(i As Integer)
 End Interface 
@@ -353,7 +352,7 @@ A derived type shadows the name of an inherited type member by re-declaring it. 
 
 Entities than can be overloaded can choose one of two forms of shadowing. *Shadowing by name* is specified using the `Shadows` keyword. An entity that shadows by name hides everything by that name in the base class, including all overloads. *Shadowing by name and signature* is specified using the `Overloads` keyword. An entity that shadows by name and signature hides everything by that name with the same signature as the entity. For example:
 
-```VB.net
+```vb
 Class Base
     Sub F()
     End Sub
@@ -392,7 +391,7 @@ End Module
 
 Shadowing a method with a `ParamArray` argument by name and signature hides only the individual signature, not all possible expanded signatures. This is true even if the signature of the shadowing method matches the unexpanded signature of the shadowed method. The following example:
 
-```VB.net
+```vb
 Class Base
     Sub F(ParamArray x() As Integer)
         Console.WriteLine("Base")
@@ -419,7 +418,7 @@ prints `Base`, even though `Derived.F` has the same signature as the unexpanded 
 
 Conversely, a method with a `ParamArray` argument only shadows methods with the same signature, not all possible expanded signatures. The following example:
 
-```VB.net
+```vb
 Class Base
     Sub F(x As Integer)
         Console.WriteLine("Base")
@@ -450,7 +449,7 @@ It is valid to shadow the name of a type member that has been multiply-inherited
 
 For example:
 
-```VB.net
+```vb
 Interface ILeft
     Sub F()
 End Interface
@@ -476,7 +475,7 @@ End Module
 
 Because methods are allowed to shadow inherited methods, it is possible for a class to contain several `Overridable` methods with the same signature. This does not present an ambiguity problem, since only the most-derived method is visible. In the following example, the `C` and `D` classes contain two `Overridable` methods with the same signature:
 
-```VB.net
+```vb
 Class A
     Public Overridable Sub F()
         Console.WriteLine("A.F")
@@ -523,7 +522,7 @@ End Module
 
 There are two `Overridable` methods here: one introduced by class `A` and the one introduced by class `C`. The method introduced by class `C` hides the method inherited from class `A`. Thus, the `Overrides` declaration in class `D` overrides the method introduced by class `C`, and it is not possible for class `D` to override the method introduced by class `A`. The example produces the output:
 
-```VB.net
+```vb
 B.F
 B.F
 D.F
@@ -534,7 +533,7 @@ It is possible to invoke the hidden `Overridable` method by accessing an instanc
 
 It is not valid to shadow a `MustOverride` method, because in most cases this would make the class unusable. For example:
 
-```VB.net
+```vb
 MustInherit Class Base
     Public MustOverride Sub F()
 End Class
@@ -557,7 +556,7 @@ In this case, the class `MoreDerived` is required to override the `MustOverride`
 
 In contrast to shadowing a name from an outer scope, shadowing an accessible name from an inherited scope causes a warning to be reported, as in the following example:
 
-```VB.net
+```vb
 Class Base
     Public Sub F()
     End Sub
@@ -581,7 +580,7 @@ The declaration of method `F` in class `Derived` causes a warning to be reported
 
 The warning caused by shadowing an inherited name can be eliminated through use of the `Shadows` or `Overloads` modifier:
 
-```VB.net
+```vb
 Class Base
     Public Sub F()
     End Sub 
@@ -599,7 +598,7 @@ The `Shadows` modifier indicates the intention to shadow the inherited member. I
 
 A declaration of a new member shadows an inherited member only within the scope of the new member, as in the following example:
 
-```VB.net
+```vb
 Class Base
     Public Shared Sub F()
     End Sub 
@@ -623,7 +622,7 @@ End Class
 
 In the example above, the declaration of method `F` in class `Derived` shadows the method `F` that was inherited from class `Base`, but since the new method `F` in class `Derived` has `Private` access, its scope does not extend to class `MoreDerived`. Thus, the call `F()` in `MoreDerived.G` is valid and will invoke `Base.F`. In the case of overloaded type members, the entire set of overloaded type members is treated as if they all had the most permissive access for the purposes of shadowing.
 
-```VB.net
+```vb
 Class Base
     Public Sub F()
     End Sub
@@ -654,7 +653,7 @@ In this example, even though the declaration of `F()` in `Derived` is declared w
 
 An *implementation* relationship exists when a type declares that it implements an interface and the type implements all the type members of the interface. A type that implements a particular interface is convertible to that interface. Interfaces cannot be instantiated, but it is valid to declare variables of interfaces; such variables can only be assigned a value that is of a class that implements the interface. For example:
 
-```VB.net
+```vb
 Interface ITestable
     Function Test(value As Byte) As Boolean
 End Interface
@@ -679,7 +678,7 @@ End Module
 
 A type implementing an interface with multiply-inherited type members must still implement those methods, even though they cannot be accessed directly from the derived interface being implemented. For example:
 
-```VB.net
+```vb
 Interface ILeft
     Sub Test()
 End Interface
@@ -711,7 +710,7 @@ End Class
 
 Even `MustInherit` classes must provide implementations of all the members of implemented interfaces; however, they can defer implementation of these methods by declaring them as `MustOverride`. For example:
 
-```VB.net
+```vb
 Interface ITest
     Sub Test1()
     Sub Test2()
@@ -739,7 +738,7 @@ End Class
 
 A type may choose to re-implement an interface that its base type implements. To re-implement the interface, the type must explicitly state that it implements the interface. A type re-implementing an interface may choose to re-implement only some, but not all, of the members of the interface  any members not re-implemented continue to use the base type's implementation. For example:
 
-```VB.net
+```vb
 Class TestBase
     Implements ITest
 
@@ -772,14 +771,14 @@ End Module
 
 This example prints:
 
-```VB.net
+```vb
 TestDerived.DerivedTest1
 TestBase.Test2
 ```
 
 When a derived type implements an interface whose base interfaces are implemented by the derived type's base types, the derived type can choose to only implement the interface's type members that are not already implemented by the base types. For example:
 
-```VB.net
+```vb
 Interface IBase
     Sub Base()
 End Interface
@@ -809,7 +808,7 @@ End Class
 
 An interface method can also be implemented using an overridable method in a base type. In that case, a derived type may also override the overridable method and alter the implementation of the interface. For example:
 
-```VB.net
+```vb
 Class Base
     Implements ITest
 
@@ -836,7 +835,7 @@ End Class
 
 A type *implements* a type member of an implemented interface by supplying a method with an `Implements` clause. The two type members must have the same number of parameters, all of the types and modifiers of the parameters must match, including the default value of optional parameters, the return type must match, and all of the constraints on method parameters must match. For example:
 
-```VB.net
+```vb
 Interface ITest
     Sub F(ByRef x As Integer)
     Sub G(Optional y As Integer = 20)
@@ -862,7 +861,7 @@ End Class
 
 A single method may implement any number of interface type members if they all meet the above criteria. For example:
 
-```VB.net
+```vb
 Interface ITest
     Sub F(i As Integer)
     Sub G(i As Integer)
@@ -879,7 +878,7 @@ End Class
 
 When implementing a method in a generic interface, the implementing method must supply the type arguments that correspond to the interface's type parameters. For example:
 
-```VB.net
+```vb
 Interface I1(Of U, V) 
     Sub M(x As U, y As List(Of V)) 
 End Interface
@@ -904,7 +903,7 @@ End Class
 
 Note that it is possible that a generic interface may not be implementable for some set of type arguments.
 
-```VB.net
+```vb
 Interface I1(Of T, U)
     Sub S1(x As T)
     Sub S1(y As U)
@@ -920,7 +919,7 @@ End Class
 
 *Polymorphism* provides the ability to vary the implementation of a method or property. With polymorphism, the same method or property can perform different actions depending on the run-time type of the instance that invokes it. Methods or properties that are polymorphic are called *overridable*. By contrast, the implementation of a non-overridable method or property is invariant; the implementation is the same whether the method or property is invoked on an instance of the class in which it is declared or an instance of a derived class. When a non-overridable method or property is invoked, the compile-time type of the instance is the determining factor. For example:
 
-```VB.net
+```vb
 Class Base
     Public Overridable Property X() As Integer
         Get
@@ -959,7 +958,7 @@ An overridable method may also be `MustOverride`, which means that it provides n
 
 In the following example, the class `Shape` defines the abstract notion of a geometrical shape object that can paint itself:
 
-```VB.net
+```vb
 MustInherit Public Class Shape
     Public MustOverride Sub Paint(g As Graphics, r As Rectangle)
 End Class 
@@ -985,7 +984,7 @@ The `Paint` method is `MustOverride` because there is no meaningful default impl
 
 It is an error for a base access to reference a `MustOverride` method, as the following example demonstrates:
 
-```VB.net
+```vb
 MustInherit Class A
     Public MustOverride Sub F()
 End Class
@@ -1009,7 +1008,7 @@ An overriding method may be declared `NotOverridable`, which prevents any furthe
 
 Consider the following example:
 
-```VB.net
+```vb
 Class A
     Public Overridable Sub F()
         Console.WriteLine("A.F")
@@ -1045,7 +1044,7 @@ In the example, class `B` provides two `Overrides` methods: a method `F` that ha
 
 An overriding method may also be declared `MustOverride`, even if the method that it is overriding is not declared `MustOverride`. This requires that the containing class be declared `MustInherit` and that any further derived classes that are not declared `MustInherit` must override the method. For example:
 
-```VB.net
+```vb
 Class A
     Public Overridable Sub F()
         Console.WriteLine("A.F")
@@ -1071,7 +1070,7 @@ A compile-time error occurs unless all of the following are true of an overridin
 
 When overriding a method in a base generic type, the overriding method must supply the type arguments that correspond to the base type parameters. For example:
 
-```VB.net
+```vb
 Class Base(Of U, V) 
     Public Overridable Sub M(x As U, y As List(Of V)) 
     End Sub
@@ -1096,7 +1095,7 @@ End Class
 
 Note that it is possible that an overridable method in a generic class may not be able to be overridden for some sets of type arguments. If the method is declared `MustOverride`, this means that some inheritance chains may not be possible. For example:
 
-```VB.net
+```vb
 MustInherit Class Base(Of T, U)
     Public MustOverride Sub S1(x As T)
     Public MustOverride Sub S1(y As U)
@@ -1113,7 +1112,7 @@ End Class
 
 An override declaration can access the overridden base method using a base access, as in the following example:
 
-```VB.net
+```vb
 Class Base
     Private x As Integer
 
@@ -1138,7 +1137,7 @@ In the example, the invocation of `MyBase.PrintVariables()` in class `Derived` i
 
 Only when it includes an `Overrides` modifier can a method override another method. In all other cases, a method with the same signature as an inherited method simply shadows the inherited method, as in the example below:
 
-```VB.net
+```vb
 Class Base
     Public Overridable Sub F()
     End Sub
@@ -1156,7 +1155,7 @@ In the example, the method `F` in class `Derived` does not include an `Overrides
 
 In the following example, method `F` in class `Derived` shadows the overridable method `F` inherited from class `Base`:
 
-```VB.net
+```vb
 Class Base
     Public Overridable Sub F()
     End Sub
@@ -1209,7 +1208,7 @@ The accessibility in a declaration does not depend on the accessibility of the d
 
 The following code demonstrates various accessibility domains:
 
-```VB.net
+```vb
 Public Class A
     Public Shared X As Integer
     Friend Shared Y As Integer
@@ -1253,7 +1252,7 @@ As the example illustrates, the accessibility domain of a member is never larger
 
 Access to `Protected` instance members must be through an instance of the derived type so that unrelated types cannot gain access to each other's protected members. For example:
 
-```VB.net
+```vb
 Class User
     Protected Password As String
 End Class
@@ -1276,7 +1275,7 @@ In the above example, the class `Guest` only has access to the protected `Passwo
 
 For the purposes of `Protected` member access in generic types, the declaration context includes type parameters. This means that a derived type with one set of type arguments does not have access to the `Protected` members of a derived type with a different set of type arguments. For example:
 
-```VB.net
+```vb
 Class Base(Of T)
     Protected x As T
 End Class
@@ -1293,16 +1292,17 @@ End Class
 ```
 
 > __Annotation__
-
 > The C# language (and possibly other languages) allows a generic type to access `Protected` members regardless of what type arguments are supplied. This should be kept in mind when designing generic classes that contain `Protected` members.
 
-<pre>AccessModifier  ::=  <b>Public</b>  |  <b>Protected</b>  |  <b>Friend</b>  |  <b>Private</b>  |  <b>Protected</b><b>Friend</b></pre>
+```antlr
+AccessModifier:  'Public' | 'Protected' | 'Friend' | 'Private' | 'Protected' 'Friend';
+```
 
 ### Constituent Types
 
 The *constituent types* of a declaration are the types that are referenced by the declaration. For example, the type of a constant, the return type of a method and the parameter types of a constructor are all constituent types. The accessibility domain of a constituent type of a declaration must be the same as or a superset of the accessibility domain of the declaration itself. For example:
 
-```VB.net
+```vb
 Public Class X
     Private Class Y
     End Class
@@ -1334,7 +1334,7 @@ The *fully qualified name* of a namespace or type is a qualified name that conta
 
 The example below shows several namespace and type declarations together with their associated fully qualified names in in-line comments.
 
-```VB.net
+```vb
 Class A            ' A.
 End Class
 
@@ -1360,7 +1360,7 @@ Observe that the namespace X.Y has been declared in two different locations in t
 
 In some situations, a qualified name may begin with the keyword `Global`. The keyword represents the unnamed outermost namespace, which is useful in situations where a declaration shadows an enclosing namespace. The `Global` keyword allows "escaping" out to the outermost namespace in that situation. For example:
 
-```VB.net
+```vb
 Namespace NS1
     Class System
     End Class
@@ -1393,7 +1393,6 @@ Given a qualified namespace or type name of the form `N.R(Of A)`, where `R` is t
 5. Otherwise, a compile-time error occurs.
 
 > __Note__
-
 > An implication of this resolution process is that type members do not shadow namespaces or types when resolving namespace or type names.
 
 ### Unqualified Name Resolution for namespaces and types
@@ -1401,9 +1400,9 @@ Given a qualified namespace or type name of the form `N.R(Of A)`, where `R` is t
 Given an unqualified name `R(Of A)`, where `A` is an optional type argument list, the following steps describe how to determine to which namespace or type the unqualified name refers:
 
 1. If R matches the name of a type parameter of the current method, and no type arguments were supplied, then the unqualified name refers to that type parameter.
-2. For each nested type containing the name reference, starting from the innermost type and going to the outermost:
-1. If `R` matches the name of a type parameter in the current type and no type arguments were supplied, then the unqualified name refers to that type parameter.
-2. Otherwise, if `R` matches the name of an accessible nested type with the same number of type parameters as type arguments, if any, then the unqualified name refers to that type.
+2.  For each nested type containing the name reference, starting from the innermost type and going to the outermost:
+    2.1. If `R` matches the name of a type parameter in the current type and no type arguments were supplied, then the unqualified name refers to that type parameter.
+    2.2. Otherwise, if `R` matches the name of an accessible nested type with the same number of type parameters as type arguments, if any, then the unqualified name refers to that type.
 3. For each nested namespace containing the name reference, starting from the innermost namespace and going to the outermost namespace:
 1. If `R` matches the name of a nested namespace in the current namespace and no type argument list is supplied, then the unqualified name refers to that nested namespace.
 2. Otherwise, if `R` matches the name of an accessible type with the same number of type parameters as type arguments, if any, in the current namespace, then the unqualified name refers to that type.
@@ -1440,7 +1439,7 @@ Types (except for standard modules and enumerated types) and methods can declare
 
 From the perspective of the generic type or method, a type parameter is a placeholder type that will be filled in with an actual type when the type or method is used. Type arguments are substituted for the type parameters in the type or method at the point at which the type or method is used. For example, a generic stack class could be implemented as:
 
-```VB.net
+```vb
 Public Class Stack(Of ItemType)
     Protected Items(0 To 99) As ItemType
     Protected CurrentIndex As Integer = 0
@@ -1467,7 +1466,7 @@ End Class
 
 Declarations that use the `Stack(Of ItemType)` class must supply a type argument for the type parameter `ItemType`. This type is then filled in wherever `ItemType` is used within the class:
 
-```VB.net
+```vb
 Option Strict On
 
 Module Test
@@ -1488,7 +1487,7 @@ Type parameters may be supplied on type or method declarations. Each type parame
 
 Each type parameter in a type or method declaration defines a name in the declaration space of that type or method. Thus, it cannot have the same name as another type parameter, a type member, a method parameter, or a local variable. The scope of a type parameter on a type or method is the entire type or method. Because type parameters are scoped to the entire type declaration, nested types can use outer type parameters. This also means that type parameters must always be specified when accessing types nested inside generic types:
 
-```VB.net
+```vb
 Public Class Outer(Of T)
     Public Class Inner
         Public Sub F(x As T)
@@ -1507,7 +1506,7 @@ End Module
 
 Unlike other members of a class, type parameters are not inherited. Type parameters in a type can only be referred to by their simple name; in other words, they cannot be qualified with the containing type name. Although it is bad programming style, the type parameters in a nested type can hide a member or type parameter declared in the outer type:
 
-```VB.net
+```vb
 Class Outer(Of T)
     Class Inner(Of T)
         Public t1 As T    ' Refers to Inner's T
@@ -1517,7 +1516,7 @@ End Class
 
 Types and methods may be overloaded based on the number of type parameters (or *arity*) that the types or methods declare. For example, the following declarations are legal:
 
-```VB.net
+```vb
 Module C
     Sub M()
     End Sub
@@ -1539,7 +1538,7 @@ End Class
 
 In the case of types, overloads are always matched against the number of type arguments specified. This is useful when using both generic and non-generic classes together in the same program:
 
-```VB.net
+```vb
 Class Queue 
 End Class      
 
@@ -1570,7 +1569,7 @@ A type parameter cannot be used anywhere within an attribute exception within a 
 
 Type parameters can be used as type arguments to other generic types and parameters. The following example is a generic type that extends the `Stack(Of ItemType)` class:
 
-```VB.net
+```vb
 Class MyStack(Of ItemType)
     Inherits Stack(Of ItemType)
 
@@ -1605,7 +1604,7 @@ Because a type argument can be any type in the type system, a generic type or me
 
 In the case of a collection like `Stack(Of ItemType)`, this fact may not be a particularly important restriction, but there may be cases where a generic type may wish to make an assumption about the types that will be supplied as type arguments. *Type constraints* can be placed on type parameters that restrict which types can be supplied as a type parameter and allow generic types or methods to assume more about type parameters.
 
-```VB.net
+```vb
 Public Class DisposableStack(Of ItemType As IDisposable)
     Implements IDisposable
 
@@ -1646,7 +1645,7 @@ A type constraint must be one of the special constraints `Class`, `Structure`, o
 
 Multiple type constraints can be specified for a single type parameter by enclosing the type constraints in curly braces (`{}`).. Only one type constraint for a given type parameter can be a class. It is an error to combine a `Structure` special constraint with a named class constraint or the `Class` special constraint.
 
-```VB.net
+```vb
 Class ControlFactory(Of T As {Control, New})
     ...
 End Class
@@ -1654,7 +1653,7 @@ End Class
 
 Type constraints can use the containing types or any of the containing types' type parameters. In the following example, the constraint requires that the type argument supplied implements a generic interface using itself as a type argument:
 
-```VB.net
+```vb
 Class Sorter(Of V As IComparable(Of V))
     ...
 End Class
@@ -1674,7 +1673,7 @@ The special type constraint `Structure` constrains the supplied type argument to
 
 The special type constraint `New` requires that the supplied type argument must have an accessible parameterless constructor and cannot be declared `MustInherit`. For example:
 
-```VB.net
+```vb
 Class Factory(Of T As New)
     Function CreateInstance() As T
         Return New T()
@@ -1684,7 +1683,7 @@ End Class
 
 A class type constraint requires that the supplied type argument must either be that type as or inherit from it. An interface type constraint requires that the supplied type argument must implement that interface. A type parameter constraint requires that the supplied type argument must derive from or implement all of the bounds given for the matching type parameter. For example:
 
-```VB.net
+```vb
 Class List(Of T)
     Sub AddRange(Of S As T)(collection As IEnumerable(Of S))
         ...
@@ -1702,7 +1701,7 @@ If multiple class constraints exist, the most derived class is considered to be 
 
 The type may be one of, or a type inherited from, the following special types: `System.Array`, `System.Delegate`, `System.MulticastDelegate`, `System.Enum`, or `System.ValueType`. In that case, only the type, or a type inherited from it, is accepted. A type parameter constrained to one of these types can only use the conversions allowed by the `DirectCast` operator. For example:
 
-```VB.net
+```vb
 MustInherit Class Base(Of T)
     MustOverride Sub S1(Of U As T)(x As U)
 End Class
@@ -1720,7 +1719,7 @@ End Class
 
 Additionally, a type parameter constrained to a value type due to one of the above relaxations cannot call any methods defined on that value type. For example:
 
-```VB.net
+```vb
 Class C1(Of T)
     Overridable Sub F(Of G As T)(x As G)
     End Sub
@@ -1738,7 +1737,7 @@ End Class
 
 If the constraint, after substitution, ends up as an array type, any covariant array type is allowed as well. For example:
 
-```VB.net
+```vb
 Module Test
     Class B
     End Class
@@ -1762,7 +1761,7 @@ End Module
 
 A type parameter with a class or interface constraint is considered to have the same members as that class or interface constraint. If a type parameter has multiple constraints, then the type parameter is considered to have the union of all the members of the constraints. If there are members with the same name in more than one constraint, then members are hidden in the following order: the class constraint hides members in interface constraints, which hide members in `System.ValueType` (if `Structure` constraint is specified), which hides members in `Object`. If a member with the same name appears in more than one interface constraint the member is unavailable (as in multiple interface inheritance) and the type parameter must be cast to the desired interface. For example:
 
-```VB.net
+```vb
 Class C1
     Sub S1(x As Integer)
     End Sub
@@ -1792,7 +1791,7 @@ End Module
 
 When supplying type parameters as type arguments, the type parameters must satisfy the constraints of the matching type parameters.
 
-```VB.net
+```vb
 Class Base(Of T As Class)
 End Class
 
@@ -1804,7 +1803,7 @@ End Class
 
 Values of a constrained type parameter can be used to access the instance members, including instance methods, specified in the constraint.
 
-```VB.net
+```vb
 Interface IPrintable
     Sub Print()
 End Interface
@@ -1830,7 +1829,7 @@ End Class
 
 A type parameter in an interface or a delegate type declaration can optionally specify a *variance modifier*. Type parameters with variance modifiers restrict how the type parameter can be used in the interface or delegate type but allow a generic interface or delegate type to be converted to another generic type with variant compatible type arguments. For example:
 
-```VB.net
+```vb
 Class Base
 End Class
 
@@ -1887,7 +1886,7 @@ The type of any `ByRef` parameter.
 
 For example:
 
-```VB.net
+```vb
 Delegate Function D(Of Out T, U)(x As U) As T
 
 Interface I1(Of Out T)
@@ -1932,7 +1931,7 @@ The type of an event.
 
 For example:
 
-```VB.net
+```vb
 Delegate Function D(Of T, In U)(x As U) As T
 
 Interface I1(Of In T)
@@ -1959,7 +1958,7 @@ In the case where a type must be valid be contravariantly and covariantly (such 
 
 > Co- and contra-variance give rise to a "diamond ambiguity problem". Consider the following code:
 
-> ```VB.net
+> ```vb
 > Class C
 >    Implements IEnumerable(Of String)
 >    Implements IEnumerable(Of Exception)

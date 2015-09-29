@@ -7,8 +7,11 @@ Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "md2docx", "md2docx.vbproj",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vb", "vb", "{C24050FF-0515-46F9-9420-A3DBD80EEB26}"
 	ProjectSection(SolutionItems) = preProject
+		..\vb\general-concepts.md = ..\vb\general-concepts.md
 		..\vb\introduction.md = ..\vb\introduction.md
 		..\vb\lexical-grammar.md = ..\vb\lexical-grammar.md
+		..\vb\preprocessing-directives.md = ..\vb\preprocessing-directives.md
+		..\vb\readme.md = ..\vb\readme.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1EEA00D2-4667-40C2-8C3A-3537BBB96B09}"

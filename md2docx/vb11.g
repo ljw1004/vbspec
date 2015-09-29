@@ -108,49 +108,52 @@ Operator:   '&' | '*' | '+' | '-' | '/' | '\\' | '^' | '<' | '=' | '>';
 
 //13.2 Preprocessing Directives
 //13.2.1 Conditional Compilation
-CCStart:  CCStatement*;
-CCStatement:  CCConstantDeclaration | CCIfGroup | LogicalLine;
-CCExpression:  LiteralExpression | CCParenthesizedExpression | CCSimpleNameExpression
-  | CCCastExpression | CCOperatorExpression | CCConditionalExpression;
-CCParenthesizedExpression:  '(' CCExpression ')';
-CCSimpleNameExpression:  Identifier;
-CCCastExpression:  'DirectCast' '(' CCExpression ',' TypeName ')'
-  | 'TryCast' '(' CCExpression ',' TypeName ')'
-  | 'CType' '(' CCExpression ',' TypeName ')'
-  | CastTarget '(' CCExpression ')';
-CCOperatorExpression:  CCUnaryOperator CCExpression | CCExpression CCBinaryOperator CCExpression;
-CCUnaryOperator:  '+' | '-' | 'Not';
-CCBinaryOperator:  '+' | '-' | '*' | '/' | '\\' | 'Mod' | '^' | '=' | '<' '>' | '<' | '>'
-  | '<' '=' | '>' '=' | '&' | 'And' | 'Or' | 'Xor' | 'AndAlso' | 'OrElse'
-  | '<' '<' | '>' '>';
-CCConditionalExpression:  'If' '(' CCExpression ',' CCExpression ',' CCExpression ')'
-  | 'If' '(' CCExpression ',' CCExpression ')';
+CCStart:                   CCStatement*;
+CCStatement:               CCConstantDeclaration | CCIfGroup | LogicalLine;
+CCExpression:              LiteralExpression | CCParenthesizedExpression | CCSimpleNameExpression
+                           | CCCastExpression | CCOperatorExpression | CCConditionalExpression;
+CCParenthesizedExpression: '(' CCExpression ')';
+CCSimpleNameExpression:    Identifier;
+CCCastExpression:          'DirectCast' '(' CCExpression ',' TypeName ')'
+                           | 'TryCast' '(' CCExpression ',' TypeName ')'
+                           | 'CType' '(' CCExpression ',' TypeName ')'
+                           | CastTarget '(' CCExpression ')';
+CCOperatorExpression:      CCUnaryOperator CCExpression | CCExpression CCBinaryOperator CCExpression;
+CCUnaryOperator:           '+' | '-' | 'Not';
+CCBinaryOperator:          '+' | '-' | '*' | '/' | '\\' | 'Mod' | '^' | '=' | '<' '>' | '<' | '>'
+                           | '<' '=' | '>' '=' | '&' | 'And' | 'Or' | 'Xor' | 'AndAlso' | 'OrElse'
+                           | '<' '<' | '>' '>';
+CCConditionalExpression:   'If' '(' CCExpression ',' CCExpression ',' CCExpression ')'
+                           | 'If' '(' CCExpression ',' CCExpression ')';
+
 CCConstantDeclaration:  '#' 'Const' Identifier '=' CCExpression LineTerminator;
-CCIfGroup:  '#' 'If' CCExpression 'Then'? LineTerminator CCStatement*
-  CCElseIfGroup* CCElseGroup? '#' 'End' 'If' LineTerminator;
+
+CCIfGroup:      '#' 'If' CCExpression 'Then'? LineTerminator CCStatement*
+                CCElseIfGroup* CCElseGroup? '#' 'End' 'If' LineTerminator;
 CCElseIfGroup:  '#' ElseIf CCExpression 'Then'? LineTerminator CCStatement*;
-CCElseGroup:  '#' 'Else' LineTerminator CCStatement*;
+CCElseGroup:    '#' 'Else' LineTerminator CCStatement*;
 
 //13.2.2 External Source Directives
-ESDStart:  ExternalSourceStatement*;
+ESDStart:                 ExternalSourceStatement*;
 ExternalSourceStatement:  ExternalSourceGroup | LogicalLine;
-ExternalSourceGroup:  '#' 'ExternalSource' '(' StringLiteral ',' IntLiteral ')' LineTerminator
-  LogicalLine* '#' 'End' 'ExternalSource' LineTerminator;
+ExternalSourceGroup:      '#' 'ExternalSource' '(' StringLiteral ',' IntLiteral ')' LineTerminator
+                          LogicalLine* '#' 'End' 'ExternalSource' LineTerminator;
 
 //13.2.3 Region Directives
-RegionStart:  RegionStatement*;
+RegionStart:      RegionStatement*;
 RegionStatement:  RegionGroup | LogicalLine;
-RegionGroup:  '#' 'Region' StringLiteral LineTerminator
-  RegionStatement*
-  '#' 'End' 'Region' LineTerminator;
+RegionGroup:      '#' 'Region' StringLiteral LineTerminator
+                  RegionStatement*
+                  '#' 'End' 'Region' LineTerminator;
 
 //13.2.4 External Checksum Directives
-ExternalChecksumStart:  ExternalChecksumStatement*;
+ExternalChecksumStart:      ExternalChecksumStatement*;
 ExternalChecksumStatement:  '#' 'ExternalChecksum' '(' StringLiteral ',' StringLiteral ',' StringLiteral ')' LineTerminator;
 
 
 //13.3 Syntactic Grammar
 AccessModifier:  'Public' | 'Protected' | 'Friend' | 'Private' | 'Protected' 'Friend';
+
 TypeParameterList:  OpenParenthesis 'Of' TypeParameter ( Comma TypeParameter )* CloseParenthesis;
 TypeParameter:  VarianceModifier? Identifier TypeParameterConstraints?;
 VarianceModifier:  'In' | 'Out';

@@ -5,23 +5,28 @@ Compilation of a Visual Basic program first involves translating the raw stream 
 > __Note__
 > With the introduction of XML literal expressions in version 9.0 of the language, Visual Basic no longer has a distinct lexical grammar in the sense that Visual Basic code can be tokenized without regard to the syntactic context. This is due to the fact that XML and Visual Basic have different lexical rules and the set of lexical rules in use at any particular time depends on what syntactic construct is being processed at that moment. This specification retains this lexical grammar section as a guide to the lexical rules of regular Visual Basic code. However, long term the lexical rules will likely be merged into the syntactic rules.
 
-    LogicalLineStart:    LogicalLine*;
-    LogicalLine:         LogicalLineElement* Comment? LineTerminator;
-    LogicalLineElement:  WhiteSpace | LineContinuation | Token;
-    Token:               Identifier | Keyword | Literal | Separator | Operator;
-
+```antlr
+LogicalLineStart:    LogicalLine*;
+LogicalLine:         LogicalLineElement* Comment? LineTerminator;
+LogicalLineElement:  WhiteSpace | LineContinuation | Token;
+Token:               Identifier | Keyword | Literal | Separator | Operator;
+```
 
 ## Characters and Lines
 
 Visual Basic programs are composed of characters from the Unicode character set.
 
-    Character:  '<Any Unicode character except a LineTerminator>';
+```antlr
+Character:  '<Any Unicode character except a LineTerminator>';
+```
 
 ### Line Terminators
 
 Unicode line break characters separate logical lines.
 
-    LineTerminator:  '<Unicode 0x00D>' | '<Unicode 0x00A>' | '<CR>' | '<LF>' | '<Unicode 0x2028>' | '<Unicode 0x2029>';
+```antlr
+LineTerminator:  '<Unicode 0x00D>' | '<Unicode 0x00A>' | '<CR>' | '<LF>' | '<Unicode 0x2028>' | '<Unicode 0x2029>';
+```
 
 ### Line Continuation
 
@@ -29,17 +34,19 @@ A *line continuation* consists of at least one white-space character that immedi
 
 The following program shows some line continuations:
 
-    Module Test
-        Sub Print( _
-            Param1 As Integer, _
-            Param2 As Integer )
+```vb
+Module Test
+    Sub Print( _
+        Param1 As Integer, _
+        Param2 As Integer )
 
-            If (Param1 < Param2) Or _
-                (Param1 > Param2) Then
-                Console.WriteLine("Not equal")
-            End If
-        End Function
-    End Module
+        If (Param1 < Param2) Or _
+            (Param1 > Param2) Then
+            Console.WriteLine("Not equal")
+        End If
+    End Function
+End Module
+```
 
 Some places in the syntactic grammar allow for *implicit line continuations*. When a line terminator is encountered:
 
@@ -63,41 +70,46 @@ after assignment operators (`=`, `:=`, `+=`, `-=`, etc.) in any context.
 
 the line terminator is treated as if it was a line continuation. For example, the previous example could also be written as:
 
-    Module Test
-        Sub Print(
-            Param1 As Integer,
-            Param2 As Integer)
+```vb
+Module Test
+    Sub Print(
+        Param1 As Integer,
+        Param2 As Integer)
 
-            If (Param1 < Param2) Or
-               (Param1 > Param2) Then
-                Console.WriteLine("Not equal")
-            End If
-        End Function
-    End Module
+        If (Param1 < Param2) Or
+            (Param1 > Param2) Then
+            Console.WriteLine("Not equal")
+        End If
+    End Function
+End Module
+```
 
 Implicit line continuations will only ever be inferred directly before or after the specified token. They will not be inferred before or after a line continuation. For example:
 
-    Dim y = 10
-    ' Error: Expression expected for assignment to x
-    Dim x = _
+```vb
+Dim y = 10
+' Error: Expression expected for assignment to x
+Dim x = _
 
-    y
+y
+```
 
 Line continuations will not be inferred in conditional compilation contexts.
 
 > __Annotation__
 > This last restriction is required because text in conditional compilation blocks that are not compiled do not have to be syntactically valid. Thus, text in the block might accidentally get "picked up" by the conditional compilation statement, especially as the language gets extended in the future. 
 
-    LineContinuation:  WhiteSpace '_' WhiteSpace* LineTerminator;
-    Comma:             ',' LineTerminator?;
-    Period:            '.' LineTerminator?;
-    OpenParenthesis:   '(' LineTerminator?;
-    CloseParenthesis:  LineTerminator? ')';
-    OpenCurlyBrace:    '{' LineTerminator?;
-    CloseCurlyBrace:   LineTerminator? '}';
-    Equals:            '=' LineTerminator?;
-    ColonEquals:       ':' '=' LineTerminator?;
-
+```antlr
+LineContinuation:  WhiteSpace '_' WhiteSpace* LineTerminator;
+Comma:             ',' LineTerminator?;
+Period:            '.' LineTerminator?;
+OpenParenthesis:   '(' LineTerminator?;
+CloseParenthesis:  LineTerminator? ')';
+OpenCurlyBrace:    '{' LineTerminator?;
+CloseCurlyBrace:   LineTerminator? '}';
+Equals:            '=' LineTerminator?;
+ColonEquals:       ':' '=' LineTerminator?;
+```
 
 ### White Space
 
@@ -106,16 +118,19 @@ Line continuations will not be inferred in conditional compilation contexts.
 > __Note__
 > Line terminators are not considered white space.
 
-    WhiteSpace:  '<Unicode class Zs>' | '<Unicode Tab 0x0009>';
+```antlr
+WhiteSpace:  '<Unicode class Zs>' | '<Unicode Tab 0x0009>';
+```
 
 ### Comments
 
 A *comment* begins with a single-quote character or the keyword `REM`. A single-quote character is either an ASCII single-quote character, a Unicode left single-quote character, or a Unicode right single-quote character. Comments can begin anywhere on a source line, and the end of the physical line ends the comment. The compiler ignores the characters between the beginning of the comment and the line terminator. Consequently, comments cannot extend across multiple lines by using line continuations.
 
-    Comment:               CommentMarker Character*;
-    CommentMarker:         SingleQuoteCharacter | 'REM';
-    SingleQuoteCharacter:  '\'' | '<Unicode 0x2018>' | '<Unicode 0x2019>';
-
+```antlr
+Comment:               CommentMarker Character*;
+CommentMarker:         SingleQuoteCharacter | 'REM';
+SingleQuoteCharacter:  '\'' | '<Unicode 0x2018>' | '<Unicode 0x2019>';
+```
 
 ## Identifiers
 
@@ -125,39 +140,43 @@ Regular identifiers may not match keywords, but escaped identifiers or identifie
 
 This example defines a class named `class` with a shared method named `shared` that takes a parameter named `boolean` and then calls the method.
 
-    Class [class]
-        Shared Sub [shared]([boolean] As Boolean)
-            If [boolean] Then
-                Console.WriteLine("true")
-            Else
-                Console.WriteLine("false")
-            End If
-        End Sub
-    End Class
+```vb
+Class [class]
+    Shared Sub [shared]([boolean] As Boolean)
+        If [boolean] Then
+            Console.WriteLine("true")
+        Else
+            Console.WriteLine("false")
+        End If
+    End Sub
+End Class
 
-    Module [module]
-        Sub Main()
-            [class].[shared](True)
-        End Sub
-    End Module
+Module [module]
+    Sub Main()
+        [class].[shared](True)
+    End Sub
+End Module
+```
 
 Identifiers are case insensitive, so two identifiers are considered to be the same identifier if they differ only in case.
 
 > __Note__
 > The Unicode Standard one-to-one case mappings are used when comparing identifiers and any locale-specific case mappings are ignored.
 
-    Identifier:            NonEscapedIdentifier TypeCharacter? | Keyword TypeCharacter | EscapedIdentifier;
-    NonEscapedIdentifier:  '<Any IdentifierName but not Keyword>';
-    EscapedIdentifier:     '[' IdentifierName ']';
-    IdentifierName:        IdentifierStart IdentifierCharacter*;
-    IdentifierStart:       AlphaCharacter | UnderscoreCharacter IdentifierCharacter;
-    IdentifierCharacter:   UnderscoreCharacter | AlphaCharacter | NumericCharacter | CombiningCharacter | FormattingCharacter;
-    AlphaCharacter:        '<Unicode classes Lu,Ll,Lt,Lm,Lo,Nl>';
-    NumericCharacter:      '<Unicode decimal digit class Nd>';
-    CombiningCharacter:    '<Unicode combining character classes Mn, Mc>';
-    FormattingCharacter:   '<Unicode formatting character class Cf>';
-    UnderscoreCharacter:   '<Unicode connection character class Pc>';
-    IdentifierOrKeyword:   Identifier | Keyword;
+```antlr
+Identifier:            NonEscapedIdentifier TypeCharacter? | Keyword TypeCharacter | EscapedIdentifier;
+NonEscapedIdentifier:  '<Any IdentifierName but not Keyword>';
+EscapedIdentifier:     '[' IdentifierName ']';
+IdentifierName:        IdentifierStart IdentifierCharacter*;
+IdentifierStart:       AlphaCharacter | UnderscoreCharacter IdentifierCharacter;
+IdentifierCharacter:   UnderscoreCharacter | AlphaCharacter | NumericCharacter | CombiningCharacter | FormattingCharacter;
+AlphaCharacter:        '<Unicode classes Lu,Ll,Lt,Lm,Lo,Nl>';
+NumericCharacter:      '<Unicode decimal digit class Nd>';
+CombiningCharacter:    '<Unicode combining character classes Mn, Mc>';
+FormattingCharacter:   '<Unicode formatting character class Cf>';
+UnderscoreCharacter:   '<Unicode connection character class Pc>';
+IdentifierOrKeyword:   Identifier | Keyword;
+```
 
 ### Type Characters
 
@@ -169,33 +188,37 @@ Appending a type character to an identifier that conceptually does not have a ty
 
 The following example shows the use of type characters:
 
-    ' The follow line will cause an error: standard modules have no type.
-    Module Test1#
-    End Module
+```vb
+' The follow line will cause an error: standard modules have no type.
+Module Test1#
+End Module
 
-    Module Test2
+Module Test2
 
-        ' This function takes a Long parameter and returns a String.
-        Function Func$(Param&)
+    ' This function takes a Long parameter and returns a String.
+    Function Func$(Param&)
 
-            ' The following line causes an error because the type character
-            ' conflicts with the declared type of Func and Param.
-            Func# = CStr(Param@)
+        ' The following line causes an error because the type character
+        ' conflicts with the declared type of Func and Param.
+        Func# = CStr(Param@)
 
-            ' The following line is valid.
-            Func$ = CStr(Param&)
-        End Function
-    End Module
+        ' The following line is valid.
+        Func$ = CStr(Param&)
+    End Function
+End Module
+```
 
 The type character `!` presents a special problem in that it can be used both as a type character and as a separator in the language. To remove ambiguity, a `!` character is a type character as long as the character that follows it cannot start an identifier. If it can, then the `!` character is a separator, not a type character.
 
-    TypeCharacter:         IntegerTypeCharacter | LongTypeCharacter | DecimalTypeCharacter | SingleTypeCharacter | DoubleTypeCharacter | StringTypeCharacter;
-    IntegerTypeCharacter:  '%';
-    LongTypeCharacter:     '&';
-    DecimalTypeCharacter:  '@';
-    SingleTypeCharacter:   '!';
-    DoubleTypeCharacter:   '#';
-    StringTypeCharacter:   '$';
+```antlr
+TypeCharacter:         IntegerTypeCharacter | LongTypeCharacter | DecimalTypeCharacter | SingleTypeCharacter | DoubleTypeCharacter | StringTypeCharacter;
+IntegerTypeCharacter:  '%';
+LongTypeCharacter:     '&';
+DecimalTypeCharacter:  '@';
+SingleTypeCharacter:   '!';
+DoubleTypeCharacter:   '#';
+StringTypeCharacter:   '$';
+```
 
 ## Keywords
 
@@ -205,7 +228,9 @@ language construct. All keywords are reserved by the language and may not be use
 > __Note__
 > `EndIf`, `GoSub`, `Let`, `Variant`, and `Wend` are retained as keywords, although they are no longer used in Visual Basic.
 
-    Keyword:   '<Any member of keyword table in 2.3>';
+```antlr
+Keyword:   '<Any member of keyword table in 2.3>';
+```
 
 |-----------------|----------------|-------------|---------------|
 | AddHandler      | AddressOf      | Alias       | And           | 
@@ -251,13 +276,17 @@ language construct. All keywords are reserved by the language and may not be use
 
 A *literal* is a textual representation of a particular value of a type. Literal types include Boolean, integer, floating point, string, character, and date.
 
+```antlr
     Literal: BooleanLiteral | IntegerLiteral | FloatingPointLiteral | StringLiteral | CharacterLiteral | DateLiteral | Nothing;
+```
 
 ### Boolean Literals
 
 `True` and `False` are literals of the `Boolean` type that map to the true and false state, respectively.
 
-    BooleanLiteral:  'True' | 'False';
+```antlr
+BooleanLiteral:  'True' | 'False';
+```
 
 ### Integer Literals
 
@@ -268,22 +297,23 @@ The type of a literal is determined by its value or by the following type charac
 > __Annotation__
 > There isn't a type character for `Byte` because the most natural character would be `B`, which is a legal character in a hexadecimal literal.
 
-    IntegerLiteral:            IntegralLiteralValue IntegralTypeCharacter?;
-    IntegralLiteralValue:      IntLiteral | HexLiteral | OctalLiteral;
-    IntegralTypeCharacter:     ShortCharacter | UnsignedShortCharacter | IntegerCharacter | UnsignedIntegerCharacter | LongCharacter | UnsignedLongCharacter | IntegerTypeCharacter | LongTypeCharacter;
-    ShortCharacter:            'S';
-    UnsignedShortCharacter:    'US';
-    IntegerCharacter:          'I';
-    UnsignedIntegerCharacter:  'UI';
-    LongCharacter:             'L';
-    UnsignedLongCharacter:     'UL';
-    IntLiteral:                Digit+;
-    HexLiteral:                '&' 'H' HexDigit+;
-    OctalLiteral:              '&' 'O' OctalDigit+;
-    Digit:                     '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
-    HexDigit:                  '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
-    OctalDigit:                '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7';
-
+```antlr
+IntegerLiteral:            IntegralLiteralValue IntegralTypeCharacter?;
+IntegralLiteralValue:      IntLiteral | HexLiteral | OctalLiteral;
+IntegralTypeCharacter:     ShortCharacter | UnsignedShortCharacter | IntegerCharacter | UnsignedIntegerCharacter | LongCharacter | UnsignedLongCharacter | IntegerTypeCharacter | LongTypeCharacter;
+ShortCharacter:            'S';
+UnsignedShortCharacter:    'US';
+IntegerCharacter:          'I';
+UnsignedIntegerCharacter:  'UI';
+LongCharacter:             'L';
+UnsignedLongCharacter:     'UL';
+IntLiteral:                Digit+;
+HexLiteral:                '&' 'H' HexDigit+;
+OctalLiteral:              '&' 'O' OctalDigit+;
+Digit:                     '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
+HexDigit:                  '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
+OctalDigit:                '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7';
+```
 
 ### Floating-Point Literals
 
@@ -292,67 +322,77 @@ A floating-point literal is an integer literal followed by an optional decimal p
 > __Annotation__
 > It is worth noting that the `Decimal` data type can encode trailing zeros in a value. The specification currently makes no comment about whether trailing zeros in a `Decimal` literal should be honored by a compiler.
 
-    FloatingPointLiteral:       FloatingPointLiteralValue FloatingPointTypeCharacter? | IntLiteral FloatingPointTypeCharacter;
-    FloatingPointTypeCharacter: SingleCharacter | DoubleCharacter | DecimalCharacter | SingleTypeCharacter | DoubleTypeCharacter | DecimalTypeCharacter;
-    SingleCharacter:            'F';
-    DoubleCharacter:            'R';
-    DecimalCharacter:           'D';
-    FloatingPointLiteralValue:  IntLiteral '.' IntLiteral Exponent? | '.' IntLiteral Exponent? | IntLiteral Exponent;
-    Exponent:                   'E' Sign? IntLiteral;
-    Sign:                       '+' | '-';
+```antlr
+FloatingPointLiteral:       FloatingPointLiteralValue FloatingPointTypeCharacter? | IntLiteral FloatingPointTypeCharacter;
+FloatingPointTypeCharacter: SingleCharacter | DoubleCharacter | DecimalCharacter | SingleTypeCharacter | DoubleTypeCharacter | DecimalTypeCharacter;
+SingleCharacter:            'F';
+DoubleCharacter:            'R';
+DecimalCharacter:           'D';
+FloatingPointLiteralValue:  IntLiteral '.' IntLiteral Exponent? | '.' IntLiteral Exponent? | IntLiteral Exponent;
+Exponent:                   'E' Sign? IntLiteral;
+Sign:                       '+' | '-';
+```
 
 ### String Literals
 
 A string literal is a sequence of zero or more Unicode characters beginning and ending with an ASCII double-quote character, a Unicode left double-quote character, or a Unicode right double-quote character. Within a string, a sequence of two double-quote characters is an escape sequence representing a double quote in the string. A string constant is of the `String` type.
 
-    Module Test
-        Sub Main()
+```vb
+Module Test
+    Sub Main()
 
-            ' This prints out: ".
-            Console.WriteLine("""")
+        ' This prints out: ".
+        Console.WriteLine("""")
 
-            ' This prints out: a"b.
-            Console.WriteLine("a""b")
+        ' This prints out: a"b.
+        Console.WriteLine("a""b")
 
-            ' This causes a compile error due to mismatched double-quotes.
-            Console.WriteLine("a"b")
-        End Sub
-    End Module
+        ' This causes a compile error due to mismatched double-quotes.
+        Console.WriteLine("a"b")
+    End Sub
+End Module
+```
 
 The compiler is allowed to replace a constant string expression with a string literal. Each string literal does not necessarily result in a new string instance. When two or more string literals that are equivalent according to the string equality operator using binary comparison semantics appear in the same program, these string literals may refer to the same string instance. For instance, the output of the following program may return `True` because the two literals may refer to the same string instance.
 
-    Module Test
-        Sub Main()
-            Dim a As Object = "he" & "llo"
-            Dim b As Object = "hello"
-            Console.WriteLine(a Is b)
-        End Sub
-    End Module
+```antlr
+Module Test
+    Sub Main()
+        Dim a As Object = "he" & "llo"
+        Dim b As Object = "hello"
+        Console.WriteLine(a Is b)
+    End Sub
+End Module
+```
 
 Here is the grammar:
 
-    StringLiteral:        DoubleQuoteCharacter StringCharacter* DoubleQuoteCharacter;
-    DoubleQuoteCharacter: '"' | '<unicode left double-quote 0x201c>' | '<unicode right double-quote 0x201D>';
-    StringCharacter:      '<Any character except DoubleQuoteCharacter>' | DoubleQuoteCharacter DoubleQuoteCharacter;
+```antlr
+StringLiteral:        DoubleQuoteCharacter StringCharacter* DoubleQuoteCharacter;
+DoubleQuoteCharacter: '"' | '<unicode left double-quote 0x201c>' | '<unicode right double-quote 0x201D>';
+StringCharacter:      '<Any character except DoubleQuoteCharacter>' | DoubleQuoteCharacter DoubleQuoteCharacter;
+```
 
 ### Character Literals
 
 A character literal represents a single Unicode character of the `Char` type. Two double-quote characters is an escape sequence representing the double-quote character.
 
-    Module Test
-        Sub Main()
+```vb
+Module Test
+    Sub Main()
 
-            ' This prints out: a.
-            Console.WriteLine("a"c)
+        ' This prints out: a.
+        Console.WriteLine("a"c)
 
-            ' This prints out: ".
-            Console.WriteLine(""""c)
-        End Sub
-    End Module
+        ' This prints out: ".
+        Console.WriteLine(""""c)
+    End Sub
+End Module
+```
 
-Here is the grammar:
-
-    CharacterLiteral:  DoubleQuoteCharacter StringCharacter DoubleQuoteCharacter 'C';
+```antlr
+CharacterLiteral:  DoubleQuoteCharacter StringCharacter DoubleQuoteCharacter 'C';
+```
 
 ### Date Literals
 
@@ -362,45 +402,54 @@ To avoid problems with interpreting the year value in a date value, the year val
 
 A time value may be specified either using a 24-hour value or a 12-hour value; time values that omit an `AM` or `PM` are assumed to be 24-hour values. If a time value omits the minutes, the literal `0` is used by default. If a time value omits the seconds, the literal `0` is used by default. If both minutes and second are omitted, then `AM` or `PM` must be specified. If the date value specified is outside the range of the `Date` type, a compile-time error occurs.
 
-    Dim d As Date
+```vb
+Dim d As Date
 
-    d = # 8/23/1970 3:45:39AM #
-    d = # 8/23/1970 #              ' Date value: 8/23/1970 12:00:00AM.
-    d = # 3:45:39AM #              ' Date value: 1/1/1 3:45:39AM.
-    d = # 3:45:39 #                ' Date value: 1/1/1 3:45:39AM.
-    d = # 13:45:39 #               ' Date value: 1/1/1 1:45:39PM.
-    d = # 1AM #                    ' Date value: 1/1/1 1:00:00AM.
-    d = # 13:45:39PM #             ' This date value is not valid.
+d = # 8/23/1970 3:45:39AM #
+d = # 8/23/1970 #              ' Date value: 8/23/1970 12:00:00AM.
+d = # 3:45:39AM #              ' Date value: 1/1/1 3:45:39AM.
+d = # 3:45:39 #                ' Date value: 1/1/1 3:45:39AM.
+d = # 13:45:39 #               ' Date value: 1/1/1 1:45:39PM.
+d = # 1AM #                    ' Date value: 1/1/1 1:00:00AM.
+d = # 13:45:39PM #             ' This date value is not valid.
+```
 
-The preceding example contains several date literals.
-
-    DateLiteral:  '#' WhiteSpace* DateOrTime WhiteSpace* '#';
-    DateOrTime:   DateValue WhiteSpace+ TimeValue | DateValue | TimeValue;
-    DateValue:    MonthValue '/' DayValue '/' YearValue | MonthValue '-' DayValue '-' YearValue;
-    TimeValue:    HourValue ':' MinuteValue ( ':' SecondValue )? WhiteSpace* AMPM? | HourValue WhiteSpace* AMPM;
-    MonthValue:   IntLiteral;
-    DayValue:     IntLiteral;
-    YearValue:    IntLiteral;
-    HourValue:    IntLiteral;
-    MinuteValue:  IntLiteral;
-    SecondValue:  IntLiteral;
-    AMPM:         'AM' | 'PM';
-    ElseIf:       'ElseIf' | 'Else' 'If';
+```antlr
+DateLiteral:  '#' WhiteSpace* DateOrTime WhiteSpace* '#';
+DateOrTime:   DateValue WhiteSpace+ TimeValue | DateValue | TimeValue;
+DateValue:    MonthValue '/' DayValue '/' YearValue | MonthValue '-' DayValue '-' YearValue;
+TimeValue:    HourValue ':' MinuteValue ( ':' SecondValue )? WhiteSpace* AMPM? | HourValue WhiteSpace* AMPM;
+MonthValue:   IntLiteral;
+DayValue:     IntLiteral;
+YearValue:    IntLiteral;
+HourValue:    IntLiteral;
+MinuteValue:  IntLiteral;
+SecondValue:  IntLiteral;
+AMPM:         'AM' | 'PM';
+ElseIf:       'ElseIf' | 'Else' 'If';
+```
 
 ### Nothing
 
 `Nothing` is a special literal; it does not have a type and is convertible to all types in the type system, including type parameters. When converted to a particular type, it is the equivalent of the default value of that type.
 
-    Nothing:  'Nothing';
+```antlr
+Nothing:  'Nothing';
+```
 
 ## Separators
 
 The following ASCII characters are separators:
 
-    Separator:  '(' | ')' | '{' | '}' | '!' | '#' | ',' | '.' | ':' | '?';
+```antlr
+Separator:  '(' | ')' | '{' | '}' | '!' | '#' | ',' | '.' | ':' | '?';
+```
 
 ## Operator Characters
 
 The following ASCII characters or character sequences denote operators:
 
-    Operator:   '&' | '*' | '+' | '-' | '/' | '\\' | '^' | '<' | '=' | '>';
+```antlr
+Operator:   '&' | '*' | '+' | '-' | '/' | '\\' | '^' | '<' | '=' | '>';
+```
+

@@ -61,6 +61,15 @@ Longline:  Option1 | Option2 | Option3
        |  Option4 | Option5
 ```
 
+The following experiment is about nested lists
+
+1.  Hello
+2.  World
+    2.1. Alpha
+    2.2. Beta
+3.  Goodbye
+
+
 The following experiment shows we must use brace codeblocks, not indented codeblocks. The brace languages I'll use will be "vb" and "antlr".
 
 Here's a small experiment...
