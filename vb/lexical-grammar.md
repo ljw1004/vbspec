@@ -277,7 +277,7 @@ Keyword:   '<Any member of keyword table in 2.3>';
 A *literal* is a textual representation of a particular value of a type. Literal types include Boolean, integer, floating point, string, character, and date.
 
 ```antlr
-    Literal: BooleanLiteral | IntegerLiteral | FloatingPointLiteral | StringLiteral | CharacterLiteral | DateLiteral | Nothing;
+Literal: BooleanLiteral | IntegerLiteral | FloatingPointLiteral | StringLiteral | CharacterLiteral | DateLiteral | Nothing;
 ```
 
 ### Boolean Literals
@@ -311,7 +311,8 @@ IntLiteral:                Digit+;
 HexLiteral:                '&' 'H' HexDigit+;
 OctalLiteral:              '&' 'O' OctalDigit+;
 Digit:                     '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
-HexDigit:                  '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
+HexDigit:                  '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' |
+                           'A' | 'B' | 'C' | 'D' | 'E' | 'F';
 OctalDigit:                '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7';
 ```
 

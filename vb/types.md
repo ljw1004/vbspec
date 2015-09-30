@@ -4,35 +4,18 @@ The two fundamental categories of types in Visual Basic are *value types* and *r
 
 Every type has a *default value*, which is the value that is assigned to variables of that type upon initialization.
 
-<pre>TypeName  ::=
-    ArrayTypeName  |
-    NonArrayTypeName</pre>
-
-<pre>NonArrayTypeName  ::=
-    SimpleTypeName  |
-    NullableTypeName</pre>
-
-<pre>SimpleTypeName  ::=
-    QualifiedTypeName  |
-    BuiltInTypeName</pre>
-
-<pre>QualifiedTypeName  ::=
-    Identifier  [  TypeArguments  ]  |
-<b>Global</b>  Period  IdentifierOrKeyword    [  TypeArguments  ]  |
-    QualifiedTypeName  Period  IdentifierOrKeyword  [  TypeArguments  ]</pre>
-
-<pre>TypeArguments  ::=
-    OpenParenthesis  <b>Of</b>  TypeArgumentList  CloseParenthesis</pre>
-
-<pre>TypeArgumentList  ::=
-    TypeName  |
-    TypeArgumentList  Comma  TypeName</pre>
-
-<pre>BuiltInTypeName  ::=  <b>Object</b>  |  PrimitiveTypeName</pre>
-
-<pre>TypeModifier  ::=  AccessModifier  |  <b>Shadows</b></pre>
-
-<pre>IdentifierModifiers  ::=  [ *NullableNameModifier* ]   [ ArrayNameModifier  ]</pre>
+```antlr
+TypeName:            ArrayTypeName | NonArrayTypeName;
+NonArrayTypeName:    SimpleTypeName | NullableTypeName;
+SimpleTypeName:      QualifiedTypeName | BuiltInTypeName;
+QualifiedTypeName:   Identifier TypeArguments? (Period IdentifierOrKeyword TypeArguments?)*
+                     | 'Global' Period IdentifierOrKeyword TypeArguments? (Period IdentifierOrKeyword TypeArguments?)*;
+TypeArguments:       OpenParenthesis 'Of' TypeArgumentList CloseParenthesis;
+TypeArgumentList:    TypeName ( Comma TypeName )*;
+BuiltInTypeName:     'Object' | PrimitiveTypeName;
+TypeModifier:        AccessModifier | 'Shadows';
+IdentifierModifiers: NullableNameModifier? ArrayNameModifier?;
+```
 
 ## Value Types and Reference Types
 
@@ -44,7 +27,7 @@ Value types are stored directly on the stack, either within an array or within a
 
 The following example shows the difference between reference types and value types:
 
-```VB.net
+```vb
 Class Class1
     Public Value As Integer = 0
 End Class
@@ -65,7 +48,7 @@ End Module
 
 The output of the program is:
 
-```VB.net
+```vb
 Values: 0, 123
 Refs: 123, 123
 ```
@@ -78,7 +61,7 @@ One thing to note about the .NET Framework type system is that even though struc
 
 For value types, a `?` modifier can be added to a type name to represent the *nullable* version of that type. A nullable value type can contain the same values as the non-nullable version of the type as well as the null value. Thus, for a nullable value type, assigning `Nothing` to a variable of the type sets the value of the variable to the null value, not the zero value of the value type. For example:
 
-```VB.net
+```vb
 Dim x As Integer = Nothing
 Dim y As Integer? = Nothing
 
@@ -92,15 +75,16 @@ A variable may also be declared to be of a nullable value type by putting a null
 
 A nullable value type `T?` has the members of `System.Nullable(Of T)` as well as any operators or conversions *lifted* from the underlying type `T` into the type `T?`. Lifting copies operators and conversions from the underlying type, in most cases substituting nullable value types for non-nullable value types. This allows many of the same conversions and operations that apply to `T` to apply to `T?` as well.
 
-<pre>NullableTypeName  ::=  NonArrayTypeName  <b>?</b></pre>
-
-<pre>NullableNameModifier  ::=  <b>?</b></pre>
+```antlr
+NullableTypeName:      NonArrayTypeName '?';
+NullableNameModifier:  '?';
+```
 
 ## Interface Implementation
 
 Structure and class declarations may declare that they implement a set of interface types through one or more `Implements` clauses. All the types specified in the `Implements` clause must be interfaces, and the type must implement all members of the interfaces. For example:
 
-```VB.net
+```vb
 Interface ICloneable
     Function Clone() As Object
 End Interface 
@@ -127,7 +111,7 @@ End Structure
 
 A type that implements an interface also implicitly implements all of the interface's base interfaces. This is true even if the type does not explicitly list all base interfaces in the `Implements` clause. In this example, the `TextBox` structure implements both `IControl` and `ITextBox`.
 
-```VB.net
+```vb
 Interface IControl
     Sub Paint()
 End Interface 
@@ -157,7 +141,7 @@ Declaring that a type implements an interface in and of itself does not declare 
 
 Types cannot implement a type parameter on its own, although it may involve the type parameters that are in scope.
 
-```VB.net
+```vb
 Class C1(Of V)
     Implements V  ' Error, can't implement type parameter directly
     Implements IEnumerable(Of V)  ' OK, not directly implementing
@@ -168,7 +152,7 @@ End Class
 
 Generic interfaces can be implemented multiple times using different type arguments. However, a generic type cannot implement a generic interface using a type parameter if the supplied type parameter (regardless of type constraints) could overlap with another implementation of that interface. For example:
 
-```VB.net
+```vb
 Interface I1(Of T)
 End Interface
 
@@ -183,11 +167,10 @@ Class C2(Of T)
 End Class
 ```
 
-<pre>TypeImplementsClause  ::=  <b>Implements</b>*Type*Implements  StatementTerminator</pre>
-
-<pre>TypeImplements  ::=
-    NonArrayTypeName  |
-*Type*Implements  Comma  NonArrayTypeName</pre>
+```antlr
+TypeImplementsClause:  'Implements' TypeImplements StatementTerminator;
+TypeImplements:        NonArrayTypeName ( Comma NonArrayTypeName )*;
+```
 
 ## Primitive Types
 
@@ -219,13 +202,13 @@ The `Char` value type, which represents a single Unicode character and maps to `
 
 The `String` reference type, which represents a sequence of Unicode characters and maps to `System.String`. The default value of the `String` type is a null value.
 
-<pre>PrimitiveTypeName  ::=  NumericTypeName  |  <b>Boolean</b>  |  <b>Date</b>  |  <b>Char</b>  |  <b>String</b></pre>
 
-<pre>NumericTypeName  ::=  IntegralTypeName  |  FloatingPointTypeName  |  <b>Decimal</b></pre>
-
-<pre>IntegralTypeName  ::=  <b>Byte</b>  |  <b>SByte</b>  |  <b>UShort</b>  |  <b>Short</b>  |  <b>UInteger</b>  |  <b>Integer</b>  |  <b>ULong</b>  |  <b>Long</b></pre>
-
-<pre>FloatingPointTypeName  ::=  <b>Single</b>  |  <b>Double</b></pre>
+```antlr
+PrimitiveTypeName:     NumericTypeName | 'Boolean' | 'Date' | 'Char' | 'String';
+NumericTypeName:       IntegralTypeName | FloatingPointTypeName | 'Decimal';
+IntegralTypeName:      'Byte' | 'SByte' | 'UShort' | 'Short' | 'UInteger' | 'Integer' | 'ULong' | 'Long';
+FloatingPointTypeName: 'Single' | 'Double';
+```
 
 ## Enumerations
 
@@ -235,7 +218,7 @@ The underlying type of an enumeration must be an integral type that can represen
 
 The following example declares an enumeration with an underlying type of `Long`:
 
-```VB.net
+```vb
 Enum Color As Long
     Red
     Green
@@ -245,10 +228,11 @@ End Enum
 
 A developer might choose to use an underlying type of `Long`, as in the example, to enable the use of values that are in the range of `Long`, but not in the range of `Integer`, or to preserve this option for the future.
 
-<pre>EnumDeclaration  ::=
-    [  Attributes  ]  [  TypeModifier+  ]  <b>Enum</b>  Identifier  [  <b>As</b>  NonArrayTypeName  ]  StatementTerminator
-    EnumMemberDeclaration+
-<b>End</b><b>Enum</b>  StatementTerminator</pre>
+```antlr
+EnumDeclaration:       Attributes? TypeModifier* 'Enum' Identifier ( 'As' NonArrayTypeName )? StatementTerminator
+                       EnumMemberDeclaration+
+                       'End' 'Enum' StatementTerminator;
+```
 
 ### Enumeration Members
 
@@ -258,13 +242,15 @@ The scope of an enumeration member is the enumeration declaration body. This mea
 
 Declaration order for enumeration member declarations is significant when constant expression values are omitted. Enumeration members implicitly have `Public` access only; no access modifiers are allowed on enumeration member declarations.
 
-<pre>EnumMemberDeclaration  ::=  [  Attributes  ]  Identifier  [  Equals  ConstantExpression  ]  StatementTerminator</pre>
+```
+EnumMemberDeclaration: Attributes? Identifier ( Equals ConstantExpression )? StatementTerminator;
+```
 
 ### Enumeration Values
 
 The enumerated values in an enumeration member list are declared as constants typed as the underlying enumeration type, and they can appear wherever constants are required. An enumeration member definition with `=` gives the associated member the value indicated by the constant expression. The constant expression must evaluate to an integral type that is implicitly convertible to the underlying type and must be within the range of values that can be represented by the underlying type. The following example is in error because the constant values `1.5`, `2.3`, and `3.3` are not implicitly convertible to the underlying integral type `Long` with strict semantics.
 
-```VB.net
+```vb
 Option Strict On
 
 Enum Color As Long
@@ -276,7 +262,7 @@ End Enum
 
 Multiple enumeration members may share the same associated value, as shown below:
 
-```VB.net
+```vb
 Enum Color
     Red
     Green
@@ -289,7 +275,7 @@ The example shows an enumeration that has two enumeration members - `Blue` and `
 
 If the first enumerator value definition in the enumeration has no initializer, the value of the corresponding constant is `0`. An enumeration value definition without an initializer gives the enumerator the value obtained by increasing the value of the previous enumeration value by `1`. This increased value must be within the range of values that can be represented by the underlying type.
 
-```VB.net
+```vb
 Enum Color
     Red
     Green = 10
@@ -323,7 +309,7 @@ End Module
 
 The example above prints the enumeration values and their associated values. The output is:
 
-```VB.net
+```vb
 Red = 0
 Green = 10
 Blue = 11
@@ -339,7 +325,7 @@ The enumeration value `Blue` is automatically assigned the value one greater tha
 
 The constant expression may not directly or indirectly use the value of its own associated enumeration value (that is, circularity in the constant expression is not allowed). The following example is invalid because the declarations of `A` and `B` are circular.
 
-```VB.net
+```vb
 Enum Circular
     A = B
     B
@@ -352,7 +338,7 @@ End Enum
 
 A *class* is a data structure that may contain data members (constants, variables, and events), function members (methods, properties, indexers, operators, and constructors), and nested types. Classes are reference types. The following example shows a class that contains each kind of member:
 
-```VB.net
+```vb
 Class AClass
     Public Sub New()
         Console.WriteLine("Constructor")
@@ -399,7 +385,7 @@ End Class
 
 The following example shows uses of these members:
 
-```VB.net
+```vb
 Module Test
 
     ' Event usage.
@@ -450,7 +436,7 @@ There are two class-specific modifiers, `MustInherit` and `NotInheritable`. It i
 
 A class declaration may include a base type specification that defines the direct base type of the class. If a class declaration has no explicit base type, the direct base type is implicitly `Object`. For example:
 
-```VB.net
+```vb
 Class Base
 End Class
 
@@ -461,7 +447,7 @@ End Class
 
 Base types cannot be a type parameter on its own, although it may involve the type parameters that are in scope.
 
-```VB.net
+```vb
 Class C1(Of V) 
 End Class
 
@@ -504,7 +490,7 @@ The scope of a class member is the class body in which the member declaration oc
 
 In the case of classes, it is possible for two variables to reference the same object, and thus possible for operations on one variable to affect the object referenced by the other variable. With structures, the variables each have their own copy of the non-`Shared` data, so it is not possible for operations on one to affect the other, as the following example illustrates:
 
-```VB.net
+```vb
 Structure Point
     Public x, y As Integer
 
@@ -517,7 +503,7 @@ End Structure
 
 Given the above declaration the following code outputs the value `10`:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim a As New Point(10, 10)
@@ -544,7 +530,7 @@ The assignment of `a` to `b` creates a copy of the value, and `b` is thus unaffe
 
 The members of a structure are the members introduced by its structure member declarations and the members inherited from `System.ValueType`. Every structure implicitly has a `Public` parameterless instance constructor that produces the default value of the structure. As a result, it is not possible for a structure type declaration to declare a parameterless instance constructor. A structure type is, however, permitted to declare *parameterized* instance constructors, as in the following example:
 
-```VB.net
+```vb
 Structure Point
     Private x, y As Integer
 
@@ -557,7 +543,7 @@ End Structure
 
 Given the above declaration, the following statements both create a `Point` with `x` and `y` initialized to zero.
 
-```VB.net
+```vb
 Dim p1 As Point = New Point()
 Dim p2 As Point = New Point(0, 0)
 ```
@@ -591,7 +577,7 @@ A *standard module* is a type whose members are implicitly `Shared` and scoped t
 
 A member of a standard module has two fully qualified names, one without the standard module name and one with the standard module name. More than one standard module in a namespace may define a member with a particular name; unqualified references to the name outside of either module are ambiguous. For example:
 
-```VB.net
+```vb
 Namespace N1
     Module M1
         Sub S1()
@@ -648,7 +634,7 @@ As previously noted, the scope of a standard module member is the declaration co
 
 The following example shows an interface that contains a default property `Item`, an event `E`, a method `F`, and a property `P`:
 
-```VB.net
+```vb
 Interface IExample
     Default Property Item(index As Integer) As String
 
@@ -662,7 +648,7 @@ End Interface
 
 Interfaces may employ multiple inheritance. In the following example, the interface `IComboBox` inherits from both `ITextBox` and `IListBox`:
 
-```VB.net
+```vb
 Interface IControl
     Sub Paint()
 End Interface 
@@ -686,7 +672,7 @@ End Interface
 
 Classes and structures can implement multiple interfaces. In the following example, the class `EditBox` derives from the class `Control` and implements both `IControl` and `IDataBound`:
 
-```VB.net
+```vb
 Interface IDataBound
     Sub Bind(b As Binder)
 End Interface 
@@ -715,7 +701,7 @@ End Class
 
 The base interfaces of an interface are the explicit base interfaces and their base interfaces. In other words, the set of base interfaces is the complete transitive closure of the explicit base interfaces, their explicit base interfaces, and so on. If an interface declaration has no explicit interface base, then there is no base interface for the type  interfaces do not inherit from `Object` (although they do have a widening conversion to `Object`). In the following example, the base interfaces of `IComboBox` are `IControl`, `ITextBox`, and `IListBox`.
 
-```VB.net
+```vb
 Interface IControl
     Sub Paint()
 End Interface 
@@ -743,7 +729,7 @@ A class or structure that implements an interface also implicitly implements all
 
 If an interface appears more than once in the transitive closure of the base interfaces, it only contributes its members to the derived interface once. A type implementing the derived interface only has to implement the methods of the multiply defined base interface once. In the following example, `Paint` only needs to be implemented once, even though the class implements `IComboBox` and `IControl`.
 
-```VB.net
+```vb
 Class ComboBox
     Implements IControl, IComboBox
 
@@ -760,7 +746,7 @@ End Class
 
 An `Inherits` clause has no effect on other `Inherits` clauses. In the following example, `IDerived` must qualify the name of `INested` with `IBase`.
 
-```VB.net
+```vb
 Interface IBase
     Interface INested
         Sub Nested()
@@ -786,7 +772,7 @@ The accessibility domain of a base interface must be the same as or a superset o
 
 The members of an interface consist of the members introduced by its member declarations and the members inherited from its base interfaces. Although interfaces do not inherit members from `Object`, because every class or structure that implements an interface does inherit from `Object`, the members of `Object`, including extension methods, are considered members of an interface and can be called on an interface directly without requiring a cast to `Object`. For example:
 
-```VB.net
+```vb
 Interface I1
 End Interface
 
@@ -816,7 +802,7 @@ An array has a *rank* that determines the number of indices associated with each
 
 The following example creates a single-dimensional array of integer values, initializes the array elements, and then prints each of them out:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim arr(5) As Integer
@@ -835,7 +821,7 @@ End Module
 
 The program outputs the following:
 
-```VB.net
+```vb
 arr(0) = 0
 arr(1) = 1
 arr(2) = 4
@@ -848,7 +834,7 @@ Each dimension of an array has an associated length. Dimension lengths are not p
 
 Array types are specified by adding a modifier to an existing type name. The modifier consists of a left parenthesis, a set of zero or more commas, and a right parenthesis. The type modified is the element type of the array, and the number of dimensions is the number of commas plus one. If more than one modifier is specified, then the element type of the array is an array. The modifiers are read left to right, with the leftmost modifier being the outermost array. In the example
 
-```VB.net
+```vb
 Module Test
     Dim arr As Integer(,)(,,)()
 End Module
@@ -860,7 +846,7 @@ A variable may also be declared to be of an array type by putting an array type 
 
 The following example shows a variety of local variable declarations that use array types with `Integer` as the element type:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim a1() As Integer    ' Declares 1-dimensional array of integers.
@@ -883,7 +869,7 @@ End Module
 
 An array type name modifier extends to all sets of parentheses that follow it. This means that in the situations where a set of arguments enclosed in parenthesis is allowed after a type name, it is not possible to specify the arguments for an array type name. For example:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         ' This calls the Integer constructor.
@@ -935,13 +921,13 @@ There are three steps in defining and using delegates: declaration, instantiatio
 
 Delegates are declared using delegate declaration syntax. The following example declares a delegate named `SimpleDelegate` that takes no arguments:
 
-```VB.net
+```vb
 Delegate Sub SimpleDelegate()
 ```
 
 The next example creates a `SimpleDelegate` instance and then immediately calls it:
 
-```VB.net
+```vb
 Module Test
     Sub F()
         System.Console.WriteLine("Test.F")
@@ -956,7 +942,7 @@ End Module
 
 There is not much point in instantiating a delegate for a method and then immediately calling via the delegate, as it would be simpler to call the method directly. Delegates show their usefulness when their anonymity is used. The next example shows a `MultiCall` method that repeatedly calls a `SimpleDelegate` instance:
 
-```VB.net
+```vb
 Sub MultiCall(d As SimpleDelegate, count As Integer)
     Dim i As Integer
 
@@ -979,7 +965,7 @@ Class and structure declarations can be *partial* declarations. A partial declar
 
 a.vb:
 
-```VB.net
+```vb
 Public Partial Class Test
     Public Sub S1()
     End Sub
@@ -988,7 +974,7 @@ End Class
 
 b.vb:
 
-```VB.net
+```vb
 Public Class Test
     Public Sub S2()
     End Sub
@@ -1003,7 +989,7 @@ When combining partial type declarations, at least one of the declarations must 
 
 Only classes and structures can be declared using partial declarations. The arity of a type is considered when matching partial declarations together: two classes with the same name but different numbers of type parameters are not considered to be partial declarations of the same time. Partial declarations can specify attributes, class modifiers, `Inherits` statement or `Implements` statement. At compile time, all of the pieces of the partial declarations are combined together and used as a part of the type declaration. If there are any conflicts between attributes, modifiers, bases, interfaces, or type members, a compile-time error results. For example:
 
-```VB.net
+```vb
 Public Partial Class Test1
     Implements IDisposable
 End Class
@@ -1024,7 +1010,7 @@ The previous example declares a type `Test1` that is `Public`, inherits from `Ob
 
 Partial types with type parameters can declare constraints and variance for the type parameters, but the constraints and variance from each partial declaration must match. Thus, constraints and variance are special in that they are not automatically combined like other modifiers:
 
-```VB.net
+```vb
 Partial Public Class List(Of T As IEnumerable)
 End Class
 
@@ -1035,7 +1021,7 @@ End Class
 
 The fact that a type is declared using multiple partial declarations does not affect the name lookup rules within the type. As a result, a partial type declaration can use members declared in other partial type declarations, or may implement methods on interfaces declared in other partial type declarations. For example:
 
-```VB.net
+```vb
 Public Partial Class Test1
     Implements IDisposable
 
@@ -1053,7 +1039,7 @@ End Class
 
 Nested types can have partial declarations as well. For example:
 
-```VB.net
+```vb
 Public Partial Class Test
     Public Partial Class NestedTest
         Public Sub S1()
@@ -1077,7 +1063,7 @@ A generic type declaration, by itself, does not denote a type. Instead, a generi
 
 A type name might identify a constructed type even though it doesn't specify type parameters directly. This can occur where a type is nested within a generic class declaration, and the instance type of the containing declaration is implicitly used for name lookup:
 
-```VB.net
+```vb
 Class Outer(Of T) 
     Public Class Inner 
     End Class
@@ -1099,7 +1085,7 @@ The base, implemented interfaces and members of constructed types are determined
 
 A constructed type for who one or more type arguments are type parameters of a containing type or method is called an *open type*. This is because some of the type parameters of the type are still not known, so the actual shape of the type is not yet fully known. In contrast, a generic type whose type arguments are all non-type parameters is called a *closed type*. The shape of a closed type is always fully known. For example:
 
-```VB.net
+```vb
 Class Base(Of T, V)
 End Class
 

@@ -155,82 +155,92 @@ ExternalChecksumStatement:  '#' 'ExternalChecksum' '(' StringLiteral ',' StringL
 AccessModifier:  'Public' | 'Protected' | 'Friend' | 'Private' | 'Protected' 'Friend';
 
 TypeParameterList:  OpenParenthesis 'Of' TypeParameter ( Comma TypeParameter )* CloseParenthesis;
-TypeParameter:  VarianceModifier? Identifier TypeParameterConstraints?;
-VarianceModifier:  'In' | 'Out';
+TypeParameter:      VarianceModifier? Identifier TypeParameterConstraints?;
+VarianceModifier:   'In' | 'Out';
+
 TypeParameterConstraints:  'As' Constraint | 'As' OpenCurlyBrace ConstraintList CloseCurlyBrace;
-ConstraintList:  Constraint ( Comma Constraint )*;
-Constraint:  TypeName | 'New' | 'Structure' | 'Class';
+ConstraintList:            Constraint ( Comma Constraint )*;
+Constraint:                TypeName | 'New' | 'Structure' | 'Class';
 
 
 //13.3.1 Attributes
-Attributes:  AttributeBlock+;
-AttributeBlock:  LineTerminator? '<' AttributeList LineTerminator? '>' LineTerminator?;
-AttributeList:  Attribute ( Comma Attribute )*;
-Attribute:  ( AttributeModifier ':' )? SimpleTypeName ( OpenParenthesis AttributeArguments? CloseParenthesis )?;
+Attributes:         AttributeBlock+;
+AttributeBlock:     LineTerminator? '<' AttributeList LineTerminator? '>' LineTerminator?;
+AttributeList:      Attribute ( Comma Attribute )*;
+Attribute:          ( AttributeModifier ':' )? SimpleTypeName ( OpenParenthesis AttributeArguments? CloseParenthesis )?;
 AttributeModifier:  'Assembly' | 'Module';
-AttributeArguments:  AttributePositionalArgumentList
-  | AttributePositionalArgumentList Comma VariablePropertyInitializerList
-  | VariablePropertyInitializerList;
+
+AttributeArguments:               AttributePositionalArgumentList
+                                  | AttributePositionalArgumentList Comma VariablePropertyInitializerList
+                                  | VariablePropertyInitializerList;
 AttributePositionalArgumentList:  AttributeArgumentExpression? ( Comma AttributeArgumentExpression? )*;
 VariablePropertyInitializerList:  VariablePropertyInitializer ( Comma VariablePropertyInitializer )*;
-VariablePropertyInitializer:  IdentifierOrKeyword ColonEquals AttributeArgumentExpression;
-AttributeArgumentExpression:  ConstantExpression | GetTypeExpression | ArrayExpression;
+VariablePropertyInitializer:      IdentifierOrKeyword ColonEquals AttributeArgumentExpression;
+AttributeArgumentExpression:      ConstantExpression | GetTypeExpression | ArrayExpression;
 
 
 //13.3.2 Source Files and Namespaces
 
-Start:  OptionStatement* ImportsStatement* AttributesStatement* NamespaceMemberDeclaration*;
+Start:                OptionStatement* ImportsStatement* AttributesStatement* NamespaceMemberDeclaration*;
 StatementTerminator:  LineTerminator | ':';
 AttributesStatement:  Attributes StatementTerminator;
-OptionStatement:  OptionExplicitStatement | OptionStrictStatement | OptionCompareStatement | OptionInferStatement;
-OptionExplicitStatement:  'Option' 'Explicit' OnOff? StatementTerminator;
-OnOff:  'On' | 'Off';
-OptionStrictStatement:  'Option' 'Strict' OnOff? StatementTerminator;
+
+OptionStatement:         OptionExplicitStatement | OptionStrictStatement | OptionCompareStatement | OptionInferStatement;
+OptionExplicitStatement: 'Option' 'Explicit' OnOff? StatementTerminator;
+OnOff:                   'On' | 'Off';
+OptionStrictStatement:   'Option' 'Strict' OnOff? StatementTerminator;
 OptionCompareStatement:  'Option' 'Compare' CompareOption StatementTerminator;
-CompareOption:  'Binary' | 'Text';
-OptionInferStatement:  'Option' 'Infer' OnOff? StatementTerminator;
-ImportsStatement:  'Imports' ImportsClauses StatementTerminator;
-ImportsClauses:  ImportsClause ( Comma ImportsClause )*;
-ImportsClause:  AliasImportsClause | MembersImportsClause | XMLNamespaceImportsClause;
-AliasImportsClause:  Identifier Equals TypeName;
-MembersImportsClause:  TypeName;
+CompareOption:           'Binary' | 'Text';
+OptionInferStatement:    'Option' 'Infer' OnOff? StatementTerminator;
+
+ImportsStatement:     'Imports' ImportsClauses StatementTerminator;
+ImportsClauses:       ImportsClause ( Comma ImportsClause )*;
+ImportsClause:        AliasImportsClause | MembersImportsClause | XMLNamespaceImportsClause;
+AliasImportsClause:   Identifier Equals TypeName;
+MembersImportsClause: TypeName;
+
 XMLNamespaceImportsClause:  '<' XMLNamespaceAttributeName XMLWhitespace? Equals XMLWhitespace? XMLNamespaceValue '>';
-XMLNamespaceValue:  DoubleQuoteCharacter XMLAttributeDoubleQuoteValueCharacter* DoubleQuoteCharacter
-  | SingleQuoteCharacter XMLAttributeSingleQuoteValueCharacter* SingleQuoteCharacter;
+XMLNamespaceValue:          DoubleQuoteCharacter XMLAttributeDoubleQuoteValueCharacter* DoubleQuoteCharacter
+                            | SingleQuoteCharacter XMLAttributeSingleQuoteValueCharacter* SingleQuoteCharacter;
+
 NamespaceDeclaration:  'Namespace' NamespaceName StatementTerminator
-  NamespaceMemberDeclaration*
-  'End' 'Namespace' StatementTerminator;
-NamespaceName:  RelativeNamespaceName | 'Global' | 'Global' '.' RelativeNamespaceName;
-RelativeNamespaceName : Identifier ( Period IdentifierOrKeyword )*;
+                       NamespaceMemberDeclaration*
+                       'End' 'Namespace' StatementTerminator;
+NamespaceName:         RelativeNamespaceName | 'Global' | 'Global' '.' RelativeNamespaceName;
+RelativeNamespaceName: Identifier ( Period IdentifierOrKeyword )*;
+
 NamespaceMemberDeclaration:  NamespaceDeclaration | TypeDeclaration;
-TypeDeclaration:  ModuleDeclaration | NonModuleDeclaration;
-NonModuleDeclaration:  EnumDeclaration | StructureDeclaration | InterfaceDeclaration | ClassDeclaration | DelegateDeclaration;
+TypeDeclaration:             ModuleDeclaration | NonModuleDeclaration;
+NonModuleDeclaration:        EnumDeclaration | StructureDeclaration | InterfaceDeclaration | ClassDeclaration | DelegateDeclaration;
 
 //13.3.3 Types
-TypeName:  ArrayTypeName | NonArrayTypeName;
-NonArrayTypeName:  SimpleTypeName | NullableTypeName;
-SimpleTypeName:  QualifiedTypeName | BuiltInTypeName;
-QualifiedTypeName:
-  | Identifier TypeArguments? (Period IdentifierOrKeyword TypeArguments?)*
-  | 'Global' Period IdentifierOrKeyword TypeArguments? (Period IdentifierOrKeyword TypeArguments?)*;
-TypeArguments:  OpenParenthesis 'Of' TypeArgumentList CloseParenthesis;
-TypeArgumentList:  TypeName ( Comma TypeName )*;
-BuiltInTypeName:  'Object' | PrimitiveTypeName;
-TypeModifier:  AccessModifier | 'Shadows';
-IdentifierModifiers:  NullableNameModifier? ArrayNameModifier?;
-NullableTypeName:  NonArrayTypeName '?';
-NullableNameModifier:  '?';
-TypeImplementsClause:  'Implements' TypeImplements StatementTerminator;
-TypeImplements:  NonArrayTypeName ( Comma NonArrayTypeName )*;
 
-PrimitiveTypeName:  NumericTypeName | 'Boolean' | 'Date' | 'Char' | 'String';
-NumericTypeName:  IntegralTypeName | FloatingPointTypeName | 'Decimal';
-IntegralTypeName:  'Byte' | 'SByte' | 'UShort' | 'Short' | 'UInteger' | 'Integer' | 'ULong' | 'Long';
-FloatingPointTypeName:  'Single' | 'Double';
-EnumDeclaration:  Attributes? TypeModifier* 'Enum' Identifier ( 'As' NonArrayTypeName )? StatementTerminator
-  EnumMemberDeclaration+
-  'End' 'Enum' StatementTerminator;
-EnumMemberDeclaration:  Attributes? Identifier ( Equals ConstantExpression )? StatementTerminator;
+TypeName:            ArrayTypeName | NonArrayTypeName;
+NonArrayTypeName:    SimpleTypeName | NullableTypeName;
+SimpleTypeName:      QualifiedTypeName | BuiltInTypeName;
+QualifiedTypeName:   Identifier TypeArguments? (Period IdentifierOrKeyword TypeArguments?)*
+                     | 'Global' Period IdentifierOrKeyword TypeArguments? (Period IdentifierOrKeyword TypeArguments?)*;
+TypeArguments:       OpenParenthesis 'Of' TypeArgumentList CloseParenthesis;
+TypeArgumentList:    TypeName ( Comma TypeName )*;
+BuiltInTypeName:     'Object' | PrimitiveTypeName;
+TypeModifier:        AccessModifier | 'Shadows';
+IdentifierModifiers: NullableNameModifier? ArrayNameModifier?;
+
+NullableTypeName:      NonArrayTypeName '?';
+NullableNameModifier:  '?';
+
+TypeImplementsClause:  'Implements' TypeImplements StatementTerminator;
+TypeImplements:        NonArrayTypeName ( Comma NonArrayTypeName )*;
+PrimitiveTypeName:     NumericTypeName | 'Boolean' | 'Date' | 'Char' | 'String';
+NumericTypeName:       IntegralTypeName | FloatingPointTypeName | 'Decimal';
+IntegralTypeName:      'Byte' | 'SByte' | 'UShort' | 'Short' | 'UInteger' | 'Integer' | 'ULong' | 'Long';
+FloatingPointTypeName: 'Single' | 'Double';
+
+EnumDeclaration:       Attributes? TypeModifier* 'Enum' Identifier ( 'As' NonArrayTypeName )? StatementTerminator
+                       EnumMemberDeclaration+
+                       'End' 'Enum' StatementTerminator;
+EnumMemberDeclaration: Attributes? Identifier ( Equals ConstantExpression )? StatementTerminator;
+
 ClassDeclaration:  Attributes? ClassModifier* 'Class' Identifier TypeParameterList? StatementTerminator
   ClassBase?
   TypeImplementsClause*

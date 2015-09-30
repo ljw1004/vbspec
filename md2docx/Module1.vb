@@ -7,11 +7,17 @@ Imports DocumentFormat.OpenXml.Wordprocessing
 Imports FSharp.Markdown
 Imports Microsoft.FSharp.Core
 
+
 Module Module1
 
     Sub Main()
+        Dim fn = ""
+        For ifn = 0 To 1000
+            fn = $"vbmd{If(ifn = 0, "", CStr(ifn))}.docx"
+            If Not File.Exists(fn) Then Exit For
+        Next
         Using templateDoc = WordprocessingDocument.Open("vb-template.docx", False),
-                resultDoc = WordprocessingDocument.Create("vbmd.docx", WordprocessingDocumentType.Document)
+                resultDoc = WordprocessingDocument.Create(fn, WordprocessingDocumentType.Document)
             For Each part In templateDoc.Parts
                 resultDoc.AddPart(part.OpenXmlPart, part.RelationshipId)
             Next
@@ -19,23 +25,29 @@ Module Module1
             Dim body = resultDoc.MainDocumentPart.Document.Body
             body.RemoveAllChildren()
 
-            'Dim src = "|------------|-----------|-------|-----|
-            '| AddHandler | AddressOf | Alias | And | 
-            '| AndAlso | As | Boolean | ByRef | 
-            '"
-            'For Each p In New MarkdownParser(src).Paragraphs
-            '    body.AppendChild(p)
+            Dim src = "This is a paragraph
+
+1. List
+    1. Alpha
+    2. Beta
+2. More list
+
+Closing paragraph"
+
+            For Each p In New MarkdownParser(src, resultDoc).Paragraphs
+                body.AppendChild(p)
+            Next
+
+            'For Each fn In {"introduction.md", "lexical-grammar.md", "preprocessing-directives.md",
+            '    "general-concepts.md", "attributes.md", "source-files-and-namespaces.md", "types.md"}
+            '    For Each p In New MarkdownParser(File.ReadAllText($"..\..\..\vb\{fn}")).Paragraphs
+            '        body.AppendChild(p)
+            '    Next
             'Next
 
-            For Each p In New MarkdownParser(File.ReadAllText("..\..\..\vb\introduction.md")).Paragraphs
-                body.AppendChild(p)
-            Next
-            For Each p In New MarkdownParser(File.ReadAllText("..\..\..\vb\lexical-grammar.md")).Paragraphs
-                body.AppendChild(p)
-            Next
         End Using
 
-        Process.Start("vbmd.docx")
+        Process.Start(fn)
     End Sub
 
     <Extension>
@@ -47,14 +59,16 @@ Module Module1
 End Module
 
 Class MarkdownParser
-    Dim doc As MarkdownDocument
+    Dim mddoc As MarkdownDocument
+    Dim wdoc As WordprocessingDocument
 
-    Sub New(s As String)
-        doc = Markdown.Parse(s)
+    Sub New(s As String, wdoc As WordprocessingDocument)
+        Me.mddoc = Markdown.Parse(s)
+        Me.wdoc = wdoc
     End Sub
 
     Function Paragraphs() As IEnumerable(Of OpenXmlCompositeElement)
-        Return Paragraphs2Paragraphs(doc.Paragraphs)
+        Return Paragraphs2Paragraphs(mddoc.Paragraphs)
     End Function
 
     Iterator Function Paragraphs2Paragraphs(pars As IEnumerable(Of MarkdownParagraph)) As IEnumerable(Of OpenXmlCompositeElement)
@@ -65,6 +79,7 @@ Class MarkdownParser
         Next
     End Function
 
+    Dim re_grammar As New Regex("^\s*([a-zA-Z]+):\s")
 
     Iterator Function Paragraph2Paragraphs(md As MarkdownParagraph) As IEnumerable(Of OpenXmlCompositeElement)
         If md.IsHeading Then
@@ -78,17 +93,39 @@ Class MarkdownParser
             Yield New Paragraph(Spans2Elements(spans))
             Return
 
+        ElseIf md.IsListBlock Then
+            ' https://msdn.microsoft.com/en-us/library/ee922775(office.14).aspx
+            ' http://stackoverflow.com/questions/1940911/openxml-2-sdk-word-document-create-bulleted-list-programmatically
+            Dim mdl = CType(md, MarkdownParagraph.ListBlock), isOrdered = mdl.Item1.IsOrdered, pars = mdl.Item2
+
+            Dim numberingPart = If(wdoc.MainDocumentPart.NumberingDefinitionsPart, wdoc.MainDocumentPart.AddNewPart(Of NumberingDefinitionsPart)("NumberingDefinitionsPart001"))
+            Dim level As New Level(New NumberingFormat() With {.Val = NumberFormatValues.Bullet}, New LevelText() With {.Val = "·"}) With {.LevelIndex = 0}
+            Dim element = New Numbering(New AbstractNum(level) With {.AbstractNumberId = 1},
+                                        New NumberingInstance(New AbstractNumId With {.Val = 1}) With {.NumberID = 1})
+            element.Save(numberingPart)
+
+            Yield New Paragraph(New ParagraphProperties(New NumberingProperties(New NumberingLevelReference With {.Val = 0}, New NumberingId With {.Val = 1})),
+                                New Run(New Text("Hello, ") With {.Space = SpaceProcessingModeValues.Preserve}))
+            Yield New Paragraph(New ParagraphProperties(New NumberingProperties(New NumberingLevelReference With {.Val = 0}, New NumberingId With {.Val = 1})),
+                                New Run(New Text("world!") With {.Space = SpaceProcessingModeValues.Preserve}))
+
         ElseIf md.IsCodeBlock Then
             Dim mdc = CType(md, MarkdownParagraph.CodeBlock), code = mdc.Item1, lang = mdc.Item2, ignoredAfterLang = mdc.Item3
             Dim lines = code.Split({vbCrLf, vbCr, vbLf}, StringSplitOptions.None).ToList()
             If String.IsNullOrWhiteSpace(lines.Last) Then lines.RemoveAt(lines.Count - 1)
-            Dim grammar = IsGrammar(lines)
-            If grammar Then
+            If lang = "antlr" Then
+                Dim run As Run = Nothing
                 For Each line In lines
-                    Dim run As New Run(New Text(line))
-                    Dim style As New ParagraphStyleId With {.Val = "Grammar"}
-                    Yield New Paragraph(run) With {.ParagraphProperties = New ParagraphProperties(style)}
+                    If re_grammar.IsMatch(line) Then
+                        If run IsNot Nothing Then Yield New Paragraph(run) With {.ParagraphProperties = New ParagraphProperties(New ParagraphStyleId With {.Val = "Grammar"})}
+                        run = New Run(New Text(line) With {.Space = SpaceProcessingModeValues.Preserve})
+                    Else
+                        If run Is Nothing Then run = New Run()
+                        run.Append(New Break)
+                        run.Append(New Text(line) With {.Space = SpaceProcessingModeValues.Preserve})
+                    End If
                 Next
+                If run IsNot Nothing Then Yield New Paragraph(run) With {.ParagraphProperties = New ParagraphProperties(New ParagraphStyleId With {.Val = "Grammar"})}
                 Return
             Else
                 Dim run As New Run, onFirstLine = True
@@ -191,14 +228,6 @@ Class MarkdownParser
 
 
 
-    Function IsGrammar(lines As IEnumerable(Of String)) As Boolean
-        Static Dim re As New Regex("^([a-zA-Z]+): ")
-        If Not lines.Any Then Return False
-        Dim s = lines.First
-        If re.IsMatch(s) Then Return True
-        Return False
-    End Function
-
     Iterator Function Spans2Elements(mds As IEnumerable(Of MarkdownSpan)) As IEnumerable(Of OpenXmlElement)
         For Each md In mds
             For Each e In Span2Elements(md)
@@ -239,9 +268,9 @@ Class MarkdownParser
             Else
                 Dim mdil = CType(md, MarkdownSpan.IndirectLink), original = mdil.Item2, id = mdil.Item3
                 spans = mdil.Item1
-                If doc.DefinedLinks.ContainsKey(id) Then
-                    url = doc.DefinedLinks(id).Item1
-                    alt = doc.DefinedLinks(id).Item2.Option()
+                If mddoc.DefinedLinks.ContainsKey(id) Then
+                    url = mddoc.DefinedLinks(id).Item1
+                    alt = mddoc.DefinedLinks(id).Item2.Option()
                 End If
             End If
             Dim style = New RunStyle With {.Val = "Hyperlink"}

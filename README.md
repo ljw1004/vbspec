@@ -46,7 +46,7 @@ Dim x = "Hello"
 ``
 ```
 
-Grammar blocks are like this:
+Grammar blocks are like this, and can be up to 105 characters wide:
 ```
 ``antlr
 Start:  Left | Right;
@@ -65,8 +65,8 @@ The following experiment is about nested lists
 
 1.  Hello
 2.  World
-    2.1. Alpha
-    2.2. Beta
+    1. Alpha
+    2. Beta
 3.  Goodbye
 
 

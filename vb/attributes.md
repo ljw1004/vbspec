@@ -5,12 +5,11 @@ The Visual Basic language enables the programmer to specify modifiers on declara
 In addition to the modifiers defined by the language, Visual Basic also enables programmers to create new modifiers, called *attributes*, and to use them when declaring new entities. These new modifiers, which are defined through the declaration of attribute classes, are then assigned to entities through *attribute blocks*.
 
 > __Note__
-
 > Attributes may be retrieved at run time through the .NET Framework's reflection APIs. These APIs are outside the scope of this specification.
 
 For instance, a framework might define a `Help` attribute that can be placed on program elements such as classes and methods to provide a mapping from program elements to documentation, as the following example demonstrates:
 
-```VB.net
+```vb
 <AttributeUsage(AttributeTargets.All)> _
 Public Class HelpAttribute
     Inherits Attribute
@@ -34,7 +33,7 @@ The example defines an attribute class named `HelpAttribute`, or `Help` for shor
 
 The next example shows several uses of the attribute:
 
-```VB.net
+```vb
 <Help("http://www.example.com/.../Class1.htm")> _
 Public Class Class1
     <Help("http://www.example.com/.../Class1.htm", Topic:="F")> _
@@ -45,7 +44,7 @@ End Class
 
 The next example checks to see if `Class1` has a `Help` attribute, and writes out the associated `Topic` and `Url` values if the attribute is present.
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim type As Type = GetType(Class1)
@@ -66,7 +65,7 @@ End Module
 
 An *attribute class* is a non-generic class that derives from `System.Attribute` and is not `MustInherit`. The attribute class may have a `System.AttributeUsage` attribute that declares what the attribute is valid on, whether it may be used multiple times in a declaration, and whether it is inherited. The following example defines an attribute class named `SimpleAttribute` that can be placed on class declarations and interface declarations:
 
-```VB.net
+```vb
 <AttributeUsage(AttributeTargets.Class Or AttributeTargets.Interface)> _
 Public Class SimpleAttribute
     Inherits System.Attribute
@@ -75,7 +74,7 @@ End Class
 
 The next example shows a few uses of the `Simple` attribute. Although the attribute class is named `SimpleAttribute`, uses of this attribute may omit the *Attribute* suffix, thus shortening the name to `Simple`:
 
-```VB.net
+```vb
 <Simple> Class Class1
 End Class
 
@@ -87,7 +86,7 @@ If the attribute lacks a `System.AttributeUsage`, then the attribute can be plac
 
 The following example defines a multiple-use attribute class named `AuthorAttribute`:
 
-```VB.net
+```vb
 <AttributeUsage(AttributeTargets.Class, AllowMultiple:=True)> _
 Public Class AuthorAttribute
     Inherits System.Attribute
@@ -108,7 +107,7 @@ End Class
 
 The example shows a class declaration with two uses of the `Author` attribute:
 
-```VB.net
+```vb
 <Author("Maria Hammond"), Author("Ramesh Meyyappan")> _
 Class Class1
 End Class
@@ -118,7 +117,7 @@ The `System.AttributeUsage` attribute has a public instance variable, `Inherited
 
 If a single-use attribute is both inherited and specified on a derived type, the attribute specified on the derived type overrides the inherited attribute. If a multiple-use attribute is both inherited and specified on a derived type, both attributes are specified on the derived type. For example:
 
-```VB.net
+```vb
 <AttributeUsage(AttributeTargets.Class, AllowMultiple:=True, _
                 Inherited:=True) > _
 Class MultiUseAttribute
@@ -165,7 +164,7 @@ Attributes are specified in *attribute blocks*. Each attribute block is delimite
 
 An attribute may not be specified on a kind of declaration it does not support, and single-use attributes may not be specified more than once in an attribute block. The example below causes errors both because it attempts to use `HelpString` on the interface `Interface1` and more than once on the declaration of `Class1`.
 
-```VB.net
+```vb
 <AttributeUsage(AttributeTargets.Class)> _
 Public Class HelpStringAttribute
     Inherits System.Attribute
@@ -200,26 +199,19 @@ An attribute consists of an optional attribute modifier, an attribute name, an o
 
 If a source file contains an attribute block at the top of the file that specifies attributes for the assembly or module that will contain the source file, each attribute in the attribute block must be prefixed by both the `Assembly` or `Module` modifier and a colon.
 
-<pre><code><i>Attributes</i>  ::=
-    <i>AttributeBlock</i>  |
-    <i>Attributes  AttributeBlock</i>
-
-<i>AttributeBlock</i>  ::=  [  <i>LineTerminator</i>  ]  <b>&lt;</b>  <i>AttributeList</i>  [  <i>LineTerminator</i>  ]  <b>&gt;</b>  [  <i>LineTerminator</i>  ]
-
-<i>AttributeList</i>  ::=
-    <i>Attribute</i>  |
-    <i>AttributeList  Comma  Attribute</i>
-
-<i>Attribute</i>  ::=
-    [  <i>AttributeModifier</i>  <b>:</b>  ]  <i>SimpleTypeName</i>  [  <i>OpenParenthesis</i>  [  <i>AttributeArguments</i>  ]  <i>CloseParenthesis</i>  ]
-
-<i>AttributeModifier</i>  ::=  <b>Assembly</b>  |  <b>Module</b></code></pre>
+```antlr
+Attributes:         AttributeBlock+;
+AttributeBlock:     LineTerminator? '<' AttributeList LineTerminator? '>' LineTerminator?;
+AttributeList:      Attribute ( Comma Attribute )*;
+Attribute:          ( AttributeModifier ':' )? SimpleTypeName ( OpenParenthesis AttributeArguments? CloseParenthesis )?;
+AttributeModifier:  'Assembly' | 'Module';
+```
 
 ### Attribute Names
 
 The name of an attribute specifies an attribute class. By convention, attribute classes are named with the suffix `Attribute`. Uses of an attribute may either include or omit this suffix. Consequently the name of an attribute class that corresponds to an attribute identifier is either the identifier itself or the concatenation of the qualified identifier and `Attribute`. When the compiler resolves an attribute name, it appends `Attribute` to the name and tries the lookup. If that lookup fails, the compiler tries the lookup without the suffix. For example, uses of an attribute class `SimpleAttribute` may omit the `Attribute` suffix, thus shortening the name to `Simple`:
 
-```VB.net
+```vb
 <Simple> Class Class1
 End Class
 
@@ -229,7 +221,7 @@ End Interface
 
 The example above is semantically equivalent to the following:
 
-```VB.net
+```vb
 <SimpleAttribute> Class Class1
 End Class
 
@@ -239,7 +231,7 @@ End Interface
 
 In general, attributes named with the suffix `Attribute` are preferred. The following example shows two attribute classes named `T` and `T``Attribute`.
 
-```VB.net
+```vb
 <AttributeUsage(AttributeTargets.All)> _
 Public Class T
     Inherits System.Attribute
@@ -279,7 +271,7 @@ Let `Name` be the identifier of the instance variable/property initializer `Arg`
 
 For example:
 
-```VB.net
+```vb
 <AttributeUsage(AttributeTargets.All)> _
 Public Class GeneralAttribute
     Inherits Attribute
@@ -314,7 +306,7 @@ End Class
 
 Type parameters cannot be used anywhere in attribute arguments. However, constructed types may be used:
 
-```VB.net
+```vb
 <AttributeUsage(AttributeTargets.All)> _
 Class A 
    Inherits System.Attribute 
@@ -332,23 +324,13 @@ Class List(Of T)
 End Class
 ```
 
-<pre><code><i>AttributeArguments</i>  ::=
-    <i>AttributePositionalArgumentList</i>  |
-    <i>AttributePositionalArgumentList  Comma  VariablePropertyInitializerList</i>  |
-    <i>VariablePropertyInitializerList</i>
 
-<i>AttributePositionalArgumentList</i>  ::=
-    [ <i>AttributeArgumentExpression</i>  ]  |
-    <i>AttributePositionalArgumentList  Comma</i>  [ <i>AttributeArgumentExpression</i>  ]
-
-<i>VariablePropertyInitializerList</i>  ::=
-    <i>VariablePropertyInitializer</i>  |
-    <i>VariablePropertyInitializerList  Comma  VariablePropertyInitializer</i>
-
-<i>VariablePropertyInitializer</i>  ::=
-    <i>IdentifierOrKeyword  ColonEquals  AttributeArgumentExpression</i>
-
-<i>AttributeArgumentExpression</i>  ::=
-    <i>ConstantExpression</i>  |
-    <i>GetTypeExpression</i>  |
-    <i>ArrayExpression</i></code></pre>
+```antlr
+AttributeArguments:               AttributePositionalArgumentList
+                                  | AttributePositionalArgumentList Comma VariablePropertyInitializerList
+                                  | VariablePropertyInitializerList;
+AttributePositionalArgumentList:  AttributeArgumentExpression? ( Comma AttributeArgumentExpression? )*;
+VariablePropertyInitializerList:  VariablePropertyInitializer ( Comma VariablePropertyInitializer )*;
+VariablePropertyInitializer:      IdentifierOrKeyword ColonEquals AttributeArgumentExpression;
+AttributeArgumentExpression:      ConstantExpression | GetTypeExpression | ArrayExpression;
+```

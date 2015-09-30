@@ -1401,26 +1401,25 @@ Given an unqualified name `R(Of A)`, where `A` is an optional type argument list
 
 1. If R matches the name of a type parameter of the current method, and no type arguments were supplied, then the unqualified name refers to that type parameter.
 2.  For each nested type containing the name reference, starting from the innermost type and going to the outermost:
-    2.1. If `R` matches the name of a type parameter in the current type and no type arguments were supplied, then the unqualified name refers to that type parameter.
-    2.2. Otherwise, if `R` matches the name of an accessible nested type with the same number of type parameters as type arguments, if any, then the unqualified name refers to that type.
+    1. If `R` matches the name of a type parameter in the current type and no type arguments were supplied, then the unqualified name refers to that type parameter.
+    2. Otherwise, if `R` matches the name of an accessible nested type with the same number of type parameters as type arguments, if any, then the unqualified name refers to that type.
 3. For each nested namespace containing the name reference, starting from the innermost namespace and going to the outermost namespace:
-1. If `R` matches the name of a nested namespace in the current namespace and no type argument list is supplied, then the unqualified name refers to that nested namespace.
-2. Otherwise, if `R` matches the name of an accessible type with the same number of type parameters as type arguments, if any, in the current namespace, then the unqualified name refers to that type.
-3. Otherwise, if the namespace contains one or more accessible standard modules, and `R` matches the name of an accessible nested type with the same number of type parameters as type arguments, if any, in exactly one standard module, then the unqualified name refers to that nested type. If `R` matches the name of accessible nested types with the same number of type parameters as type arguments, if any, in more than one standard module, a compile-time error occurs.
-1. If the source file has one or more import aliases, and `R` matches the name of one of them, then the unqualified name refers to that import alias. If a type argument list is supplied, a compile-time error occurs.
-2. If the source file containing the name reference has one or more imports:
-1. If `R` matches the name of an accessible type with the same number of type parameters as type arguments, if any, in exactly one import, then the unqualified name refers to that type. If `R` matches the name of an accessible type with the same number of type parameters as type arguments, if any, in more than one import and all are not the same type, a compile-time error occurs.
-2. Otherwise, if no type argument list was supplied and `R` matches the name of a namespace with accessible types in exactly one import, then the unqualified name refers to that namespace. If no type argument list was supplied and `R` matches the name of a namespace with accessible types in more than one import and all are not the same namespace, a compile-time error occurs.
-3. Otherwise, if the imports contain one or more accessible standard modules, and `R` matches the name of an accessible nested type with the same number of type parameters as type arguments, if any, in exactly one standard module, then the unqualified name refers to that type. If `R` matches the name of accessible nested types with the same number of type parameters as type arguments, if any, in more than one standard module, a compile-time error occurs.
-1. If the compilation environment defines one or more import aliases, and `R` matches the name of one of them, then the unqualified name refers to that import alias. If a type argument list is supplied, a compile-time error occurs.
-2. If the compilation environment defines one or more imports:
-1. If `R` matches the name of an accessible type with the same number of type parameters as type arguments, if any, in exactly one import, then the unqualified name refers to that type. If `R` matches the name of an accessible type with the same number of type parameters as type arguments, if any, in more than one import, a compile-time error occurs.
-2. Otherwise, if no type argument list was supplied and `R` matches the name of a namespace with accessible types in exactly one import, then the unqualified name refers to that namespace. If no type argument list was supplied and `R` matches the name of a namespace with accessible types in more than one import, a compile-time error occurs.
-3. Otherwise, if the imports contain one or more accessible standard modules, and `R` matches the name of an accessible nested type with the same number of type parameters as type arguments, if any, in exactly one standard module, then the unqualified name refers to that type. If `R` matches the name of accessible nested types with the same number of type parameters as type arguments, if any, in more than one standard module, a compile-time error occurs.
-1. Otherwise, a compile-time error occurs.
+    1. If `R` matches the name of a nested namespace in the current namespace and no type argument list is supplied, then the unqualified name refers to that nested namespace.
+    2. Otherwise, if `R` matches the name of an accessible type with the same number of type parameters as type arguments, if any, in the current namespace, then the unqualified name refers to that type.
+    3. Otherwise, if the namespace contains one or more accessible standard modules, and `R` matches the name of an accessible nested type with the same number of type parameters as type arguments, if any, in exactly one standard module, then the unqualified name refers to that nested type. If `R` matches the name of accessible nested types with the same number of type parameters as type arguments, if any, in more than one standard module, a compile-time error occurs.
+4. If the source file has one or more import aliases, and `R` matches the name of one of them, then the unqualified name refers to that import alias. If a type argument list is supplied, a compile-time error occurs.
+5. If the source file containing the name reference has one or more imports:
+    1. If `R` matches the name of an accessible type with the same number of type parameters as type arguments, if any, in exactly one import, then the unqualified name refers to that type. If `R` matches the name of an accessible type with the same number of type parameters as type arguments, if any, in more than one import and all are not the same type, a compile-time error occurs.
+    2. Otherwise, if no type argument list was supplied and `R` matches the name of a namespace with accessible types in exactly one import, then the unqualified name refers to that namespace. If no type argument list was supplied and `R` matches the name of a namespace with accessible types in more than one import and all are not the same namespace, a compile-time error occurs.
+    3. Otherwise, if the imports contain one or more accessible standard modules, and `R` matches the name of an accessible nested type with the same number of type parameters as type arguments, if any, in exactly one standard module, then the unqualified name refers to that type. If `R` matches the name of accessible nested types with the same number of type parameters as type arguments, if any, in more than one standard module, a compile-time error occurs.
+6. If the compilation environment defines one or more import aliases, and `R` matches the name of one of them, then the unqualified name refers to that import alias. If a type argument list is supplied, a compile-time error occurs.
+7. If the compilation environment defines one or more imports:
+    1. If `R` matches the name of an accessible type with the same number of type parameters as type arguments, if any, in exactly one import, then the unqualified name refers to that type. If `R` matches the name of an accessible type with the same number of type parameters as type arguments, if any, in more than one import, a compile-time error occurs.
+    2. Otherwise, if no type argument list was supplied and `R` matches the name of a namespace with accessible types in exactly one import, then the unqualified name refers to that namespace. If no type argument list was supplied and `R` matches the name of a namespace with accessible types in more than one import, a compile-time error occurs.
+    3. Otherwise, if the imports contain one or more accessible standard modules, and `R` matches the name of an accessible nested type with the same number of type parameters as type arguments, if any, in exactly one standard module, then the unqualified name refers to that type. If `R` matches the name of accessible nested types with the same number of type parameters as type arguments, if any, in more than one standard module, a compile-time error occurs.
+8. Otherwise, a compile-time error occurs.
 
 > __Note__
-
 > An implication of this resolution process is that type members do not shadow namespaces or types when resolving namespace or type names.
 
 Normally, a name can only occur once in a particular namespace. However, because namespaces can be declared across multiple .NET assemblies, it is possible to have a situation where two assemblies define a type with the same fully qualified name. In that case, a type declared in the current set of source files is preferred over a type declared in an external .NET assembly. Otherwise, the name is ambiguous and there is no way to disambiguate the name.
@@ -1434,7 +1433,6 @@ A *variable* represents a storage location. Every variable has a type that deter
 Types (except for standard modules and enumerated types) and methods can declare *type parameters*, which are types that will not be provided until an instance of the type is declared or the method is invoked. Types and methods with type parameters are also known as *generic types* and *generic methods*, respectively, because the type or method must be written generically, without specific knowledge of the types that will be supplied by code that uses the type or method.
 
 > __Annotation__
-
 > At this time, even though methods and delegates can be generic, properties, events and operators cannot be generic themselves. They may, however, use type parameters from the containing class.
 
 From the perspective of the generic type or method, a type parameter is a placeholder type that will be filled in with an actual type when the type or method is used. Type arguments are substituted for the type parameters in the type or method at the point at which the type or method is used. For example, a generic stack class could be implemented as:
@@ -1585,18 +1583,11 @@ When a declaration supplies a type argument to `MyStack`, the same type argument
 
 As a type, type parameters are purely a compile-time construct. At run-time, each type parameter is bound to a run-time type that was specified by supplying a type argument to the generic declaration. Thus, the type of a variable declared with a type parameter will, at run-time, be a non-generic type or a specific constructed type. The run-time execution of all statements and expressions involving type parameters uses the actual type that was supplied as the type argument for that parameter.
 
-<pre>TypeParameterList  ::=
-    OpenParenthesis  <b>Of</b>  TypeParameters  CloseParenthesis</pre>
-
-<pre>TypeParameters  ::=
-    TypeParameter  |
-    TypeParameters  Comma  TypeParameter</pre>
-
-<pre>TypeParameter  ::=
-    [  VarianceModifier  ]  Identifier  [  TypeParameterConstraints  ]</pre>
-
-<pre>VarianceModifier  ::=
-<b>In</b>  |  <b>Out</b></pre>
+```antlr
+TypeParameterList:  OpenParenthesis 'Of' TypeParameter ( Comma TypeParameter )* CloseParenthesis;
+TypeParameter:      VarianceModifier? Identifier TypeParameterConstraints?;
+VarianceModifier:   'In' | 'Out';
+```
 
 ### Type Constraints
 
@@ -1662,13 +1653,11 @@ End Class
 The special type constraint `Class` constrains the supplied type argument to any reference type.
 
 > __Annotation__
-
 > The special type constraint `Class` can be satisfied by an interface. And a structure can implement an interface. Therefore, the constraint `(Of T As U, U As Class)` might be satisfied with "T" a structure (which does not satisfy the `Class` special constraint), and "U" an interface that it implements (which does satisfy the `Class` special constraint).
 
 The special type constraint `Structure` constrains the supplied type argument to any value type except `System.Nullable(Of T)`.
 
 > __Annotation__
-
 > Structure constraints do not allow `System.Nullable(Of T)` so that it is not possible to supply `System.Nullable(Of T)` as a type argument to itself.
 
 The special type constraint `New` requires that the supplied type argument must have an accessible parameterless constructor and cannot be declared `MustInherit`. For example:
@@ -1815,15 +1804,11 @@ Class Printer(Of V As IPrintable)
 End Class
 ```
 
-<pre>TypeParameterConstraints  ::=
-<b>As</b>  Constraint  |
-<b>As</b>  OpenCurlyBrace  ConstraintList  CloseCurlyBrace</pre>
-
-<pre>ConstraintList  ::=
-    ConstraintList  *Comma*  Constraint  |
-    Constraint</pre>
-
-<pre>Constraint  ::=  TypeName  |  <b>New</b>  |  <b>Structure</b>  |  <b>Class</b></pre>
+```antlr
+TypeParameterConstraints:  'As' Constraint | 'As' OpenCurlyBrace ConstraintList CloseCurlyBrace;
+ConstraintList:            Constraint ( Comma Constraint )*;
+Constraint:                TypeName | 'New' | 'Structure' | 'Class';
+```
 
 ### Type Parameter Variance
 
@@ -1855,10 +1840,9 @@ They cannot contain an event declaration that specifies a parameter list (but a 
 They cannot contain a nested class, structure, or enumerated type.
 
 > __Annotation__
-
 > These restrictions are due to the fact that types nested in generic types implicitly copy the generic parameters of their parent. In the case of nested classes, structures, or enumerated types, those kinds of types cannot have variance modifiers on their type parameters. In the case of an event declaration with a parameter list, the generated nested delegate class could have confusing errors when a type that appears to be used in an `In` position (i.e. a parameter type) is actually used in an `Out` position (i.e. the type of the event).
 
-A type parameter that is declared with the Out modifier is *covariant*. Informally, a covariant type parameter can only be used in an output position&mdash;i.e. a value that is being returned from the interface or delegate type&mdash;and cannot be used in an input position. A type `T` is considered to be *valid covariantly* if:
+A type parameter that is declared with the Out modifier is *covariant*. Informally, a covariant type parameter can only be used in an output position -- i.e. a value that is being returned from the interface or delegate type -- and cannot be used in an input position. A type `T` is considered to be *valid covariantly* if:
 
 `T` is a class, structure, or enumerated type.
 
@@ -1903,7 +1887,7 @@ Interface I2(Of Out T)
 End Interface
 ```
 
-A type parameter that is declared with the In modifier is *contravariant*. Informally, a contravariant type parameter can only be used in an input position&mdash;i.e. a value that is being passed in to the interface or delegate type&mdash;and cannot be used in an output position. A type `T` is considered to be *valid contravariantly* if:
+A type parameter that is declared with the In modifier is *contravariant*. Informally, a contravariant type parameter can only be used in an input position -- i.e. a value that is being passed in to the interface or delegate type -- and cannot be used in an output position. A type `T` is considered to be *valid contravariantly* if:
 
 `T` is a class, structure, or enumerated type.
 
@@ -1949,13 +1933,10 @@ End Interface
 In the case where a type must be valid be contravariantly and covariantly (such as a property with both a `Get` and `Set` accessor or a `ByRef` parameter), a variant type parameter cannot be used.
 
 > __Note__
-
 > `Out` is not a reserved word.
 
-<br/>
 
 > __Annotation__
-
 > Co- and contra-variance give rise to a "diamond ambiguity problem". Consider the following code:
 
 > ```vb
