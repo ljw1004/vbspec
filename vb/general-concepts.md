@@ -1852,11 +1852,11 @@ A type parameter that is declared with the Out modifier is *covariant*. Informal
 
 `T` is a type parameter which was not declared as an `Out` type parameter.
 
-`T` is a constructed interface or delegate type `X(Of P`<sub>1</sub>`,...,P`<sub>n</sub>`)` with type arguments `A`<sub>1</sub>`,...,A`<sub>n</sub> such that:
+`T` is a constructed interface or delegate type `X(Of P1,...,Pn)` with type arguments `A1,...,An` such that:
 
-If `P`<sub>i</sub> was declared as an Out type parameter then `A`<sub>i</sub> is valid covariantly.
+If `Pi` was declared as an Out type parameter then `Ai` is valid covariantly.
 
-If `P`<sub>i</sub> was declared as an In type parameter then `A`<sub>i</sub> is valid contravariantly.
+If `Pi` was declared as an In type parameter then `Ai` is valid contravariantly.
 
 The following must be valid covariantly in an interface or delegate type:
 
@@ -1887,6 +1887,9 @@ Interface I2(Of Out T)
 End Interface
 ```
 
+> __Note__
+> `Out` is not a reserved word.
+
 A type parameter that is declared with the In modifier is *contravariant*. Informally, a contravariant type parameter can only be used in an input position -- i.e. a value that is being passed in to the interface or delegate type -- and cannot be used in an output position. A type `T` is considered to be *valid contravariantly* if:
 
 `T` is a class, structure, or enumerated type.
@@ -1897,11 +1900,11 @@ A type parameter that is declared with the In modifier is *contravariant*. Infor
 
 `T` is a type parameter which was not declared as an In type parameter.
 
-`T` is a constructed interface or delegate type `X(Of P`<sub>1</sub>`,...,P`<sub>n</sub>`)` with type arguments `A`<sub>1</sub>`,...,A`<sub>n</sub> such that:
+`T` is a constructed interface or delegate type `X(Of P1,...,Pn)` with type arguments `A1,...,An` such that:
 
-If `P`<sub>i</sub> was declared as an `Out` type parameter then `A`<sub>i</sub> is valid contravariantly.
+If `Pi` was declared as an `Out` type parameter then `Ai` is valid contravariantly.
 
-If `P`<sub>i</sub> was declared as an `In` type parameter then `A`<sub>i</sub> is valid covariantly.
+If `Pi` was declared as an `In` type parameter then `Ai` is valid covariantly.
 
 The following must be valid contravariantly in an interface or delegate type:
 
@@ -1932,31 +1935,26 @@ End Interface
 
 In the case where a type must be valid be contravariantly and covariantly (such as a property with both a `Get` and `Set` accessor or a `ByRef` parameter), a variant type parameter cannot be used.
 
-> __Note__
-> `Out` is not a reserved word.
-
 
 > __Annotation__
 > Co- and contra-variance give rise to a "diamond ambiguity problem". Consider the following code:
 
-> ```vb
-> Class C
->    Implements IEnumerable(Of String)
->    Implements IEnumerable(Of Exception)
-
->    Public Function GetEnumerator1() As IEnumerator(Of String) _
->       Implements IEnumerable(Of String).GetEnumerator
->       Console.WriteLine("string")
->    End Function
-
->    Public Function GetEnumerator2() As IEnumerator(Of Exception) _
->       Implements IEnumerable(Of Execption).GetEnumerator
->       Console.WriteLine("exception")
->    End Function
-> End Class
-
-> Dim c As IEnumerable(Of Object) = New C
-> c.GetEnumerator()
-> ```
+>     Class C
+>        Implements IEnumerable(Of String)
+>        Implements IEnumerable(Of Exception)
+>     
+>        Public Function GetEnumerator1() As IEnumerator(Of String) _
+>           Implements IEnumerable(Of String).GetEnumerator
+>           Console.WriteLine("string")
+>        End Function
+>     
+>        Public Function GetEnumerator2() As IEnumerator(Of Exception) _
+>           Implements IEnumerable(Of Execption).GetEnumerator
+>           Console.WriteLine("exception")
+>        End Function
+>     End Class
+>     
+>     Dim c As IEnumerable(Of Object) = New C
+>     c.GetEnumerator()
 
 > The class `C` can be converted to `IEnumerable(Of Object)` in two ways, both through covariant conversion from `IEnumerable(Of String)` and through covariant conversion from `IEnumerable(Of Exception)`. The CLR does not specify which of the two methods will be called by `c.GetEnumerator()`. In general, whenever a class is declared to implement a covariant interface with two different generic arguments that have a common supertype (e.g. in this case `String` and `Exception` have the common supertype `Object`), or a class is declared to implement a contravariant interface with two different generic arguments that have a common subtype, then ambiguity is likely to arise. The compiler gives a warning on such declarations.

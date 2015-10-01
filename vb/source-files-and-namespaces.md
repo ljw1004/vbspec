@@ -26,7 +26,8 @@ The two source files contribute to the global namespace, in this case declaring 
 Except where noted, statements within a Visual Basic program can be terminated either by a line terminator or by a colon.
 
 ```antlr
-Start:                OptionStatement* ImportsStatement* AttributesStatement* NamespaceMemberDeclaration*;
+Start:                OptionStatement* ImportsStatement* AttributesStatement*
+                      NamespaceMemberDeclaration*;
 StatementTerminator:  LineTerminator | ':';
 AttributesStatement:  Attributes StatementTerminator;
 ```
@@ -62,7 +63,8 @@ Option Compare Text  ' Not allowed, Option Compare is already specified.
 There are four compilation options: strict type semantics, explicit declaration semantics, comparison semantics, and local variable type inference semantics. If a source file does not include a particular `Option` statement, then the compilation environment determines which particular set of semantics will be used. There is also a fifth compilation option, integer overflow checks, which can only be specified through the compilation environment.
 
 ```antlr
-OptionStatement:         OptionExplicitStatement | OptionStrictStatement | OptionCompareStatement | OptionInferStatement;
+OptionStatement:         OptionExplicitStatement | OptionStrictStatement
+                         | OptionCompareStatement | OptionInferStatement;
 ```
 
 ### Option Explicit Statement
@@ -466,7 +468,7 @@ End Namespace
 
 Only namespaces, classes, structures, enumerated types, and standard modules may be imported.
 
-```vb
+```antlr
 MembersImportsClause: TypeName;
 ```
 
@@ -496,9 +498,11 @@ Imports <xmlns:db="http://example.org/database-two">
 ```
 
 ```antlr
-XMLNamespaceImportsClause:  '<' XMLNamespaceAttributeName XMLWhitespace? Equals XMLWhitespace? XMLNamespaceValue '>';
-XMLNamespaceValue:          DoubleQuoteCharacter XMLAttributeDoubleQuoteValueCharacter* DoubleQuoteCharacter
-                            | SingleQuoteCharacter XMLAttributeSingleQuoteValueCharacter* SingleQuoteCharacter;
+XMLNamespaceImportsClause:  '<' XMLNamespaceAttributeName
+                            XMLWhitespace? Equals XMLWhitespace?
+                            XMLNamespaceValue '>';
+XMLNamespaceValue:   DoubleQuoteCharacter XMLAttributeDoubleQuoteValueCharacter* DoubleQuoteCharacter
+                     | SingleQuoteCharacter XMLAttributeSingleQuoteValueCharacter* SingleQuoteCharacter;
 ```
 
 ## Namespaces
@@ -606,5 +610,6 @@ Namespace members can only be namespace declarations and type declarations. Type
 ```antlr
 NamespaceMemberDeclaration:  NamespaceDeclaration | TypeDeclaration;
 TypeDeclaration:             ModuleDeclaration | NonModuleDeclaration;
-NonModuleDeclaration:        EnumDeclaration | StructureDeclaration | InterfaceDeclaration | ClassDeclaration | DelegateDeclaration;
+NonModuleDeclaration:        EnumDeclaration | StructureDeclaration | InterfaceDeclaration
+                             | ClassDeclaration | DelegateDeclaration;
 ```

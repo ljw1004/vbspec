@@ -68,6 +68,7 @@ CCBinaryOperator:          '+' | '-' | '*' | '/' | '\\' | 'Mod' | '^' | '=' | '<
 CCConditionalExpression:   'If' '(' CCExpression ',' CCExpression ',' CCExpression ')'
                            | 'If' '(' CCExpression ',' CCExpression ')';
 ```
+
 ### Conditional Constant Directives
 
 Conditional constant statements define constants that exist in a separate conditional compilation declaration space scoped to the source file. The declaration space is special in that no explicit declaration of conditional compilation constants is necessary -- conditional constants can be implicitly defined in a conditional compilation directive.
@@ -217,5 +218,6 @@ End Module
 
 ```antlr
 ExternalChecksumStart:      ExternalChecksumStatement*;
-ExternalChecksumStatement:  '#' 'ExternalChecksum' '(' StringLiteral ',' StringLiteral ',' StringLiteral ')' LineTerminator;
+ExternalChecksumStatement:  '#' 'ExternalChecksum'
+                            '(' StringLiteral ',' StringLiteral ',' StringLiteral ')' LineTerminator;
 ```

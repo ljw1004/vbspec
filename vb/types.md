@@ -9,7 +9,8 @@ TypeName:            ArrayTypeName | NonArrayTypeName;
 NonArrayTypeName:    SimpleTypeName | NullableTypeName;
 SimpleTypeName:      QualifiedTypeName | BuiltInTypeName;
 QualifiedTypeName:   Identifier TypeArguments? (Period IdentifierOrKeyword TypeArguments?)*
-                     | 'Global' Period IdentifierOrKeyword TypeArguments? (Period IdentifierOrKeyword TypeArguments?)*;
+                     | 'Global' Period IdentifierOrKeyword TypeArguments?
+                       (Period IdentifierOrKeyword TypeArguments?)*;
 TypeArguments:       OpenParenthesis 'Of' TypeArgumentList CloseParenthesis;
 TypeArgumentList:    TypeName ( Comma TypeName )*;
 BuiltInTypeName:     'Object' | PrimitiveTypeName;
@@ -206,7 +207,8 @@ The `String` reference type, which represents a sequence of Unicode characters a
 ```antlr
 PrimitiveTypeName:     NumericTypeName | 'Boolean' | 'Date' | 'Char' | 'String';
 NumericTypeName:       IntegralTypeName | FloatingPointTypeName | 'Decimal';
-IntegralTypeName:      'Byte' | 'SByte' | 'UShort' | 'Short' | 'UInteger' | 'Integer' | 'ULong' | 'Long';
+IntegralTypeName:      'Byte' | 'SByte' | 'UShort' | 'Short'
+                       | 'UInteger' | 'Integer' | 'ULong' | 'Long';
 FloatingPointTypeName: 'Single' | 'Double';
 ```
 
@@ -229,7 +231,8 @@ End Enum
 A developer might choose to use an underlying type of `Long`, as in the example, to enable the use of values that are in the range of `Long`, but not in the range of `Integer`, or to preserve this option for the future.
 
 ```antlr
-EnumDeclaration:       Attributes? TypeModifier* 'Enum' Identifier ( 'As' NonArrayTypeName )? StatementTerminator
+EnumDeclaration:       Attributes? TypeModifier* 'Enum' Identifier
+                       ( 'As' NonArrayTypeName )? StatementTerminator
                        EnumMemberDeclaration+
                        'End' 'Enum' StatementTerminator;
 ```
@@ -423,14 +426,14 @@ End Module
 
 There are two class-specific modifiers, `MustInherit` and `NotInheritable`. It is invalid to specify them both.
 
-<pre>ClassDeclaration  ::=
-    [  Attributes  ]  [  ClassModifier+  ]  <b>Class</b>  Identifier  [  TypeParameterList  ]  StatementTerminator
-    [  ClassBase  ]
-    [  TypeImplementsClause+  ]
-    [  ClassMemberDeclaration+  ]
-<b>End</b><b>Class</b>  StatementTerminator</pre>
-
-<pre>ClassModifier  ::=  TypeModifier  |  <b>MustInherit</b>  |  <b>NotInheritable</b>  |  <b>Partial</b></pre>
+```antlr
+ClassDeclaration:  Attributes? ClassModifier* 'Class' Identifier TypeParameterList? StatementTerminator
+                   ClassBase?
+                   TypeImplementsClause*
+                   ClassMemberDeclaration*
+                   'End' 'Class' StatementTerminator;
+ClassModifier:     TypeModifier | 'MustInherit' | 'NotInheritable' | 'Partial';
+```
 
 ### Class Base Specification
 
@@ -464,7 +467,9 @@ Classes may only derive from `Object` and classes. It is invalid for a class to 
 
 Every class has exactly one direct base class, and circularity in derivation is prohibited. It is not possible to derive from a `NotInheritable` class, and the accessibility domain of the base class must be the same as or a superset of the accessibility domain of the class itself.
 
-<pre>ClassBase  ::=  <b>Inherits</b>  NonArrayTypeName  StatementTerminator</pre>
+```antlr
+ClassBase:        'Inherits' NonArrayTypeName StatementTerminator;
+```
 
 ### Class Members
 
@@ -474,15 +479,16 @@ A class member declaration may have `Public`, `Protected`, `Friend`, `Protected 
 
 The scope of a class member is the class body in which the member declaration occurs, plus the constraint list of that class (if it is generic and has constraints). If the member has `Friend` access, its scope extends to the class body of any derived class in the same program or any assembly that has been given `Friend` access, and if the member has `Public`, `Protected`, or `Protected Friend` access, its scope extends to the class body of any derived class in any program.
 
-<pre>ClassMemberDeclaration  ::=
-    NonModuleDeclaration  |
-    EventMemberDeclaration  |
-    VariableMemberDeclaration  |
-    ConstantMemberDeclaration  |
-    MethodMemberDeclaration  |
-    PropertyMemberDeclaration  |
-    ConstructorMemberDeclaration  |
-    OperatorDeclaration</pre>
+```antlr
+ClassMemberDeclaration:  NonModuleDeclaration
+                         | EventMemberDeclaration
+                         | VariableMemberDeclaration
+                         | ConstantMemberDeclaration
+                         | MethodMemberDeclaration
+                         | PropertyMemberDeclaration
+                         | ConstructorMemberDeclaration
+                         | OperatorDeclaration;
+```
 
 ## Structures
 
@@ -517,14 +523,14 @@ End Module
 
 The assignment of `a` to `b` creates a copy of the value, and `b` is thus unaffected by the assignment to `a.x`. Had `Point` instead been declared as a class, the output would be `100` because `a` and `b` would reference the same object.
 
-<pre>StructureDeclaration  ::=
-    [  Attributes  ]  [  StructureModifier+  ]  <b>Structure</b>  Identifier  [  TypeParameterList  ]
-        StatementTerminator
-    [  TypeImplementsClause+  ]
-    [  StructMemberDeclaration+  ]
-<b>End</b><b>Structure</b>  StatementTerminator</pre>
-
-<pre>StructureModifier  ::=  TypeModifier  |  <b>Partial</b></pre>
+```antlr
+StructureDeclaration:  Attributes? StructureModifier* 'Structure' Identifier
+                       TypeParameterList? StatementTerminator
+                       TypeImplementsClause*
+                       StructMemberDeclaration*
+                       'End' 'Structure' StatementTerminator;
+StructureModifier:     TypeModifier | 'Partial';
+```
 
 ### Structure Members
 
@@ -550,26 +556,29 @@ Dim p2 As Point = New Point(0, 0)
 
 Because structures directly contain their field values (rather than references to those values), structures cannot contain fields that directly or indirectly reference themselves. For example, the following code is not valid:
 
-`Structure S1``
-``    Dim f1 As S2``
-End Structure``
-``
-Structure S2``
-``    ' This would require S1 to contain itself.``
-``    Dim f1 As S1``
-End Structure`
+```vb
+Structure S1
+    Dim f1 As S2
+End Structure
+
+Structure S2
+    ' This would require S1 to contain itself.
+    Dim f1 As S1
+End Structure
+```
 
 Normally, a structure member declaration may only have `Public`, `Friend`, or `Private` access, but when overriding members inherited from `Object`, `Protected` and `Protected Friend` access may also be used. When a structure member declaration does not include an access modifier, the declaration defaults to `Public` access. The scope of a member declared by a structure is the structure body in which the declaration occurs, plus the constraints of that structure (if it was generic and had constraints).
 
-<pre>StructMemberDeclaration  ::=
-    NonModuleDeclaration  |
-    VariableMemberDeclaration  |
-    ConstantMemberDeclaration  |
-    EventMemberDeclaration  |
-    MethodMemberDeclaration  |
-    PropertyMemberDeclaration  |
-    ConstructorMemberDeclaration  |
-    OperatorDeclaration</pre>
+```antlr
+StructMemberDeclaration:  NonModuleDeclaration
+                          | VariableMemberDeclaration
+                          | ConstantMemberDeclaration
+                          | EventMemberDeclaration
+                          | MethodMemberDeclaration
+                          | PropertyMemberDeclaration
+                          | ConstructorMemberDeclaration
+                          | OperatorDeclaration;
+```
 
 ## Standard Modules
 
@@ -606,10 +615,11 @@ End Namespace
 
 A module may only be declared in a namespace and may not be nested in another type. Standard modules may not implement interfaces, they implicitly derive from `Object`, and they have only `Shared` constructors.
 
-<pre>ModuleDeclaration  ::=
-    [  Attributes  ]  [  TypeModifier+  ]  <b>Module</b>  Identifier  StatementTerminator
-    [  ModuleMemberDeclaration+  ]
-<b>End</b><b>Module</b>  StatementTerminator</pre>
+```antlr
+ModuleDeclaration:  Attributes? TypeModifier* 'Module' Identifier StatementTerminator
+                    ModuleMemberDeclaration*
+                    'End' 'Module' StatementTerminator;
+```
 
 ### Standard Module Members
 
@@ -619,14 +629,15 @@ Normally, a standard module member declaration may only have `Public`, `Friend`,
 
 As previously noted, the scope of a standard module member is the declaration containing the standard module declaration. Members inherited from `Object` are not included in this special scoping; those members have no scope and must always be qualified with the name of the module. If the member has `Friend` access, its scope extends only to namespace members declared in the same program or assemblies that have been given `Friend` access.
 
-<pre>ModuleMemberDeclaration  ::=
-    NonModuleDeclaration  |
-    VariableMemberDeclaration  |
-    ConstantMemberDeclaration  |
-    EventMemberDeclaration  |
-    MethodMemberDeclaration  |
-    PropertyMemberDeclaration  |
-    ConstructorMemberDeclaration</pre>
+```antlr
+ModuleMemberDeclaration:  NonModuleDeclaration
+                         | VariableMemberDeclaration
+                         | ConstantMemberDeclaration
+                         | EventMemberDeclaration
+                         | MethodMemberDeclaration
+                         | PropertyMemberDeclaration
+                         | ConstructorMemberDeclaration;
+```
 
 ## Interfaces
 
@@ -691,11 +702,13 @@ Public Class EditBox
 End Class
 ```
 
-<pre>InterfaceDeclaration  ::=
-    [  Attributes  ]  [  TypeModifier+  ]  <b>Interface</b>  Identifier  [  TypeParameterList  ]  StatementTerminator
-    [  InterfaceBase+  ]
-    [  InterfaceMemberDeclaration+  ]
-<b>End</b><b>Interface</b>  StatementTerminator</pre>
+```antlr
+InterfaceDeclaration:  Attributes? TypeModifier* 'Interface' Identifier
+                       TypeParameterList? StatementTerminator
+                       InterfaceBase*
+                       InterfaceMemberDeclaration*
+                       'End' 'Interface' StatementTerminator;
+```
 
 ### Interface Inheritance
 
@@ -762,11 +775,10 @@ End Interface
 
 The accessibility domain of a base interface must be the same as or a superset of the accessibility domain of the interface itself.
 
-<pre>InterfaceBase  ::=  <b>Inherits</b>  InterfaceBases  StatementTerminator</pre>
-
-<pre>InterfaceBases  ::=
-    NonArrayTypeName  |
-    InterfaceBases  Comma  NonArrayTypeName</pre>
+```antlr
+InterfaceBase:         'Inherits' InterfaceBases StatementTerminator;
+InterfaceBases:        NonArrayTypeName ( Comma NonArrayTypeName )*;
+```
 
 ### Interface Members
 
@@ -788,11 +800,14 @@ Module Test
 End Module
 ```
 
-<pre>Members of an interface with the same name as members of `Object` implicitly shadow `Object` members. Only nested types, methods, properties, and events may be members of an interface. Methods and properties may not have a body. Interface members are implicitly `Public` and may not specify an access modifier. The scope of a member declared in an interface is the interface body in which the declaration occurs, plus the constraint list of that interface (if it is generic and has constraints).InterfaceMemberDeclaration  ::=
-    NonModuleDeclaration  |
-    InterfaceEventMemberDeclaration  |
-    InterfaceMethodMemberDeclaration  |
-    InterfacePropertyMemberDeclaration</pre>
+Members of an interface with the same name as members of `Object` implicitly shadow `Object` members. Only nested types, methods, properties, and events may be members of an interface. Methods and properties may not have a body. Interface members are implicitly `Public` and may not specify an access modifier. The scope of a member declared in an interface is the interface body in which the declaration occurs, plus the constraint list of that interface (if it is generic and has constraints).
+
+```antlr
+InterfaceMemberDeclaration:  NonModuleDeclaration
+                             | InterfaceEventMemberDeclaration
+                             | InterfaceMethodMemberDeclaration
+                             | InterfacePropertyMemberDeclaration;
+```
 
 ## Arrays
 
@@ -887,19 +902,13 @@ End Module
 
 In the last case, `(3)` is interpreted as part of the type name rather than as a set of constructor arguments.
 
-<pre>ArrayTypeName  ::=  NonArrayTypeName  ArrayTypeModifiers</pre>
-
-<pre>ArrayTypeModifiers  ::=  ArrayTypeModifier+</pre>
-
-<pre>ArrayTypeModifier  ::=  OpenParenthesis  [  RankList  ]  CloseParenthesis</pre>
-
-<pre>RankList  ::=
-    Comma  |
-    RankList  Comma</pre>
-
-<pre>ArrayNameModifier  ::=
-    ArrayTypeModifiers  |
-    ArraySizeInitializationModifier</pre>
+```antlr
+ArrayTypeName:       NonArrayTypeName ArrayTypeModifiers;
+ArrayTypeModifiers:  ArrayTypeModifier+;
+ArrayTypeModifier:   OpenParenthesis RankList? CloseParenthesis;
+RankList:            Comma*;
+ArrayNameModifier:   ArrayTypeModifiers | ArraySizeInitializationModifier;
+```
 
 ## Delegates
 
@@ -954,10 +963,10 @@ End Sub
 
 It is unimportant to the `MultiCall` method what the target method for the `SimpleDelegate` is, what accessibility this method has, or whether the method is `Shared` or not. All that matters is that the signature of the target method is compatible with `SimpleDelegate`.
 
-<pre>DelegateDeclaration  ::=
-    [  Attributes  ]  [  TypeModifier+  ]  <b>Delegate</b>  MethodSignature  StatementTerminator</pre>
-
-<pre>MethodSignature  ::=  SubSignature  |  FunctionSignature</pre>
+```antlr
+DelegateDeclaration:  Attributes? TypeModifier* 'Delegate' MethodSignature StatementTerminator;
+MethodSignature:      SubSignature | FunctionSignature;
+```
 
 ## Partial types
 
@@ -984,7 +993,6 @@ End Class
 When combining partial type declarations, at least one of the declarations must have a `Partial` modifier, otherwise a compile-time error results.
 
 > __Annotation__
-
 > Although it is possible to specify `Partial` on only one declaration among many partial declarations, it is better form to specify it on all partial declarations. In the situation where one partial declaration is visible but one or more partial declarations are hidden (such as the case of extending tool-generated code), it is acceptable to leave the `Partial` modifier off of the visible declaration but specify it on the hidden declarations.
 
 Only classes and structures can be declared using partial declarations. The arity of a type is considered when matching partial declarations together: two classes with the same name but different numbers of type parameters are not considered to be partial declarations of the same time. Partial declarations can specify attributes, class modifiers, `Inherits` statement or `Implements` statement. At compile time, all of the pieces of the partial declarations are combined together and used as a part of the type declaration. If there are any conflicts between attributes, modifiers, bases, interfaces, or type members, a compile-time error results. For example:
@@ -1073,10 +1081,9 @@ Class Outer(Of T)
 End Class
 ```
 
-A constructed type `C(Of T`<sub>1</sub>`,...,T`<sub>n</sub>`)` is accessible when the generic type and all the type arguments are accessible. For instance, if the generic type `C` is `Public` and all of the type arguments `T`<sub>1</sub>`,...,T`<sub>n</sub> are `Public`, then the constructed type is `Public`. If either the type name or one of the type arguments is `Private`, however, then the accessibility of the constructed type is `Private`. If one type argument of the constructed type is `Protected` and another type argument is `Friend`, then the constructed type is accessible only in the class and its subclasses in this assembly or any assembly that has been given `Friend` access. In other words, the accessibility domain for a constructed type is the intersection of the accessibility domains of its constituent parts.
+A constructed type `C(Of T1,...,Tn)` is accessible when the generic type and all the type arguments are accessible. For instance, if the generic type `C` is `Public` and all of the type arguments `T1,...,Tn` are `Public`, then the constructed type is `Public`. If either the type name or one of the type arguments is `Private`, however, then the accessibility of the constructed type is `Private`. If one type argument of the constructed type is `Protected` and another type argument is `Friend`, then the constructed type is accessible only in the class and its subclasses in this assembly or any assembly that has been given `Friend` access. In other words, the accessibility domain for a constructed type is the intersection of the accessibility domains of its constituent parts.
 
 > __Annotation__
-
 > The fact that the accessibility domain of constructed type is the intersection of its constituted parts has the interesting side effect of defining a new accessibility level. A constructed type that contains an element that is `Protected` and an element that is `Friend` can only be accessed in contexts that can access *both* `Friend` *and* `Protected` members. However, there is no way to express this accessibility level in the language, as the accessibility `Protected Friend` means that an entity can be accessed in a context that can access *either* `Friend` *or* `Protected` members.
 
 The base, implemented interfaces and members of constructed types are determined by substituting the supplied type arguments for each occurrence of the type parameter in the generic type.

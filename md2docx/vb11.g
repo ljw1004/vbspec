@@ -242,60 +242,69 @@ EnumDeclaration:       Attributes? TypeModifier* 'Enum' Identifier ( 'As' NonArr
 EnumMemberDeclaration: Attributes? Identifier ( Equals ConstantExpression )? StatementTerminator;
 
 ClassDeclaration:  Attributes? ClassModifier* 'Class' Identifier TypeParameterList? StatementTerminator
-  ClassBase?
-  TypeImplementsClause*
-  ClassMemberDeclaration*
-  'End' 'Class' StatementTerminator;
-ClassModifier:  TypeModifier | 'MustInherit' | 'NotInheritable' | 'Partial';
-ClassBase:  'Inherits' NonArrayTypeName StatementTerminator;
+                   ClassBase?
+                   TypeImplementsClause*
+                   ClassMemberDeclaration*
+                   'End' 'Class' StatementTerminator;
+ClassModifier:     TypeModifier | 'MustInherit' | 'NotInheritable' | 'Partial';
+ClassBase:        'Inherits' NonArrayTypeName StatementTerminator;
+
 ClassMemberDeclaration:  NonModuleDeclaration
-  | EventMemberDeclaration
-  | VariableMemberDeclaration
-  | ConstantMemberDeclaration
-  | MethodMemberDeclaration
-  | PropertyMemberDeclaration
-  | ConstructorMemberDeclaration
-  | OperatorDeclaration;
+                         | EventMemberDeclaration
+                         | VariableMemberDeclaration
+                         | ConstantMemberDeclaration
+                         | MethodMemberDeclaration
+                         | PropertyMemberDeclaration
+                         | ConstructorMemberDeclaration
+                         | OperatorDeclaration;
+
 StructureDeclaration:  Attributes? StructureModifier* 'Structure' Identifier TypeParameterList? StatementTerminator
-  TypeImplementsClause*
-  StructMemberDeclaration*
-  'End' 'Structure' StatementTerminator;
-StructureModifier:  TypeModifier | 'Partial';
+                       TypeImplementsClause*
+                       StructMemberDeclaration*
+                       'End' 'Structure' StatementTerminator;
+StructureModifier:     TypeModifier | 'Partial';
+
 StructMemberDeclaration:  NonModuleDeclaration
-  | VariableMemberDeclaration
-  | ConstantMemberDeclaration
-  | EventMemberDeclaration
-  | MethodMemberDeclaration
-  | PropertyMemberDeclaration
-  | ConstructorMemberDeclaration
-  | OperatorDeclaration;
+                          | VariableMemberDeclaration
+                          | ConstantMemberDeclaration
+                          | EventMemberDeclaration
+                          | MethodMemberDeclaration
+                          | PropertyMemberDeclaration
+                          | ConstructorMemberDeclaration
+                          | OperatorDeclaration;
+
 ModuleDeclaration:  Attributes? TypeModifier* 'Module' Identifier StatementTerminator
-  ModuleMemberDeclaration*
-  'End' 'Module' StatementTerminator;
+                    ModuleMemberDeclaration*
+                    'End' 'Module' StatementTerminator;
+
 ModuleMemberDeclaration:  NonModuleDeclaration
-  | VariableMemberDeclaration
-  | ConstantMemberDeclaration
-  | EventMemberDeclaration
-  | MethodMemberDeclaration
-  | PropertyMemberDeclaration
-  | ConstructorMemberDeclaration;
+                         | VariableMemberDeclaration
+                         | ConstantMemberDeclaration
+                         | EventMemberDeclaration
+                         | MethodMemberDeclaration
+                         | PropertyMemberDeclaration
+                         | ConstructorMemberDeclaration;
+
 InterfaceDeclaration:  Attributes? TypeModifier* 'Interface' Identifier TypeParameterList? StatementTerminator
-  InterfaceBase*
-  InterfaceMemberDeclaration*
-  'End' 'Interface' StatementTerminator;
-InterfaceBase:  'Inherits' InterfaceBases StatementTerminator;
-InterfaceBases:  NonArrayTypeName ( Comma NonArrayTypeName )*;
+                       InterfaceBase*
+                       InterfaceMemberDeclaration*
+                       'End' 'Interface' StatementTerminator;
+InterfaceBase:         'Inherits' InterfaceBases StatementTerminator;
+InterfaceBases:        NonArrayTypeName ( Comma NonArrayTypeName )*;
+
 InterfaceMemberDeclaration:  NonModuleDeclaration
-  | InterfaceEventMemberDeclaration
-  | InterfaceMethodMemberDeclaration
-  | InterfacePropertyMemberDeclaration;
-ArrayTypeName:  NonArrayTypeName ArrayTypeModifiers;
+                             | InterfaceEventMemberDeclaration
+                             | InterfaceMethodMemberDeclaration
+                             | InterfacePropertyMemberDeclaration;
+
+ArrayTypeName:       NonArrayTypeName ArrayTypeModifiers;
 ArrayTypeModifiers:  ArrayTypeModifier+;
-ArrayTypeModifier:  OpenParenthesis RankList? CloseParenthesis;
-RankList:  Comma*;
-ArrayNameModifier:  ArrayTypeModifiers | ArraySizeInitializationModifier;
+ArrayTypeModifier:   OpenParenthesis RankList? CloseParenthesis;
+RankList:            Comma*;
+ArrayNameModifier:   ArrayTypeModifiers | ArraySizeInitializationModifier;
+
 DelegateDeclaration:  Attributes? TypeModifier* 'Delegate' MethodSignature StatementTerminator;
-MethodSignature:  SubSignature | FunctionSignature;
+MethodSignature:      SubSignature | FunctionSignature;
 
 
 //13.3.4 Type Members

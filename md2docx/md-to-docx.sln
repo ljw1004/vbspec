@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vb", "vb", "{C24050FF-0515-46F9-9420-A3DBD80EEB26}"
 	ProjectSection(SolutionItems) = preProject
 		..\vb\attributes.md = ..\vb\attributes.md
+		..\vb\conversions.md = ..\vb\conversions.md
 		..\vb\general-concepts.md = ..\vb\general-concepts.md
 		..\vb\introduction.md = ..\vb\introduction.md
 		..\vb\lexical-grammar.md = ..\vb\lexical-grammar.md

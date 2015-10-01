@@ -7,12 +7,6 @@ Imports DocumentFormat.OpenXml.Wordprocessing
 Imports FSharp.Markdown
 Imports Microsoft.FSharp.Core
 
-' TODO: diamond ambiguity - code inside an annotation - doesn't look right
-' TODO: reduce font size for code blocks in template
-' TODO: types.md has lots of antlr blocks that need doing
-' TODO: correct all the <sub> subscripts. I'll probably ignore them for now
-' TODO: make sure all antlr fits within the margin.
-
 
 Module Module1
 
@@ -36,13 +30,9 @@ Module Module1
             Dim body = resultDoc.MainDocumentPart.Document.Body
             body.RemoveAllChildren()
 
-            Dim src = "> __Annotation__
-> Hello
-
->    Module Module1
-
-> That was a code block with `inline code` and `stuff` in it
-"
+            Dim src = "> __Note__
+> This is about `code` spacing"
+            src = ""
 
             For Each p In New MarkdownParser(src, resultDoc).Paragraphs
                 body.AppendChild(p)
@@ -50,7 +40,8 @@ Module Module1
 
             If String.IsNullOrEmpty(src) Then
                 For Each mdfn In {"introduction.md", "lexical-grammar.md", "preprocessing-directives.md",
-                "general-concepts.md", "attributes.md", "source-files-and-namespaces.md", "types.md"}
+                "general-concepts.md", "attributes.md", "source-files-and-namespaces.md", "types.md",
+                "conversions.md"}
                     For Each p In New MarkdownParser(File.ReadAllText($"..\..\..\vb\{mdfn}"), resultDoc).Paragraphs
                         body.AppendChild(p)
                     Next
@@ -175,47 +166,48 @@ Class MarkdownParser
             End If
 
         ElseIf md.IsQuotedBlock Then
-            Dim mdq = CType(md, MarkdownParagraph.QuotedBlock), pars = mdq.Item
-            If Not pars.Any Then Return
+            Dim mdq = CType(md, MarkdownParagraph.QuotedBlock), quoteds = mdq.Item
             Dim kind = ""
-            If pars.Count = 1 AndAlso pars.First.IsParagraph Then
-                Dim firstPar = CType(pars.First, MarkdownParagraph.Paragraph), spans = firstPar.Item
-                If spans.Any AndAlso spans.First.IsStrong Then
-                    Dim strong = CType(spans.First, MarkdownSpan.Strong).Item
-                    If strong.Any AndAlso strong.First.IsLiteral Then
-                        Dim literal = CType(strong.First, MarkdownSpan.Literal).Item
-                        If literal = "Note" Then kind = "AlertText"
-                        If literal = "Annotation" Then kind = "Annotation"
+            For Each quoted In quoteds
+                If quoted.IsParagraph Then
+                    Dim p = CType(quoted, MarkdownParagraph.Paragraph), spans = p.Item
+                    If spans.FirstOrDefault?.IsStrong Then
+                        Dim strong = CType(spans.First, MarkdownSpan.Strong).Item
+                        If strong.FirstOrDefault?.IsLiteral Then
+                            Dim literal = CType(strong.First, MarkdownSpan.Literal).Item
+                            If literal = "Annotation" Then
+                                kind = "Annotation"
+                                Yield New Paragraph(Span2Elements(spans.Head)) With {.ParagraphProperties = New ParagraphProperties(New ParagraphStyleId With {.Val = kind})}
+                                quoted = MarkdownParagraph.NewParagraph(spans.Tail)
+                            ElseIf literal = "Note" Then
+                                kind = "AlertText"
+                            End If
+                        End If
                     End If
+                    '
+                    For Each qp In Paragraph2Paragraphs(quoted)
+                        Dim qpp = TryCast(qp, Paragraph)
+                        If qpp IsNot Nothing Then
+                            Dim props As New ParagraphProperties(New ParagraphStyleId() With {.Val = kind})
+                            qpp.ParagraphProperties = props
+                        End If
+                        Yield qp
+                    Next
+
+                ElseIf quoted.IsCodeBlock Then
+                    Dim mdc = CType(quoted, MarkdownParagraph.CodeBlock), code = mdc.Item1, lang = mdc.Item2, ignoredAfterLang = mdc.Item3
+                    Dim lines = code.Split({vbCrLf, vbCr, vbLf}, StringSplitOptions.None).ToList()
+                    If String.IsNullOrWhiteSpace(lines.Last) Then lines.RemoveAt(lines.Count - 1)
+                    Dim run As New Run() With {.RunProperties = New RunProperties(New RunStyle With {.Val = "CodeEmbedded"})}
+                    For Each line In lines
+                        If run.ChildElements.Count > 1 Then run.Append(New Break)
+                        run.Append(New Text("    " & line) With {.Space = SpaceProcessingModeValues.Preserve})
+                    Next
+                    Yield New Paragraph(run) With {.ParagraphProperties = New ParagraphProperties(New ParagraphStyleId With {.Val = kind})}
                 End If
-            End If
-
-            If kind = "Annotation" Then
-                Dim props As New ParagraphProperties(New ParagraphStyleId With {.Val = kind})
-                Dim onlyPar = CType(pars.First, MarkdownParagraph.Paragraph)
-                Dim strong = onlyPar.Item.First, rest = onlyPar.Item.Skip(1).ToList()
-                Dim literal = TryCast(rest(0), MarkdownSpan.Literal)
-                rest(0) = MarkdownSpan.NewLiteral(literal.Item.TrimStart())
-
-                Dim props1 As New ParagraphProperties(New ParagraphStyleId With {.Val = kind})
-                Dim p1 As New Paragraph(Span2Elements(strong)) With {.ParagraphProperties = props1}
-                Yield p1
-
-                Dim props2 As New ParagraphProperties(New ParagraphStyleId With {.Val = kind})
-                Dim p2 As New Paragraph(Spans2Elements(rest)) With {.ParagraphProperties = props2}
-                Yield p2
-                Return
-            Else
-                For Each p In Paragraphs2Paragraphs(pars)
-                    Dim pp = TryCast(p, Paragraph)
-                    If pp IsNot Nothing Then
-                        Dim props As New ParagraphProperties(New ParagraphStyleId() With {.Val = kind})
-                        pp.ParagraphProperties = props
-                    End If
-                    Yield p
-                Next
-                Return
-            End If
+                '
+            Next
+            Return
 
         ElseIf md.IsTableBlock Then
             Dim mdt = CType(md, MarkdownParagraph.TableBlock), header = mdt.Item1.Option, align = mdt.Item2, rows = mdt.Item3
@@ -301,37 +293,44 @@ Class MarkdownParser
 
 
     Iterator Function Spans2Elements(mds As IEnumerable(Of MarkdownSpan)) As IEnumerable(Of OpenXmlElement)
-        Dim prevWasInlineCodeBlock = False ' to work around bug in FSharp.Markdown parser
         For Each md In mds
-            'If prevWasInlineCodeBlock AndAlso md.IsLiteral Then
-            '    Dim txt = CType(md, MarkdownSpan.Literal).Item
-            '    If txt.StartsWith("`" & vbCrLf) Then
-            '        md = MarkdownSpan.NewLiteral(txt.Substring(3))
-            '    ElseIf txt.StartsWith("`" & vbCr) OrElse txt.StartsWith("`" & vbLf) Then
-            '        md = MarkdownSpan.NewLiteral(txt.Substring(2))
-            '    End If
-            'End If
-
             For Each e In Span2Elements(md)
                 Yield e
             Next
-            prevWasInlineCodeBlock = md.IsInlineCode
         Next
     End Function
 
     Iterator Function Span2Elements(md As MarkdownSpan) As IEnumerable(Of OpenXmlElement)
         If md.IsLiteral Then
             Dim mdl = CType(md, MarkdownSpan.Literal), s = mdl.Item
-            Dim txt As New Text(s) With {.Space = SpaceProcessingModeValues.Preserve}
-            Yield New Run(txt)
+
+            ' workaround a bug where FSharp.Markdown doesn't parse indented codeblocks inside quotedblock
+            Dim lines = s.Split({vbCrLf, vbCr, vbLf}, StringSplitOptions.None).ToList()
+            Dim wasCode = False, run As Run = Nothing
+            For Each line In lines
+                If line = "" Then line = If(wasCode, "    ", " ")
+                Dim isCode = line.StartsWith("    ")
+                If isCode Then
+                    If Not wasCode Then Yield run : run = Nothing
+                    If run Is Nothing Then run = New Run With {.RunProperties = New RunProperties(New RunStyle With {.Val = "CodeEmbedded"})}
+                    If Not wasCode Then run.Append(New Break, New Break)
+                    run.Append(New Text(line) With {.Space = SpaceProcessingModeValues.Preserve}, New Break)
+                Else
+                    If wasCode Then run.Append(New Break) : Yield run : run = Nothing
+                    If run Is Nothing Then run = New Run
+                    run.Append(New Text(line) With {.Space = SpaceProcessingModeValues.Preserve})
+                End If
+                wasCode = isCode
+            Next
+            If run IsNot Nothing Then Yield run
             Return
 
         ElseIf md.IsStrong OrElse md.IsEmphasis Then
             Dim spans = If(md.IsStrong, CType(md, MarkdownSpan.Strong).Item, CType(md, MarkdownSpan.Emphasis).Item)
-            Dim style = If(md.IsStrong, CType(New Bold, OpenXmlElement), New Italic)
             For Each e In Spans2Elements(spans)
+                Dim style = If(md.IsStrong, CType(New Bold, OpenXmlElement), New Italic)
                 Dim run = CType(e, Run)
-                If run IsNot Nothing Then run.InsertAt(New RunProperties(style), 0)
+                If run IsNot Nothing Then run.InsertAt(New RunProperties(Style), 0)
                 Yield e
             Next
             Return
@@ -339,31 +338,11 @@ Class MarkdownParser
         ElseIf md.IsInlineCode Then
             Dim mdi = CType(md, MarkdownSpan.InlineCode), code = mdi.Item
 
-            If code.StartsWith("`") Then
-                ' workaround bug in FSharp.Markdown which renders a quoted codeblock as inline-code
-                Dim lines = code.Split({vbCrLf, vbCr, vbLf}, StringSplitOptions.None).ToList()
-                If String.IsNullOrWhiteSpace(lines.Last) Then lines.RemoveAt(lines.Count - 1)
-                Dim lang = lines(0).Substring(1)
-                If lang <> "vb" Then Throw New NotImplementedException("Not yet implemented: any code other than VB in a quoted block")
-                lines.RemoveAt(0)
-                Dim props As New RunProperties(New RunStyle With {.Val = "CodeEmbedded"})
-                Dim run As New Run With {.RunProperties = props}
-                run.AppendChild(New Break)
-                For Each line In lines
-                    run.AppendChild(New Break)
-                    run.AppendChild(New Text(line) With {.Space = SpaceProcessingModeValues.Preserve})
-                Next
-                run.AppendChild(New Break)
-                run.AppendChild(New Break)
-                Yield run
-                Return
-            Else
-                Dim txt As New Text(code) With {.Space = SpaceProcessingModeValues.Preserve}
-                Dim props As New RunProperties(New RunStyle With {.Val = "CodeEmbedded"})
-                Dim run As New Run(txt) With {.RunProperties = props}
-                Yield run
-                Return
-            End If
+            Dim txt As New Text(code) With {.Space = SpaceProcessingModeValues.Preserve}
+            Dim props As New RunProperties(New RunStyle With {.Val = "CodeEmbedded"})
+            Dim run As New Run(txt) With {.RunProperties = props}
+            Yield run
+            Return
 
         ElseIf md.IsDirectLink Or md.IsIndirectLink Then
             Dim spans As IEnumerable(Of MarkdownSpan), url = "", alt = ""

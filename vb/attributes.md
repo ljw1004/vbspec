@@ -203,7 +203,8 @@ If a source file contains an attribute block at the top of the file that specifi
 Attributes:         AttributeBlock+;
 AttributeBlock:     LineTerminator? '<' AttributeList LineTerminator? '>' LineTerminator?;
 AttributeList:      Attribute ( Comma Attribute )*;
-Attribute:          ( AttributeModifier ':' )? SimpleTypeName ( OpenParenthesis AttributeArguments? CloseParenthesis )?;
+Attribute:          ( AttributeModifier ':' )? SimpleTypeName
+                    ( OpenParenthesis AttributeArguments? CloseParenthesis )?;
 AttributeModifier:  'Assembly' | 'Module';
 ```
 
@@ -326,11 +327,11 @@ End Class
 
 
 ```antlr
-AttributeArguments:               AttributePositionalArgumentList
-                                  | AttributePositionalArgumentList Comma VariablePropertyInitializerList
-                                  | VariablePropertyInitializerList;
-AttributePositionalArgumentList:  AttributeArgumentExpression? ( Comma AttributeArgumentExpression? )*;
-VariablePropertyInitializerList:  VariablePropertyInitializer ( Comma VariablePropertyInitializer )*;
-VariablePropertyInitializer:      IdentifierOrKeyword ColonEquals AttributeArgumentExpression;
-AttributeArgumentExpression:      ConstantExpression | GetTypeExpression | ArrayExpression;
+AttributeArguments:              AttributePositionalArgumentList
+                                 | AttributePositionalArgumentList Comma VariablePropertyInitializerList
+                                 | VariablePropertyInitializerList;
+AttributePositionalArgumentList: AttributeArgumentExpression? ( Comma AttributeArgumentExpression? )*;
+VariablePropertyInitializerList: VariablePropertyInitializer ( Comma VariablePropertyInitializer )*;
+VariablePropertyInitializer:     IdentifierOrKeyword ColonEquals AttributeArgumentExpression;
+AttributeArgumentExpression:     ConstantExpression | GetTypeExpression | ArrayExpression;
 ```

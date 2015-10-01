@@ -25,7 +25,9 @@ Character:  '<Any Unicode character except a LineTerminator>';
 Unicode line break characters separate logical lines.
 
 ```antlr
-LineTerminator:  '<Unicode 0x00D>' | '<Unicode 0x00A>' | '<CR>' | '<LF>' | '<Unicode 0x2028>' | '<Unicode 0x2029>';
+LineTerminator:  '<Unicode 0x00D>' | '<Unicode 0x00A>'
+                 | '<CR>' | '<LF>'
+                 | '<Unicode 0x2028>' | '<Unicode 0x2029>';
 ```
 
 ### Line Continuation
@@ -211,7 +213,8 @@ End Module
 The type character `!` presents a special problem in that it can be used both as a type character and as a separator in the language. To remove ambiguity, a `!` character is a type character as long as the character that follows it cannot start an identifier. If it can, then the `!` character is a separator, not a type character.
 
 ```antlr
-TypeCharacter:         IntegerTypeCharacter | LongTypeCharacter | DecimalTypeCharacter | SingleTypeCharacter | DoubleTypeCharacter | StringTypeCharacter;
+TypeCharacter:         IntegerTypeCharacter | LongTypeCharacter | DecimalTypeCharacter
+                       | SingleTypeCharacter | DoubleTypeCharacter | StringTypeCharacter;
 IntegerTypeCharacter:  '%';
 LongTypeCharacter:     '&';
 DecimalTypeCharacter:  '@';
@@ -277,7 +280,8 @@ Keyword:   '<Any member of keyword table in 2.3>';
 A *literal* is a textual representation of a particular value of a type. Literal types include Boolean, integer, floating point, string, character, and date.
 
 ```antlr
-Literal: BooleanLiteral | IntegerLiteral | FloatingPointLiteral | StringLiteral | CharacterLiteral | DateLiteral | Nothing;
+Literal: BooleanLiteral | IntegerLiteral | FloatingPointLiteral
+         | StringLiteral | CharacterLiteral | DateLiteral | Nothing;
 ```
 
 ### Boolean Literals
@@ -300,7 +304,9 @@ The type of a literal is determined by its value or by the following type charac
 ```antlr
 IntegerLiteral:            IntegralLiteralValue IntegralTypeCharacter?;
 IntegralLiteralValue:      IntLiteral | HexLiteral | OctalLiteral;
-IntegralTypeCharacter:     ShortCharacter | UnsignedShortCharacter | IntegerCharacter | UnsignedIntegerCharacter | LongCharacter | UnsignedLongCharacter | IntegerTypeCharacter | LongTypeCharacter;
+IntegralTypeCharacter:     ShortCharacter | UnsignedShortCharacter | IntegerCharacter
+                           | UnsignedIntegerCharacter | LongCharacter | UnsignedLongCharacter
+                           | IntegerTypeCharacter | LongTypeCharacter;
 ShortCharacter:            'S';
 UnsignedShortCharacter:    'US';
 IntegerCharacter:          'I';
@@ -324,12 +330,15 @@ A floating-point literal is an integer literal followed by an optional decimal p
 > It is worth noting that the `Decimal` data type can encode trailing zeros in a value. The specification currently makes no comment about whether trailing zeros in a `Decimal` literal should be honored by a compiler.
 
 ```antlr
-FloatingPointLiteral:       FloatingPointLiteralValue FloatingPointTypeCharacter? | IntLiteral FloatingPointTypeCharacter;
-FloatingPointTypeCharacter: SingleCharacter | DoubleCharacter | DecimalCharacter | SingleTypeCharacter | DoubleTypeCharacter | DecimalTypeCharacter;
+FloatingPointLiteral:       FloatingPointLiteralValue FloatingPointTypeCharacter?
+                            | IntLiteral FloatingPointTypeCharacter;
+FloatingPointTypeCharacter: SingleCharacter | DoubleCharacter | DecimalCharacter
+                            | SingleTypeCharacter | DoubleTypeCharacter | DecimalTypeCharacter;
 SingleCharacter:            'F';
 DoubleCharacter:            'R';
 DecimalCharacter:           'D';
-FloatingPointLiteralValue:  IntLiteral '.' IntLiteral Exponent? | '.' IntLiteral Exponent? | IntLiteral Exponent;
+FloatingPointLiteralValue:  IntLiteral '.' IntLiteral Exponent? | '.' IntLiteral Exponent?
+                            | IntLiteral Exponent;
 Exponent:                   'E' Sign? IntLiteral;
 Sign:                       '+' | '-';
 ```
@@ -370,8 +379,10 @@ Here is the grammar:
 
 ```antlr
 StringLiteral:        DoubleQuoteCharacter StringCharacter* DoubleQuoteCharacter;
-DoubleQuoteCharacter: '"' | '<unicode left double-quote 0x201c>' | '<unicode right double-quote 0x201D>';
-StringCharacter:      '<Any character except DoubleQuoteCharacter>' | DoubleQuoteCharacter DoubleQuoteCharacter;
+DoubleQuoteCharacter: '"' | '<unicode left double-quote 0x201c>'
+                      | '<unicode right double-quote 0x201D>';
+StringCharacter:      '<Any character except DoubleQuoteCharacter>'
+                      | DoubleQuoteCharacter DoubleQuoteCharacter;
 ```
 
 ### Character Literals
@@ -419,7 +430,8 @@ d = # 13:45:39PM #             ' This date value is not valid.
 DateLiteral:  '#' WhiteSpace* DateOrTime WhiteSpace* '#';
 DateOrTime:   DateValue WhiteSpace+ TimeValue | DateValue | TimeValue;
 DateValue:    MonthValue '/' DayValue '/' YearValue | MonthValue '-' DayValue '-' YearValue;
-TimeValue:    HourValue ':' MinuteValue ( ':' SecondValue )? WhiteSpace* AMPM? | HourValue WhiteSpace* AMPM;
+TimeValue:    HourValue ':' MinuteValue ( ':' SecondValue )? WhiteSpace* AMPM?
+              | HourValue WhiteSpace* AMPM;
 MonthValue:   IntLiteral;
 DayValue:     IntLiteral;
 YearValue:    IntLiteral;

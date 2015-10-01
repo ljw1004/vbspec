@@ -2,7 +2,7 @@
 
 Conversion is the process of changing a value from one type to another. For example, a value of type `Integer` can be converted to a value of type `Double`, or a value of type `Derived` can be converted to a value of type `Base`, assuming that `Base` and `Derived` are both classes and `Derived` inherits from `Base`. Conversions may not require the value itself to change (as in the latter example), or they may require significant changes in the value representation (as in the former example).
 
-Conversions may either be widening or narrowing. A *widening conversion* is a conversion from a type to another type whose value domain is at least as big, if not bigger, than the original type's value domain. Widening conversions should never fail. A *narrowing conversion* is a conversion from a type to another type  whose value domain is either smaller than the original type's value domain or sufficiently unrelated that extra care must be taken when doing the conversion (for example, when converting from `Integer` to `String`). Narrowing conversions, which may entail loss of information, can fail.
+Conversions may either be widening or narrowing. A *widening conversion* is a conversion from a type to another type whose value domain is at least as big, if not bigger, than the original type's value domain. Widening conversions should never fail. A *narrowing conversion* is a conversion from a type to another type whose value domain is either smaller than the original type's value domain or sufficiently unrelated that extra care must be taken when doing the conversion (for example, when converting from `Integer` to `String`). Narrowing conversions, which may entail loss of information, can fail.
 
 The identity conversion (i.e. a conversion from a type to itself) and default value conversion (i.e. a conversion from `Nothing`) are defined for all types.
 
@@ -10,7 +10,7 @@ The identity conversion (i.e. a conversion from a type to itself) and default va
 
 Conversions can be either *implicit* or *explicit*. Implicit conversions occur without any special syntax. The following is an example of implicit conversion of an `Integer` value to a `Long` value:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim intValue As Integer = 123
@@ -23,7 +23,7 @@ End Module
 
 Explicit conversions, on the other hand, require cast operators. Attempting to do an explicit conversion on a value without a cast operator causes a compile-time error. The following example uses an explicit conversion to convert a `Long` value to an `Integer` value.
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim longValue As Long = 134
@@ -40,13 +40,13 @@ The set of implicit conversions depends on the compilation environment and the `
 
 Although `Boolean` is not a numeric type, it does have narrowing conversions to and from the numeric types as if it were an enumerated type. The literal `True` converts to the literal `255` for `Byte`, `65535` for `UShort`, `4294967295` for `UInteger`, `18446744073709551615` for `ULong`, and to the expression `-1` for `SByte`, `Short`, `Integer`, `Long`, `Decimal`, `Single`, and `Double`. The literal `False` converts to the literal `0`. A zero numeric value converts to the literal `False`. All other numeric values convert to the literal `True`.
 
-There is a narrowing conversion from Boolean to String, converting to either `System.Boolean.TrueString` or `System.Boolean.FalseString`. There is also a narrowing conversion from `String` to `Boolean`: if the string was equal to `TrueString` or `FalseString` (in the current culture, case-insensitively) then it uses the appropriate value; otherwise it attempts to parse the string as a numeric type (in hex or octal if possible, otherwise as a float) and uses the above rules; otherwise it throws  `System.InvalidCastException`.
+There is a narrowing conversion from Boolean to String, converting to either `System.Boolean.TrueString` or `System.Boolean.FalseString`. There is also a narrowing conversion from `String` to `Boolean`: if the string was equal to `TrueString` or `FalseString` (in the current culture, case-insensitively) then it uses the appropriate value; otherwise it attempts to parse the string as a numeric type (in hex or octal if possible, otherwise as a float) and uses the above rules; otherwise it throws `System.InvalidCastException`.
 
 ## Numeric Conversions
 
 Numeric conversions exist between the types `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, `Long`, `Decimal`, `Single` and `Double`, and all enumerated types. When being converted, enumerated types are treated as if they were their underlying types. When converting to an enumerated type, the source value is not required to conform to the set of values defined in the enumerated type. For example:
 
-```VB.net
+```vb
 Enum Values
     One
     Two
@@ -94,36 +94,35 @@ Reference types may be converted to a base type, and vice versa. Conversions fro
 Class and interface types can be cast to and from any interface type. Conversions between a type and an interface type only succeed at run time if the actual types involved have an inheritance or implementation relationship. Because an interface type will always contain an instance of a type that derives from `Object`, an interface type can also always be cast to and from `Object`.
 
 > __Annotation__
-
 > It is not an error to convert a `NotInheritable` classes to and from interfaces that it does not implement because classes that represent COM classes may have interface implementations that are not known until run time. 
 
 If a reference conversion fails at run time, a `System.InvalidCastException` exception is thrown.
 
 ### Reference Variance Conversions
 
-Generic interfaces or delegates may have variant type parameters that allow conversions between compatible variants of the type. Therefore, at runtime a conversion from a class type or an interface type to an interface type that is variant compatible with an interface type it inherits from or implements will succeed. Similarly, delegate types can be cast to and from variant compatible delegate types.  For example, the delegate type
+Generic interfaces or delegates may have variant type parameters that allow conversions between compatible variants of the type. Therefore, at runtime a conversion from a class type or an interface type to an interface type that is variant compatible with an interface type it inherits from or implements will succeed. Similarly, delegate types can be cast to and from variant compatible delegate types. For example, the delegate type
 
-```VB.net
+```vb
 Delegate Function F(Of In A, Out R)(a As A) As R
 ```
 
 would allow a conversion from `F(Of Object, Integer)` to `F(Of String, Integer)`. That is, a delegate `F` which takes `Object` may be safely used as a delegate `F` which takes `String`. When the delegate is invoked, the target method will be expecting an object, and a string is an object.
 
-A generic delegate or interface type `S(Of S`<sub>1</sub>`,...,S`<sub>N</sub>`)` is said to be *variant compatible* with a generic interface or delegate type `T(Of T`<sub>1</sub>`,...,T`<sub>N</sub>`)` if:
+A generic delegate or interface type `S(Of S1,...,Sn)` is said to be *variant compatible* with a generic interface or delegate type `T(Of T1,...,Tn)` if:
 
-`S` and `T` are both constructed from the same generic type `U(Of U1,...,UN)`.
+`S` and `T` are both constructed from the same generic type `U(Of U1,...,Un)`.
 
-For each type parameter `U`<sub>X</sub>:
+For each type parameter `Ux`:
 
-If the type parameter was declared without variance then `S`<sub>X</sub> and `T`<sub>X</sub> must be the same type.
+If the type parameter was declared without variance then `Sx` and `Tx` must be the same type.
 
-If the type parameter was declared `In` then there must be a widening identity, default, reference, array, or type parameter conversion from `S`<sub>X</sub> to `T`<sub>X</sub>.
+If the type parameter was declared `In` then there must be a widening identity, default, reference, array, or type parameter conversion from `Sx` to `Tx`.
 
-If the type parameter was declared `Out` then there must be a widening identity, default, reference, array, or type parameter conversion from `T`<sub>X</sub> to `S`<sub>X</sub>.
+If the type parameter was declared `Out` then there must be a widening identity, default, reference, array, or type parameter conversion from `Tx` to `Sx`.
 
 When converting from a class to a generic interface with variant type parameters, if the class implements more than one variant compatible interface the conversion is ambiguous if there is not a non-variant conversion. For example:
 
-```VB.net
+```vb
 Class Base
 End Class
 
@@ -161,7 +160,7 @@ End Module
 
 When an expression classified as a lambda method is reclassified as a value in a context where there is no target type (for example, `Dim x = Function(a As Integer, b As Integer) a + b`), or where the target type is not a delegate type, the type of the resulting expression is an anonymous delegate type equivalent to the signature of the lambda method. This anonymous delegate type has a conversion to any compatible delegate type: a compatible delegate type is any delegate type that can be created using a delegate creation expression with the anonymous delegate type's `Invoke` method as a parameter. For example:
 
-```VB.net
+```vb
 ' Anonymous delegate type similar to Func(Of Object, Object, Object)
 Dim x = Function(x, y) x + y
 
@@ -177,7 +176,7 @@ Besides the conversions that are defined on arrays by virtue of the fact that th
 
 For any two types `A` and `B`, if they are both reference types or type parameters not known to be value types, and if `A` has a reference, array, or type parameter conversion to `B`, a conversion exists from an array of type `A` to an array of type `B` with the same rank. This relationship is known as *array covariance*. Array covariance in particular means that an element of an array whose element type is `B` may actually be an element of an array whose element type is `A`, provided that both `A` and `B` are reference types and that `B` has a reference conversion or array conversion to `A`. In the following example, the second invocation of `F` causes a `System.ArrayTypeMismatchException` exception to be thrown because the actual element type of `b` is `String`, not `Object`:
 
-```VB.net
+```vb
 Module Test
     Sub F(ByRef x As Object)
     End Sub
@@ -193,7 +192,7 @@ End Module
 
 Because of array covariance, assignments to elements of reference type arrays include a run-time check that ensures that the value being assigned to the array element is actually of a permitted type.
 
-```VB.net
+```vb
 Module Test
     Sub Fill(array() As Object, index As Integer, count As Integer, _
             value As Object)
@@ -218,7 +217,7 @@ In this example, the assignment to `array(i)` in method `Fill` implicitly includ
 
 If one of the array element types is a type parameter whose type turns out to be a value type at runtime, a `System.InvalidCastException` exception will be thrown. For example:
 
-```VB.net
+```vb
 Module Test
     Sub F(Of T As U, U)(x() As T)
         Dim y() As U = x
@@ -234,7 +233,7 @@ End Module
 
 Conversions also exist between an array of an enumerated type and an array of the enumerated type's underlying type or an array of another enumerated type with the same underlying type, provided the arrays have the same rank.
 
-```VB.net
+```vb
 Enum Color As Byte
     Red
     Green
@@ -276,7 +275,7 @@ To support nullable value types well, the value type `System.Nullable(Of T)` is 
 
 Structures, on the other hand, may be mutable if its instance variables are accessible or if its methods or properties modify its instance variables. If one reference to a boxed structure is used to modify the structure, then all references to the boxed structure will see the change. Because this result may be unexpected, when a value typed as `Object` is copied from one location to another boxed value types will automatically be cloned on the heap instead of merely having their references copied. For example:
 
-```VB.net
+```vb
 Class Class1
     Public Value As Integer = 0
 End Class
@@ -305,7 +304,7 @@ End Module
 
 The output of the program is:
 
-```VB.net
+```vb
 Values: 0, 123
 Refs: 123, 123
 ```
@@ -313,12 +312,11 @@ Refs: 123, 123
 The assignment to the field of the local variable `val2` does not impact the field of the local variable `val1` because when the boxed `Struct1` was assigned to `val2`, a copy of the value was made. In contrast, the assignment `ref2.Value = 123` affects the object that both `ref1` and `ref2` references.
 
 > __Annotation__
-
 > Structure copying is not done for boxed structures typed as `System.ValueType` because it is not possible to late bind off of `System.ValueType`.
 
 There is one exception to the rule that boxed value types will be copied on assignment. If a boxed value type reference is stored within another type, the inner reference will not be copied. For example:
 
-```VB.net
+```vb
 Structure Struct1
     Public Value As Object
 End Structure
@@ -341,19 +339,18 @@ End Module
 
 The output of the program is:
 
-```VB.net
+```vb
 Values: 123, 123
 ```
 
 This is because the inner boxed value is not copied when the value is copied. Thus, both `val1.Value` and `val2.Value` have a reference to the same boxed value type.
 
 > __Annotation__
-
 > The fact that inner boxed value types are not copied is a limitation of the .NET type system - to ensure that all inner boxed value types were copied whenever a value of type `Object` was copied would be prohibitively expensive.
 
 As previously described, boxed value types can only be unboxed to their original type. Boxed primitive types, however, are treated specially when typed as `Object`. They can be converted to any other primitive type that they have a conversion to. For example:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim o As Object = 5
@@ -367,7 +364,7 @@ Normally, the boxed `Integer` value `5` could not be unboxed into a `Byte` varia
 
 It is important to note that converting a value type to an interface is different than a generic argument constrained to an interface. When accessing interface members on a constrained type parameter (or calling methods on `Object`), boxing does not occur as it does when a value type is converted to an interface and an interface member is accessed. For example, suppose an interface `ICounter` contains a method `Increment` which can be used to modify a value. If `ICounter` is used as a constraint, the implementation of the `Increment` method is called with a reference to the variable that `Increment` was called on, not a boxed copy:
 
-```VB.net
+```vb
 Interface ICounter
     Sub Increment()
     ReadOnly Property Value() As Integer
@@ -407,7 +404,7 @@ End Module
 
 The first call to `Increment` modifies the value in the variable `x`. This is not equivalent to the second call to `Increment`, which modifies the value in a boxed copy of `x`. Thus, the output of the program is:
 
-```VB.net
+```vb
 0
 1
 1
@@ -425,7 +422,7 @@ A narrowing conversion from `S?` to `T`.
 
 For example, an intrinsic widening conversion exists from `Integer?` to `Long?` because an intrinsic widening conversion exists from `Integer` to `Long`:
 
-```VB.net
+```vb
 Dim i As Integer? = 10
 Dim l As Long? = i
 ```
@@ -434,7 +431,7 @@ When converting from `T?` to `S?`, if the value of `T?` is `Nothing`, then the v
 
 Because of the behavior of the underlying type `System.Nullable(Of T)`, when a nullable value type `T?` is boxed, the result is a boxed value of type `T`, not a boxed value of type `T?`. And, conversely, when unboxing to a nullable value type `T?`, the value will be wrapped by `System.Nullable(Of T)`, and `Nothing` will be unboxed to a null value of type `T?`. For example:
 
-```VB.net
+```vb
 Dim i1? As Integer = Nothing
 Dim o1 As Object = i1
 
@@ -446,7 +443,7 @@ Console.WriteLine(i1)                               ' Will print 10
 
 A side effect of this behavior is that a nullable value type `T?` appears to implement all of the interfaces of `T`, because converting a value type to an interface requires the type to be boxed. As a result, `T?` is convertible to all the interfaces that `T` is convertible to. It is important to note, however, that a nullable value type `T?` does not actually implement the interfaces of `T` for the purposes of generic constraint checking or reflection. For example:
 
-```VB.net
+```vb
 Interface I1
 End Interface
 
@@ -510,7 +507,6 @@ From `Single` to `Double`.
 From the literal `0` to an enumerated type.
 
 > __Annotation__
-
 > The conversion from `0` to any enumerated type is widening to simplify testing flags. For example, if `Values` is an enumerated type with a value `One`, you could test a variable `v` of type `Values` by saying `(v And Values.One) = 0`.
 
 From an enumerated type to its underlying numeric type, or to a numeric type that its underlying numeric type has a widening conversion to.
@@ -518,7 +514,6 @@ From an enumerated type to its underlying numeric type, or to a numeric type tha
 From a constant expression of type `ULong`, `Long`, `UInteger`, `Integer`, `UShort`, `Short`, `Byte`, or `SByte` to a narrower type, provided the value of the constant expression is within the range of the destination type.
 
 > __Note__
-
 > Conversions from `UInteger` or `Integer` to `Single`, `ULong` or `Long` to `Single` or `Double`, or `Decimal` to `Single` or `Double` may cause a loss of precision, but will never cause a loss of magnitude. The other widening numeric conversions never lose any information.
 
 __Reference conversions__
@@ -534,7 +529,6 @@ From an interface type to a variant compatible interface type.
 From a delegate type to a variant compatible delegate type.
 
 > __Note__
-
 > Many other reference conversions are implied by these rules. For example, anonymous delegates are reference types that inherit from `System.MulticastDelegate`; array types are reference types that inherit from `System.Array`; anonymous types are reference types that inherit from `System.Object`.
 
 __Anonymous Delegate conversions__
@@ -543,27 +537,29 @@ From an anonymous delegate type generated for a lambda method reclassification t
 
 __Array conversions__
 
-From an array type `S` with an element type `S`<sub>E</sub> to an array type `T` with an element type `T`<sub>E</sub>, provided all of the following are true:
+From an array type `S` with an element type `Se` to an array type `T` with an element type `Te`, provided all of the following are true:
 
 `S` and `T` differ only in element type.
 
-Both `S`<sub>E</sub> and `T`<sub>E</sub> are reference types or are type parameters known to be a reference type.
+Both `Se` and `Te` are reference types or are type parameters known to be a reference type.
 
-A widening reference, array, or type parameter conversion exists from `S`<sub>E</sub> to `T`<sub>E</sub>.
+A widening reference, array, or type parameter conversion exists from `Se` to `Te`.
 
-From an array type `S` with an enumerated element type `S`<sub>E</sub> to an array type `T` with an element type `T`<sub>E</sub>, provided all of the following are true:
+From an array type `S` with an enumerated element type `Se` to an array type `T` with an element type `Te`, provided all of the following are true:
 
 `S` and `T` differ only in element type.
 
-`T`<sub>E</sub> is the underlying type of `S`<sub>E</sub>.
+`Te` is the underlying type of `Se`.
 
-From an array type `S` of rank 1 with an enumerated element type `S`<sub>E</sub>, to System.Collections.Generic.`IList(Of T`<sub>E</sub>`)`, `IReadOnlyList(Of T`<sub>E</sub>`)`, `ICollection(Of T`<sub>E</sub>`)`, `IReadOnlyCollection(Of T`<sub>E</sub>`)`, and `IEnumerable(Of T`<sub>E</sub>`)`, provided one of the following is true:
+From an array type `S` of rank 1 with an enumerated element type `Se`, to `System.Collections.Generic.IList(Of Te)`, `IReadOnlyList(Of Te)`, `ICollection(Of Te)`, `IReadOnlyCollection(Of Te)`, and `IEnumerable(Of Te)`, provided one of the following is true:
 
-Both `S`<sub>E</sub> and `T`<sub>E</sub> are reference types or are type parameters known to be a reference type, and a widening reference, array, or type parameter conversion exists from `S`<sub>E</sub> to `T`<sub>E</sub>; or
+Both `Se` and `Te` are reference types or are type parameters known to be a reference type, and a widening reference, array, or type parameter conversion exists from `Se` to `Te`; or
 
-`T`<sub>E</sub> is the underlying type of `S`<sub>E</sub>; or
+`Te` is the underlying type of `Se`; or
 
-`T`<sub>E</sub> is identical to `S`<sub>E</sub>.Value Type conversions
+`Te` is identical to `Se`
+
+__Value Type conversions__
 
 From a value type to a base type.
 
@@ -597,7 +593,7 @@ From a type parameter to an interface variant compatible with an interface imple
 
 From a type parameter to a class constraint, or a base type of the class constraint.
 
-From a type parameter `T` to a type parameter constraint `T`<sub>X</sub>, or anything `T`<sub>X</sub> has a widening conversion to.
+From a type parameter `T` to a type parameter constraint `Tx`, or anything `Tx` has a widening conversion to.
 
 ## Narrowing Conversions
 
@@ -655,21 +651,21 @@ From an anonymous delegate type generated for a lambda method reclassification t
 
 __Array conversions__
 
-From an array type `S` with an element type `S`<sub>E</sub>, to an array type `T` with an element type `T`<sub>E</sub>, provided that all of the following are true:
+From an array type `S` with an element type `Se`, to an array type `T` with an element type `Te`, provided that all of the following are true:
 
 - `S` and `T` differ only in element type.
-- Both `S`<sub>E</sub> and `T`<sub>E</sub> are reference types or are type parameters not known to be value types.
-- A narrowing reference, array, or type parameter conversion exists from `S`<sub>E</sub> to `T`<sub>E</sub>.
+- Both `Se` and `Te` are reference types or are type parameters not known to be value types.
+- A narrowing reference, array, or type parameter conversion exists from `Se` to `Te`.
 
-From an array type `S` with an element type `S`<sub>E</sub> to an array type `T` with an enumerated element type `T`<sub>E</sub>, provided all of the following are true:
+From an array type `S` with an element type `Se` to an array type `T` with an enumerated element type `Te`, provided all of the following are true:
 
 - `S` and `T` differ only in element type.
-- `S`<sub>E</sub> is the underlying type of `T`<sub>E</sub> , or they are both different enumerated types that share the same underlying type.
+- `Se` is the underlying type of `Te` , or they are both different enumerated types that share the same underlying type.
 
-From an array type `S` of rank 1 with an enumerated element type `S`<sub>E</sub>, to `IList(Of T`<sub>E</sub>`)`, `IReadOnlyList(Of T`<sub>E</sub>`)`, `ICollection(Of T`<sub>E</sub>`)`, `IReadOnlyCollection(Of T`<sub>E</sub>`)` and `IEnumerable(Of T`<sub>E</sub>`)`, provided one of the following is true:
+From an array type `S` of rank 1 with an enumerated element type `Se`, to `IList(Of Te)`, `IReadOnlyList(Of Te)`, `ICollection(Of Te)`, `IReadOnlyCollection(Of Te)` and `IEnumerable(Of Te)`, provided one of the following is true:
 
-- Both `S`<sub>E</sub> and `T`<sub>E</sub> are reference types or are type parameters known to be a reference type, and a narrowing reference, array, or type parameter conversion exists from `S`<sub>E</sub> to `T`<sub>E</sub>; or
-- `S`<sub>E</sub> is the underlying type of `T`<sub>E</sub>, or they are both different enumerated types that share the same underlying type.
+- Both `Se` and `Te` are reference types or are type parameters known to be a reference type, and a narrowing reference, array, or type parameter conversion exists from `Se` to `Te`; or
+- `Se` is the underlying type of `Te`, or they are both different enumerated types that share the same underlying type.
 
 __Value type conversions__
 
@@ -709,17 +705,17 @@ From an interface type to a type parameter.
 
 From a type parameter to a derived type of a class constraint.
 
-From a type parameter `T` to anything a type parameter constraint `T`<sub>X</sub> has a narrowing conversion to.
+From a type parameter `T` to anything a type parameter constraint `Tx` has a narrowing conversion to.
 
 ## Type Parameter Conversions
 
-Type parameters' conversions are determined by the constraints, if any, put on them. A type parameter `T` can always be converted to itself, to and from `Object`, and to and from any interface type. Note that if the type `T` is a value type at run-time, converting from `T` to `Object` or an interface type will be a boxing conversion and converting from `Object` or an interface type to `T` will be an unboxing conversion. A type parameter with a class constraint `C` defines additional conversions from the type parameter to `C` and its base classes, and vice versa. A type parameter `T` with a type parameter constraint `T`<sub>X</sub> defines a conversion to `T`<sub>X</sub> and anything `T`<sub>X</sub> converts to.
+Type parameters' conversions are determined by the constraints, if any, put on them. A type parameter `T` can always be converted to itself, to and from `Object`, and to and from any interface type. Note that if the type `T` is a value type at run-time, converting from `T` to `Object` or an interface type will be a boxing conversion and converting from `Object` or an interface type to `T` will be an unboxing conversion. A type parameter with a class constraint `C` defines additional conversions from the type parameter to `C` and its base classes, and vice versa. A type parameter `T` with a type parameter constraint `Tx` defines a conversion to `Tx` and anything `Tx` converts to.
 
 An array whose element type is a type parameter with an interface constraint `I` has the same covariant array conversions as an array whose element type is `I`, provided that the type parameter also has a `Class` or class constraint (since only reference array element types can be covariant). An array whose element type is a type parameter with a class constraint `C` has the same covariant array conversions as an array whose element type is `C`.
 
 The above conversions rules do not permit conversions from unconstrained type parameters to non-interface types, which may be surprising. The reason for this is to prevent confusion about the semantics of such conversions. For example, consider the following declaration:
 
-```VB.net
+```vb
 Class X(Of T)
     Public Shared Function F(t As T) As Long 
         Return CLng(t)    ' Error, explicit conversion not permitted
@@ -729,7 +725,7 @@ End Class
 
 If the conversion of `T` to `Integer` were permitted, one might easily expect that `X(Of Integer).F(7)` would return `7L`. However, it would not, because numeric conversions are only considered when the types are known to be numeric at compile time. In order to make the semantics clear, the above example must instead be written:
 
-```VB.net
+```vb
 Class X(Of T)
     Public Shared Function F(t As T) As Long
         Return CLng(CObj(t))    ' OK, conversions permitted
@@ -751,7 +747,7 @@ The *most encompassed* type in a set of types is the one type that is encompasse
 
 When collecting the candidate user-defined conversions for a type `T?`, the user-defined conversion operators defined by `T` are used instead. If the type being converted to is also a nullable value type, then any of `T`'s user-defined conversions operators that involve only non-nullable value types are lifted. A conversion operator from `T` to `S` is lifted to be a conversion from `T?` to `S?` and is evaluated by converting `T?` to `T`, if necessary, then evaluating the user-defined conversion operator from `T` to `S` and then converting `S` to `S?`, if necessary. If the value being converted is `Nothing`, however, a lifted conversion operator converts directly into a value of `Nothing` typed as `S?`. For example:
 
-```VB.net
+```vb
 Structure S
     ...
 End Structure
@@ -776,7 +772,7 @@ End Module
 
 When resolving conversions, user-defined conversions operators are always preferred over lifted conversion operators. For example:
 
-```VB.net
+```vb
 Structure S
     ...
 End Structure
