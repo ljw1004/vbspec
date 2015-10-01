@@ -36,28 +36,26 @@ Module Module1
             Dim body = resultDoc.MainDocumentPart.Document.Body
             body.RemoveAllChildren()
 
-            '            Dim src = "#Heading 1
+            Dim src = "> __Annotation__
+> This is some text
+> ```vb
+> Module Module1
+> End Module
+> ```
+> End of stuff"
 
-            '1. Alpha
-            '2. Beta
-
-            'Interstitial
-
-            '1. One
-            '2. Two
-
-            'Closing paragraph"
-
-            '            For Each p In New MarkdownParser(src, resultDoc).Paragraphs
-            '                body.AppendChild(p)
-            '            Next
-
-            For Each mdfn In {"introduction.md", "lexical-grammar.md", "preprocessing-directives.md",
-                "general-concepts.md", "attributes.md", "source-files-and-namespaces.md", "types.md"}
-                For Each p In New MarkdownParser(File.ReadAllText($"..\..\..\vb\{mdfn}"), resultDoc).Paragraphs
-                    body.AppendChild(p)
-                Next
+            For Each p In New MarkdownParser(src, resultDoc).Paragraphs
+                body.AppendChild(p)
             Next
+
+            If String.IsNullOrEmpty(src) Then
+                For Each mdfn In {"introduction.md", "lexical-grammar.md", "preprocessing-directives.md",
+                "general-concepts.md", "attributes.md", "source-files-and-namespaces.md", "types.md"}
+                    For Each p In New MarkdownParser(File.ReadAllText($"..\..\..\vb\{mdfn}"), resultDoc).Paragraphs
+                        body.AppendChild(p)
+                    Next
+                Next
+            End If
 
         End Using
 

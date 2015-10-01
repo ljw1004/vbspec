@@ -61,6 +61,32 @@ Longline:  Option1 | Option2 | Option3
        |  Option4 | Option5
 ```
 
+-------------------------------------------------------------
+
+The following experiment is about code blocks in annotations.
+
+> __Annotation__
+> This is an annotation
+> ```vb
+> Module Module1
+> End Module
+> ```
+> More annotation
+
+and this is another one...
+
+> __Annotation__
+> This is an annotation
+
+> ```vb
+> Module Module1
+> End Module
+> ```
+
+> More annotation
+
+-------------------------------------------------------------
+
 The following experiment is about nested lists. It shows that github markdown ignores the number you've written (using it solely to infer "ordered" vs "unordered") and the numbering scheme it uses is
 ```
 1. Level One
@@ -87,6 +113,8 @@ and again...
 
     Continuation
 3.  Goodbye
+
+-------------------------------------------------------------
 
 The following experiment shows we must use brace codeblocks, not indented codeblocks. The brace languages I'll use will be "vb" and "antlr".
 
@@ -151,5 +179,7 @@ ANTLR indented code
     Start: Left | Right | 'hello';
     Left: 'world';
     Right: 'there';
+
+-------------------------------------------------------------
 
 End of experiments.
