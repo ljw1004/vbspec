@@ -37,12 +37,12 @@ Module Module1
             body.RemoveAllChildren()
 
             Dim src = "> __Annotation__
-> This is some text
-> ```vb
-> Module Module1
-> End Module
-> ```
-> End of stuff"
+> Hello
+
+>    Module Module1
+
+> That was a code block with `inline code` and `stuff` in it
+"
 
             For Each p In New MarkdownParser(src, resultDoc).Paragraphs
                 body.AppendChild(p)
@@ -301,10 +301,21 @@ Class MarkdownParser
 
 
     Iterator Function Spans2Elements(mds As IEnumerable(Of MarkdownSpan)) As IEnumerable(Of OpenXmlElement)
+        Dim prevWasInlineCodeBlock = False ' to work around bug in FSharp.Markdown parser
         For Each md In mds
+            'If prevWasInlineCodeBlock AndAlso md.IsLiteral Then
+            '    Dim txt = CType(md, MarkdownSpan.Literal).Item
+            '    If txt.StartsWith("`" & vbCrLf) Then
+            '        md = MarkdownSpan.NewLiteral(txt.Substring(3))
+            '    ElseIf txt.StartsWith("`" & vbCr) OrElse txt.StartsWith("`" & vbLf) Then
+            '        md = MarkdownSpan.NewLiteral(txt.Substring(2))
+            '    End If
+            'End If
+
             For Each e In Span2Elements(md)
                 Yield e
             Next
+            prevWasInlineCodeBlock = md.IsInlineCode
         Next
     End Function
 
@@ -314,6 +325,7 @@ Class MarkdownParser
             Dim txt As New Text(s) With {.Space = SpaceProcessingModeValues.Preserve}
             Yield New Run(txt)
             Return
+
         ElseIf md.IsStrong OrElse md.IsEmphasis Then
             Dim spans = If(md.IsStrong, CType(md, MarkdownSpan.Strong).Item, CType(md, MarkdownSpan.Emphasis).Item)
             Dim style = If(md.IsStrong, CType(New Bold, OpenXmlElement), New Italic)
@@ -323,13 +335,36 @@ Class MarkdownParser
                 Yield e
             Next
             Return
+
         ElseIf md.IsInlineCode Then
             Dim mdi = CType(md, MarkdownSpan.InlineCode), code = mdi.Item
-            Dim txt As New Text(code) With {.Space = SpaceProcessingModeValues.Preserve}
-            Dim props As New RunProperties(New RunStyle With {.Val = "CodeEmbedded"})
-            Dim run As New Run(txt) With {.RunProperties = props}
-            Yield run
-            Return
+
+            If code.StartsWith("`") Then
+                ' workaround bug in FSharp.Markdown which renders a quoted codeblock as inline-code
+                Dim lines = code.Split({vbCrLf, vbCr, vbLf}, StringSplitOptions.None).ToList()
+                If String.IsNullOrWhiteSpace(lines.Last) Then lines.RemoveAt(lines.Count - 1)
+                Dim lang = lines(0).Substring(1)
+                If lang <> "vb" Then Throw New NotImplementedException("Not yet implemented: any code other than VB in a quoted block")
+                lines.RemoveAt(0)
+                Dim props As New RunProperties(New RunStyle With {.Val = "CodeEmbedded"})
+                Dim run As New Run With {.RunProperties = props}
+                run.AppendChild(New Break)
+                For Each line In lines
+                    run.AppendChild(New Break)
+                    run.AppendChild(New Text(line) With {.Space = SpaceProcessingModeValues.Preserve})
+                Next
+                run.AppendChild(New Break)
+                run.AppendChild(New Break)
+                Yield run
+                Return
+            Else
+                Dim txt As New Text(code) With {.Space = SpaceProcessingModeValues.Preserve}
+                Dim props As New RunProperties(New RunStyle With {.Val = "CodeEmbedded"})
+                Dim run As New Run(txt) With {.RunProperties = props}
+                Yield run
+                Return
+            End If
+
         ElseIf md.IsDirectLink Or md.IsIndirectLink Then
             Dim spans As IEnumerable(Of MarkdownSpan), url = "", alt = ""
             If md.IsDirectLink Then
@@ -354,6 +389,7 @@ Class MarkdownParser
             Next
             Yield hyperlink
             Return
+
         Else
             Yield New Run(New Text($"[{md.GetType.Name}]"))
             Return

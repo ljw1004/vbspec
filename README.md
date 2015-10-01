@@ -63,7 +63,7 @@ Longline:  Option1 | Option2 | Option3
 
 -------------------------------------------------------------
 
-The following experiment is about code blocks in annotations.
+The following experiment is about code blocks in quoted blocks. Both styles are fine.
 
 > __Annotation__
 > This is an annotation
@@ -84,6 +84,27 @@ and this is another one...
 > ```
 
 > More annotation
+
+and this is another one...
+
+> __Annotation__
+> This is an annotation with five spaces in the nested code block
+
+>     This is a nested code block
+>     of multiple lines
+
+> Continued annotation
+
+and another one...
+
+> __Annotation__
+> This is an annotation with four spaces in the nested code block
+
+>    This is a nested code block
+>    of multiple lines
+
+> Continued annotation
+
 
 -------------------------------------------------------------
 
