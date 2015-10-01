@@ -311,7 +311,7 @@ The import specifies the exact name of the namespace or type to which it is crea
 
 If an import alias points to a type or namespace which cannot be resolved by these rules, then the import statement is ignored (and the compiler gives a warning).
 
-Also, the reference cannot be to an open generic type – all generic types must have valid type arguments supplied, and all type arguments must be resolvable by the rules above. Any incorrect binding of a generic type is an error.
+Also, the reference cannot be to an open generic type -- all generic types must have valid type arguments supplied, and all type arguments must be resolvable by the rules above. Any incorrect binding of a generic type is an error.
 
 ```vb
 Imports A = G              ' error: since G is an open generic type
@@ -564,9 +564,9 @@ Namespace N1
 End Namespace
 ```
 
-The second form starts with the keywords `Namespace Global`. It is treated as if all its member declarations were lexically placed in the global unnamed namespace – regardless of any defaults provided by the compilation environment. This form of namespace declaration may not be lexically nested within any other namespace declaration.
+The second form starts with the keywords `Namespace Global`. It is treated as if all its member declarations were lexically placed in the global unnamed namespace -- regardless of any defaults provided by the compilation environment. This form of namespace declaration may not be lexically nested within any other namespace declaration.
 
-The third form starts with the keywords `Namespace Global` followed by a qualified identifier `N`. It is treated as if it were a namespace declaration of the first form "`Namespace N`" that was lexically placed in the global unnamed namespace – regardless of any defaults provided by the compilation environment. This form of namespace declaration may not be lexically nested within any other namespace declaration.
+The third form starts with the keywords `Namespace Global` followed by a qualified identifier `N`. It is treated as if it were a namespace declaration of the first form "`Namespace N`" that was lexically placed in the global unnamed namespace -- regardless of any defaults provided by the compilation environment. This form of namespace declaration may not be lexically nested within any other namespace declaration.
 
 ```vb
 Namespace Global       ' Puts N1.A in the global namespace

@@ -7,15 +7,26 @@ Imports DocumentFormat.OpenXml.Wordprocessing
 Imports FSharp.Markdown
 Imports Microsoft.FSharp.Core
 
+' TODO: diamond ambiguity - code inside an annotation - doesn't look right
+' TODO: reduce font size for code blocks in template
+' TODO: types.md has lots of antlr blocks that need doing
+' TODO: correct all the <sub> subscripts. I'll probably ignore them for now
+' TODO: make sure all antlr fits within the margin.
+
 
 Module Module1
 
     Sub Main()
+        ' Pick a output filename that's not already locked by Word...
         Dim fn = ""
         For ifn = 0 To 1000
             fn = $"vbmd{If(ifn = 0, "", CStr(ifn))}.docx"
-            If Not File.Exists(fn) Then Exit For
+            Try
+                If File.Exists(fn) Then File.Delete(fn) Else Exit For
+            Catch ex As Exception
+            End Try
         Next
+
         Using templateDoc = WordprocessingDocument.Open("vb-template.docx", False),
                 resultDoc = WordprocessingDocument.Create(fn, WordprocessingDocumentType.Document)
             For Each part In templateDoc.Parts
@@ -25,25 +36,28 @@ Module Module1
             Dim body = resultDoc.MainDocumentPart.Document.Body
             body.RemoveAllChildren()
 
-            Dim src = "This is a paragraph
+            '            Dim src = "#Heading 1
 
-1. List
-    1. Alpha
-    2. Beta
-2. More list
+            '1. Alpha
+            '2. Beta
 
-Closing paragraph"
+            'Interstitial
 
-            For Each p In New MarkdownParser(src, resultDoc).Paragraphs
-                body.AppendChild(p)
+            '1. One
+            '2. Two
+
+            'Closing paragraph"
+
+            '            For Each p In New MarkdownParser(src, resultDoc).Paragraphs
+            '                body.AppendChild(p)
+            '            Next
+
+            For Each mdfn In {"introduction.md", "lexical-grammar.md", "preprocessing-directives.md",
+                "general-concepts.md", "attributes.md", "source-files-and-namespaces.md", "types.md"}
+                For Each p In New MarkdownParser(File.ReadAllText($"..\..\..\vb\{mdfn}"), resultDoc).Paragraphs
+                    body.AppendChild(p)
+                Next
             Next
-
-            'For Each fn In {"introduction.md", "lexical-grammar.md", "preprocessing-directives.md",
-            '    "general-concepts.md", "attributes.md", "source-files-and-namespaces.md", "types.md"}
-            '    For Each p In New MarkdownParser(File.ReadAllText($"..\..\..\vb\{fn}")).Paragraphs
-            '        body.AppendChild(p)
-            '    Next
-            'Next
 
         End Using
 
@@ -94,20 +108,44 @@ Class MarkdownParser
             Return
 
         ElseIf md.IsListBlock Then
-            ' https://msdn.microsoft.com/en-us/library/ee922775(office.14).aspx
-            ' http://stackoverflow.com/questions/1940911/openxml-2-sdk-word-document-create-bulleted-list-programmatically
-            Dim mdl = CType(md, MarkdownParagraph.ListBlock), isOrdered = mdl.Item1.IsOrdered, pars = mdl.Item2
+            Dim mdl = CType(md, MarkdownParagraph.ListBlock)
+            Dim flat = FlattenList(mdl)
+
+            ' Let's figure out what kind of list it is - ordered or unordered? nested?
+            Dim format0 = {"1", "1", "1"}
+            For Each item In flat
+                format0(item.Item1) = If(item.Item2, "1", "o")
+            Next
+            Dim format = String.Join("", format0)
 
             Dim numberingPart = If(wdoc.MainDocumentPart.NumberingDefinitionsPart, wdoc.MainDocumentPart.AddNewPart(Of NumberingDefinitionsPart)("NumberingDefinitionsPart001"))
-            Dim level As New Level(New NumberingFormat() With {.Val = NumberFormatValues.Bullet}, New LevelText() With {.Val = "·"}) With {.LevelIndex = 0}
-            Dim element = New Numbering(New AbstractNum(level) With {.AbstractNumberId = 1},
-                                        New NumberingInstance(New AbstractNumId With {.Val = 1}) With {.NumberID = 1})
-            element.Save(numberingPart)
+            If numberingPart.Numbering Is Nothing Then numberingPart.Numbering = New Numbering()
 
-            Yield New Paragraph(New ParagraphProperties(New NumberingProperties(New NumberingLevelReference With {.Val = 0}, New NumberingId With {.Val = 1})),
-                                New Run(New Text("Hello, ") With {.Space = SpaceProcessingModeValues.Preserve}))
-            Yield New Paragraph(New ParagraphProperties(New NumberingProperties(New NumberingLevelReference With {.Val = 0}, New NumberingId With {.Val = 1})),
-                                New Run(New Text("world!") With {.Space = SpaceProcessingModeValues.Preserve}))
+            Dim createLevel = Function(level As Integer, isOrdered As Boolean) As Level
+                                  Dim numFormat = NumberFormatValues.Bullet, levelText = "·"
+                                  If isOrdered AndAlso level = 0 Then numFormat = NumberFormatValues.Decimal : levelText = "%1."
+                                  If isOrdered AndAlso level = 1 Then numFormat = NumberFormatValues.LowerLetter : levelText = "%2."
+                                  If isOrdered AndAlso level = 2 Then numFormat = NumberFormatValues.LowerRoman : levelText = "%3."
+                                  Return New Level(New StartNumberingValue With {.Val = 1}, New NumberingFormat With {.Val = numFormat}, New LevelText With {.Val = levelText}, New ParagraphProperties(New Indentation With {.Left = CStr(540 + 360 * level), .Hanging = "360"})) With {.LevelIndex = level}
+                              End Function
+            Dim level0 = createLevel(0, format(0) = "1")
+            Dim level1 = createLevel(1, format(1) = "1")
+            Dim level2 = createLevel(2, format(2) = "1")
+
+            Dim abstracts = numberingPart.Numbering.OfType(Of AbstractNum).Select(Function(an) an.AbstractNumberId.Value).ToList()
+            Dim aid = If(abstracts.Count = 0, 1, abstracts.Max() + 1)
+            Dim abstract As New AbstractNum(New MultiLevelType() With {.Val = MultiLevelValues.Multilevel}, level0, level1, level2) With {.AbstractNumberId = aid}
+            numberingPart.Numbering.InsertAt(abstract, 0)
+
+            Dim instances = numberingPart.Numbering.OfType(Of NumberingInstance).Select(Function(ni) ni.NumberID.Value)
+            Dim nid = If(instances.Count = 0, 1, instances.Max() + 1)
+            Dim numInstance As New NumberingInstance(New AbstractNumId With {.Val = aid}) With {.NumberID = nid}
+            numberingPart.Numbering.AppendChild(numInstance)
+
+            For Each item In flat
+                Dim spans = item.Item3.Item
+                Yield New Paragraph(Spans2Elements(spans)) With {.ParagraphProperties = New ParagraphProperties(New NumberingProperties(New ParagraphStyleId With {.Val = "ListParagraph"}, New NumberingLevelReference With {.Val = item.Item1}, New NumberingId With {.Val = nid}))}
+            Next
 
         ElseIf md.IsCodeBlock Then
             Dim mdc = CType(md, MarkdownParagraph.CodeBlock), code = mdc.Item1, lang = mdc.Item2, ignoredAfterLang = mdc.Item3
@@ -226,6 +264,42 @@ Class MarkdownParser
         End If
     End Function
 
+    Function FlattenList(md As MarkdownParagraph.ListBlock) As IEnumerable(Of Tuple(Of Integer, Boolean, MarkdownParagraph.Span))
+        Dim flat = FlattenList(md, 0).ToList()
+        Dim isOrdered As New Dictionary(Of Integer, Boolean)
+        For Each item In flat
+            Dim level = item.Item1, isItemOrdered = item.Item2
+            If isOrdered.ContainsKey(level) AndAlso isOrdered(level) <> isItemOrdered Then Throw New Exception("List can't mix ordered and unordered items at same level")
+            If Not isOrdered.ContainsKey(level) Then isOrdered(level) = isItemOrdered
+            If level > 2 Then Throw New Exception("Can't have more than 3 levels in a list")
+        Next
+        Return flat
+    End Function
+
+    Iterator Function FlattenList(md As MarkdownParagraph.ListBlock, level As Integer) As IEnumerable(Of Tuple(Of Integer, Boolean, MarkdownParagraph.Span))
+        Dim isOrdered = md.Item1.IsOrdered, items = md.Item2
+        For Each item In items
+            Dim pars = item.ToList()
+            Dim itemSpan As MarkdownParagraph.Span = Nothing
+            Dim itemList As MarkdownParagraph.ListBlock = Nothing
+            If pars.Count = 1 AndAlso pars(0).IsSpan Then
+                itemSpan = CType(pars(0), MarkdownParagraph.Span)
+            ElseIf pars.Count = 1 AndAlso pars(0).IsListBlock Then
+                itemList = CType(pars(0), MarkdownParagraph.ListBlock)
+            ElseIf pars.Count = 2 AndAlso pars(0).IsSpan AndAlso pars(1).IsListBlock Then
+                itemSpan = CType(pars(0), MarkdownParagraph.Span)
+                itemList = CType(pars(1), MarkdownParagraph.ListBlock)
+            Else
+                Throw New Exception("Nothing fancy allowed in lists")
+            End If
+            Yield Tuple.Create(level, isOrdered, itemSpan)
+            If itemList IsNot Nothing Then
+                For Each subitem In FlattenList(itemList, level + 1)
+                    Yield subitem
+                Next
+            End If
+        Next
+    End Function
 
 
     Iterator Function Spans2Elements(mds As IEnumerable(Of MarkdownSpan)) As IEnumerable(Of OpenXmlElement)

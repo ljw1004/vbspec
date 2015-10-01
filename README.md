@@ -61,7 +61,12 @@ Longline:  Option1 | Option2 | Option3
        |  Option4 | Option5
 ```
 
-The following experiment is about nested lists
+The following experiment is about nested lists. It shows that github markdown ignores the number you've written (using it solely to infer "ordered" vs "unordered") and the numbering scheme it uses is
+```
+1. Level One
+   i. Level Two
+      b. Level 3
+```
 
 1.  Hello
 2.  World
@@ -73,6 +78,15 @@ The following experiment is about nested lists
         2. TwoB
 3.  Goodbye
 
+and again...
+
+1.  Hello
+2.  World
+    1. Alpha
+    2. Beta
+
+    Continuation
+3.  Goodbye
 
 The following experiment shows we must use brace codeblocks, not indented codeblocks. The brace languages I'll use will be "vb" and "antlr".
 
