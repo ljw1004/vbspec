@@ -50,23 +50,60 @@ The constant expressions allowed in conditional compilation directives are a sub
 The preprocessor allows whitespace and explicit line continuations before and after every token.
 
 ```antlr
-CCStart:                   CCStatement*;
-CCStatement:               CCConstantDeclaration | CCIfGroup | LogicalLine;
-CCExpression:              LiteralExpression | CCParenthesizedExpression | CCSimpleNameExpression
-                           | CCCastExpression | CCOperatorExpression | CCConditionalExpression;
-CCParenthesizedExpression: '(' CCExpression ')';
-CCSimpleNameExpression:    Identifier;
-CCCastExpression:          'DirectCast' '(' CCExpression ',' TypeName ')'
-                           | 'TryCast' '(' CCExpression ',' TypeName ')'
-                           | 'CType' '(' CCExpression ',' TypeName ')'
-                           | CastTarget '(' CCExpression ')';
-CCOperatorExpression:      CCUnaryOperator CCExpression | CCExpression CCBinaryOperator CCExpression;
-CCUnaryOperator:           '+' | '-' | 'Not';
-CCBinaryOperator:          '+' | '-' | '*' | '/' | '\\' | 'Mod' | '^' | '=' | '<' '>' | '<' | '>'
-                           | '<' '=' | '>' '=' | '&' | 'And' | 'Or' | 'Xor' | 'AndAlso' | 'OrElse'
-                           | '<' '<' | '>' '>';
-CCConditionalExpression:   'If' '(' CCExpression ',' CCExpression ',' CCExpression ')'
-                           | 'If' '(' CCExpression ',' CCExpression ')';
+CCStart
+    : CCStatement*
+    ;
+
+CCStatement
+    : CCConstantDeclaration
+    | CCIfGroup
+    | LogicalLine
+    ;
+
+CCExpression
+    : LiteralExpression
+    | CCParenthesizedExpression
+    | CCSimpleNameExpression
+    | CCCastExpression
+    | CCOperatorExpression
+    | CCConditionalExpression
+    ;
+
+CCParenthesizedExpression
+    : '(' CCExpression ')'
+    ;
+
+CCSimpleNameExpression
+    : Identifier
+    ;
+
+CCCastExpression
+    : 'DirectCast' '(' CCExpression ',' TypeName ')'
+    | 'TryCast' '(' CCExpression ',' TypeName ')'
+    | 'CType' '(' CCExpression ',' TypeName ')'
+    | CastTarget '(' CCExpression ')'
+    ;
+
+CCOperatorExpression
+    : CCUnaryOperator CCExpression
+    | CCExpression CCBinaryOperator CCExpression
+    ;
+
+CCUnaryOperator
+    : '+' | '-' | 'Not'
+    ;
+
+CCBinaryOperator
+    : '+' | '-' | '*' | '/' | '\\' | 'Mod' | '^' | '='
+    | '<' '>' | '<' | '>' | '<' '=' | '>' '=' | '&'
+    | 'And' | 'Or' | 'Xor' | 'AndAlso' | 'OrElse'
+    | '<' '<' | '>' '>'
+    ;
+
+CCConditionalExpression
+    : 'If' '(' CCExpression ',' CCExpression ',' CCExpression ')'
+    | 'If' '(' CCExpression ',' CCExpression ')'
+    ;
 ```
 
 ### Conditional Constant Directives
@@ -102,7 +139,9 @@ End Module
 The compilation environment may also define conditional constants in a conditional compilation declaration space.
 
 ```antlr
-CCConstantDeclaration:  '#' 'Const' Identifier '=' CCExpression LineTerminator;
+CCConstantDeclaration
+    : '#' 'Const' Identifier '=' CCExpression LineTerminator
+    ;
 ```
 
 ### Conditional Compilation Directives
@@ -132,10 +171,18 @@ End Class
 ```
 
 ```antlr
-CCIfGroup:      '#' 'If' CCExpression 'Then'? LineTerminator CCStatement*
-                CCElseIfGroup* CCElseGroup? '#' 'End' 'If' LineTerminator;
-CCElseIfGroup:  '#' ElseIf CCExpression 'Then'? LineTerminator CCStatement*;
-CCElseGroup:    '#' 'Else' LineTerminator CCStatement*;
+CCIfGroup
+    : '#' 'If' CCExpression 'Then'? LineTerminator CCStatement*
+    CCElseIfGroup* CCElseGroup? '#' 'End' 'If' LineTerminator
+    ;
+
+CCElseIfGroup
+    : '#' ElseIf CCExpression 'Then'? LineTerminator CCStatement*
+    ;
+
+CCElseGroup
+    : '#' 'Else' LineTerminator CCStatement*
+    ;
 ```
 
 ## External Source Directives
@@ -155,10 +202,19 @@ End Module
 ```
 
 ```antlr
-ESDStart:                 ExternalSourceStatement*;
-ExternalSourceStatement:  ExternalSourceGroup | LogicalLine;
-ExternalSourceGroup:      '#' 'ExternalSource' '(' StringLiteral ',' IntLiteral ')' LineTerminator
-                          LogicalLine* '#' 'End' 'ExternalSource' LineTerminator;
+ESDStart
+    : ExternalSourceStatement*
+    ;
+
+ExternalSourceStatement
+    : ExternalSourceGroup
+    | LogicalLine
+    ;
+
+ExternalSourceGroup
+    : '#' 'ExternalSource' '(' StringLiteral ',' IntLiteral ')' LineTerminator
+      LogicalLine* '#' 'End' 'ExternalSource' LineTerminator
+    ;
 ```
 
 ## Region Directives
@@ -183,11 +239,20 @@ End Class
 ```
 
 ```antlr
-RegionStart:      RegionStatement*;
-RegionStatement:  RegionGroup | LogicalLine;
-RegionGroup:      '#' 'Region' StringLiteral LineTerminator
-                  RegionStatement*
-                  '#' 'End' 'Region' LineTerminator;
+RegionStart
+    : RegionStatement*
+    ;
+
+RegionStatement
+    : RegionGroup
+    | LogicalLine
+    ;
+
+RegionGroup
+    : '#' 'Region' StringLiteral LineTerminator
+      RegionStatement*
+      '#' 'End' 'Region' LineTerminator
+    ;
 ```
 
 ## External Checksum Directives
@@ -217,7 +282,13 @@ End Module
 ```
 
 ```antlr
-ExternalChecksumStart:      ExternalChecksumStatement*;
-ExternalChecksumStatement:  '#' 'ExternalChecksum'
-                            '(' StringLiteral ',' StringLiteral ',' StringLiteral ')' LineTerminator;
+ExternalChecksumStart
+    : ExternalChecksumStatement*
+    ;
+
+ExternalChecksumStatement
+    : '#' 'ExternalChecksum' '('
+      StringLiteral ',' StringLiteral ',' StringLiteral
+      ')' LineTerminator
+    ;
 ```

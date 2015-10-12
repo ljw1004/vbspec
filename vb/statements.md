@@ -2,25 +2,25 @@
 
 Statements represent executable code.
 
-<pre>Statement  ::=
-    LabelDeclarationStatement  |
-    LocalDeclarationStatement  |
-    WithStatement  |
-    SyncLockStatement  |
-    EventStatement  |
-    AssignmentStatement  |
-    InvocationStatement  |
-    ConditionalStatement  |
-    LoopStatement  |
-    ErrorHandlingStatement  |
-    BranchStatement  |
-    ArrayHandlingStatement  |
-    UsingStatement  |
-    AwaitStatement  |
-    YieldStatement</pre>
+```antlr
+Statement
+    : LabelDeclarationStatement
+    | LocalDeclarationStatement
+    | WithStatement
+    | SyncLockStatement
+    | EventStatement
+    | AssignmentStatement
+    | InvocationStatement
+    | ConditionalStatement
+    | LoopStatement
+    | ErrorHandlingStatement
+    | BranchStatement
+    | ArrayHandlingStatement
+    | UsingStatement
+    ;
+```
 
 > __Annotation__
-
 > The Microsoft Visual Basic Compiler only allows statements which start with a keyword or an identifier. Thus, for instance, the invocation statement "`Call (Console).WriteLine`" is allowed, but the invocation statement "`(Console).WriteLine`" is not.
 
 ## Control Flow
@@ -35,7 +35,7 @@ Implicit in this ordering is the concept of a *control point*, which is the next
 
 Here is an example of a regular method
 
-```VB.net
+```vb
 Function Test() As Integer
     Console.WriteLine("hello")
     Return 1
@@ -61,7 +61,7 @@ After control flow has exited, there are no longer any live references to the me
 
 Iterator methods are used as a convenient way to generate a sequence, one which can be consumed by the `For Each` statement. Iterator methods use the `Yield` statement (Section 10.15) to provide elements of the sequence. (An iterator method with no `Yield` statements will produce an empty sequence). Here is an example of an iterator method:
 
-```VB.net
+```vb
 Iterator Function Test() As IEnumerable(Of Integer)
     Console.WriteLine("hello")
     Yield 1
@@ -91,13 +91,13 @@ When the iterator object's `Dispose` method is invoked, again the existing metho
 
 The above descriptions of behavior for invocation of `MoveNext` or `Dispose` on an iterator object only apply if all previous invocations of `MoveNext` or `Dispose` on that iterator object have already returned to their callers. If they haven't, then the behavior is undefined.
 
-When control flow exits the iterator method body normally - through reaching the `End Function` that mark its end, or through an explicit `Return` or `Exit` statement – it must have done so in the context of an invocation of `MoveNext` or `Dispose` function on an iterator object to resume the iterator method instance, and it will have been using the method instance that was created when the iterator method was first invoked. The control point of that instance is left at the `End Function` statement, and control flow resumes in the caller; and if it had been resumed by a call to `MoveNext` then the value `False` is returned to the caller.
+When control flow exits the iterator method body normally -- through reaching the `End Function` that mark its end, or through an explicit `Return` or `Exit` statement -- it must have done so in the context of an invocation of `MoveNext` or `Dispose` function on an iterator object to resume the iterator method instance, and it will have been using the method instance that was created when the iterator method was first invoked. The control point of that instance is left at the `End Function` statement, and control flow resumes in the caller; and if it had been resumed by a call to `MoveNext` then the value `False` is returned to the caller.
 
 When control flow exits the iterator method body through an unhandled exception, then the exception is propagated to the caller, which again will be either an invocation of `MoveNext` or of `Dispose`.
 
 As for the other possible return types of an iterator function,
 
-1. When an iterator method is invoked whose return type is `IEnumerable(Of T)` for some `T`, an instance is first created – specific to that invocation of the iterator method – of all parameters in the method, and they are initialized with the supplied values. The result of the invocation is an an object which implements the return type. Should this object's `GetEnumerator` method be called, it creates an instance – specific to that invocation of `GetEnumerator` – of all parameters and local variables in the method. It initializes the parameters to the values already saved, and proceeds as for the iterator method above.
+1. When an iterator method is invoked whose return type is `IEnumerable(Of T)` for some `T`, an instance is first created -- specific to that invocation of the iterator method -- of all parameters in the method, and they are initialized with the supplied values. The result of the invocation is an an object which implements the return type. Should this object's `GetEnumerator` method be called, it creates an instance -- specific to that invocation of `GetEnumerator` -- of all parameters and local variables in the method. It initializes the parameters to the values already saved, and proceeds as for the iterator method above.
 2. When an iterator method is invoked whose return type is the non-generic interface `IEnumerator`, the behavior is exactly as for `IEnumerator(Of Object)`.
 3. When an iterator method is invoked whose return type is the non-generic interface `IEnumerable`, the behavior is exactly as for `IEnumerable(Of Object)`.
 
@@ -105,7 +105,7 @@ As for the other possible return types of an iterator function,
 
 Async methods are a convenient way to do long-running work without for example blocking the UI of an application. Async is short for *Asynchronous* - it means that the caller of the async method will resume its execution promptly, but the eventual completion of the async method's instance may happen at some later time in the future. By convention async methods are named with the suffix "Async".
 
-```VB.net
+```vb
 Async Function TestAsync() As Task(Of String)
     Console.WriteLine("hello")
     Await Task.Delay(100)
@@ -133,10 +133,9 @@ __Resumption Delegate and Current Caller__
 As detailed in Section 11.25 "Await Operator", execution of an `Await` expression has the ability to suspend the method instance's control point leaving control flow to go elsewhere. Control flow can later resume at the same instance's control point through invocation of a *resumption delegate*. Note that this suspension is done without exiting the async method, and does not cause finally handlers to execute. The method instance is still referenced by both the resumption delegate and the `Task` or `Task(Of T)` result (if any), and will not be garbage collected so long as there exists a live reference to either delegate or result.
 
 > __Annotation__
-
 > It is helpful to imagine the statement "`Dim x = Await WorkAsync()`" approximately as syntactic shorthand for the following:
-
-> ```VB.net
+>
+> ```vb
 > Dim temp = WorkAsync().GetAwaiter()
 > If Not temp.IsCompleted Then
 >        temp.OnCompleted(resumptionDelegate)
@@ -148,14 +147,13 @@ As detailed in Section 11.25 "Await Operator", execution of an `Await` expressio
 
 In the following, the *current caller* of the method instance is defined as either the original caller, or the caller of the resumption delegate, whichever is more recent.
 
-When control flow exits the async method body - through reaching the `End Sub` or `End Function` that mark its end, or through an explicit `Return` or `Exit` statement, or through an unhandled exception - the instance's control point is set to the end of the method. Behavior then depends on the return type of the async method.
+When control flow exits the async method body -- through reaching the `End Sub` or `End Function` that mark its end, or through an explicit `Return` or `Exit` statement, or through an unhandled exception -- the instance's control point is set to the end of the method. Behavior then depends on the return type of the async method.
 
 1. In the case of an `Async Function` with return type `Task`:
    1. If control flow exits through an unhandled exception, then the async object's status is set to `TaskStatus.Faulted` and its `Exception.InnerException` property is set to the exception (except: certain implementation-defined exceptions such as `OperationCanceledException` change it to `TaskStatus.Canceled`). Control flow resumes in the current caller.
    2. Otherwise, the async object's status is set to `TaskStatus.Completed`. Control flow resumes in the current caller.
 
 > __Annotation__
-
 > The whole point of Task, and what makes async methods interesting, is that when a task becomes Completed then any methods that were awaiting it will presently have their resumption delegates executed, i.e. they will become unblocked.
 
 2. In the case of an `Async Function` with return type `Task(Of T)` for some `T`: the behavior is as above, except that in non-exception cases the async object's `Result` property is also set to the final value of the task return variable.
@@ -164,18 +162,17 @@ When control flow exits the async method body - through reaching the `End Sub` o
    4. Otherwise, control flow simply resumes in the current caller.
 
 > __Annotation__
-
 > There is some Microsoft-specific behavior of an `Async Sub`.
-
+>
 > If `SynchronizationContext.Current` is `Nothing` at the start of the invocation, then any unhandled exceptions from an Async Sub will be posted to the Threadpool.
-
+>
 > If `SynchronizationContext.Current` is not `Nothing` at the start of the invocation, then `OperationStarted()` is invoked on that context before the start of the method and `OperationCompleted()` after the end. Additionally, any unhandled exceptions will be posted to be rethrown on the synchronization context.
-
-> This means that in UI applications, for an`Async Sub`that is invoked on the UI thread, any exceptions it fails to handle will be reposted the UI thread.
-
+>
+> This means that in UI applications, for an `Async Sub` that is invoked on the UI thread, any exceptions it fails to handle will be reposted the UI thread.
+>
 > Mutable structures in general are considered bad practice, and they are not supported by async or iterator methods. In particular, each invocation of an async or iterator method in a structure will implicitly operate on a *copy* of that structure that is copied at its moment of invocation. Thus, for example,
-
-> ```VB.net
+>
+> ```vb
 > Structure S
 >        Dim x As Integer
 >        Async Sub Mutate()
@@ -198,7 +195,7 @@ Label declaration statements must appear at the beginning of a logical line and 
 
 Labels have their own declaration space and do not interfere with other identifiers. The following example is valid and uses the name variable `x` both as a parameter and as a label.
 
-```VB.net
+```vb
 Function F(x As Integer) As Integer
     If x >= 0 Then
         GoTo x
@@ -213,23 +210,32 @@ The scope of a label is the body of the method containing it.
 
 For the sake of readability, statement productions that involve multiple substatements are treated as a single production in this specification, even though the substatements may each be by themselves on a labeled line.
 
-<pre>Block  ::=  [  Statements+  ]</pre>
+```antlr
+Block
+    : Statements*
+    ;
 
-<pre>LabelDeclarationStatement  ::=  LabelName  <b>:</b></pre>
+LabelDeclarationStatement
+    : LabelName ':'
+    ;
 
-<pre>LabelName  ::=  Identifier  |  IntLiteral</pre>
+LabelName
+    : Identifier
+    | IntLiteral
+    ;
 
-<pre>Statements  ::=
-    [  Statement  ]  |
-    Statements  <b>:</b>  [  Statement  ]</pre>
+Statements
+    : Statement? ( ':' Statement? )*
+    ;
+```
 
 ### Local Variables and Parameters
 
-Sections 10.1.1-10.1.3 detail how and when method instances are created, and with them the copies of a method's local variables and parameters.. In addition, each time the body of a loop is entered, a new copy is made of each local variable declared inside that loop as described in Section 10.9, and the method instance now contains this copy of its local variable rather than the previous copy.
+Sections 10.1.1-10.1.3 detail how and when method instances are created, and with them the copies of a method's local variables and parameters. In addition, each time the body of a loop is entered, a new copy is made of each local variable declared inside that loop as described in Section 10.9, and the method instance now contains this copy of its local variable rather than the previous copy.
 
 All locals are initialized to their type's default value. Local variables and parameters are always publicly accessible. It is an error to refer to a local variable in a textual position that precedes its declaration, as the following example illustrates:
 
-```VB.net
+```vb
 Class A
     Private i As Integer = 0
 
@@ -252,7 +258,7 @@ Each block in a method creates a declaration space for local variables. Names ar
 
 Thus, in the following example, the `F` and `G` methods are in error because the name `i` is declared in the outer block and cannot be redeclared in the inner block. However, the `H` and `I` methods are valid because the two `i`'s are declared in separate non-nested blocks.
 
-```VB.net
+```vb
 Class A
     Sub F()
         Dim i As Integer = 0
@@ -291,7 +297,7 @@ End Class
 
 When the method is a function, a special local variable is implicitly declared in the method body's declaration space with the same name as the method representing the return value of the function. The local variable has special name resolution semantics when used in expressions. If the local variable is used in a context that expects an expression classified as a method group, such as an invocation expression, then the name resolves to the function rather than to the local variable. For example:
 
-```VB.net
+```vb
 Function F(i As Integer) As Integer
     If i = 0 Then
         F = 1        ' Sets the return value.
@@ -303,7 +309,7 @@ End Function
 
 The use of parentheses can cause ambiguous situations (such as `F(1)`, where `F` is a function whose return type is a one-dimensional array); in all ambiguous situations, the name resolves to the function rather than the local variable. For example:
 
-```VB.net
+```vb
 Function F(i As Integer) As Integer()
     If i = 0 Then
         F = new Integer(2) { 1, 2, 3 }
@@ -333,7 +339,7 @@ Otherwise, a compile-time error occurs.
 
 If no type is specified on a local declaration statement that has an array size or array type modifier, then the type of the local declaration is an array with the specified rank and the previous steps are used to determine the element type of the array. If local variable type inference is used, the type of the initializer must be an array type with the same array shape (i.e. array type modifiers) as the local declaration statement. Note that it is possible that the inferred element type may still be an array type. For example:
 
-```VB.net
+```vb
 Option Infer On
 
 Module Test
@@ -363,7 +369,7 @@ Variable initializers on local declaration statements are equivalent to assignme
 
 The following example shows the use of initializers:
 
-```VB.net
+```vb
 Module Test
     Sub F()
         Static x As Integer = 5
@@ -395,7 +401,7 @@ End Module
 
 This program prints:
 
-```VB.net
+```vb
 Static variable x = 5
 Static variable x = 6
 Static variable x = 7
@@ -406,7 +412,7 @@ Local variable y = 8
 
 Initializers on static locals are thread-safe and protected against exceptions during initialization. If an exception occurs during a static local initializer, the static local will have its default value and not be initialized. A static local initializer
 
-```VB.net
+```vb
 Module Test
     Sub F()
         Static x As Integer = 5
@@ -416,7 +422,7 @@ End Module
 
 is equivalent to
 
-```VB.net
+```vb
 Imports System.Threading
 Imports Microsoft.VisualBasic.CompilerServices
 
@@ -450,15 +456,21 @@ End Module
 
 Local variables, local constants, and static variables are scoped to the statement block in which they are declared. Static variables are special in that their names may only be used once throughout the entire method. For example, it is not valid to specify two static variable declarations with the same name even if they are in different blocks.
 
-<pre>LocalDeclarationStatement  ::=  LocalModifier  VariableDeclarators  StatementTerminator</pre>
+```antlr
+LocalDeclarationStatement
+    : LocalModifier VariableDeclarators StatementTerminator
+    ;
 
-<pre>LocalModifier  ::=  <b>Static</b>  |  <b>Dim</b>  |  <b>Const</b></pre>
+LocalModifier
+    : 'Static' | 'Dim' | 'Const'
+    ;
+```
 
 ### Implicit Local Declarations
 
 In addition to local declaration statements, local variables can also be declared implicitly through use. A simple name expression that uses a name that does not resolve to something else declares a local variable by that name. For example:
 
-```VB.net
+```vb
 Option Explicit Off
 
 Module Test
@@ -474,7 +486,7 @@ Implicit local declaration only occurs in expression contexts that can accept an
 
 Implicit locals are treated as if they are declared at the beginning of the containing method. Thus, they are always scoped to the entire method body, even if declared inside of a lambda expression. For example, the following code:
 
-```VB.net
+```vb
 Option Explicit Off 
 
 Module Test
@@ -500,7 +512,7 @@ If explicit local declaration is specified by the compilation environment or by 
 
 A `With` statement allows multiple references to an expression's members without specifying the expression multiple times. The expression must be classified as a value and is evaluated once, upon entry into the block. Within the `With` statement block, a member access expression or dictionary access expression starting with a period or an exclamation point is evaluated as if the `With` expression preceded it. For example:
 
-```VB.net
+```vb
 Structure Test
     Public x As Integer
 
@@ -524,16 +536,19 @@ End Module
 
 It is invalid to branch into a `With` statement block from outside of the block.
 
-<pre>WithStatement  ::=
-<b>With</b>  Expression  StatementTerminator
-    [  Block  ]
-<b>End</b><b>With</b>  StatementTerminator</pre>
+```antlr
+WithStatement
+    : 'With' Expression StatementTerminator
+      Block?
+      'End' 'With' StatementTerminator
+    ;
+```
 
 ## SyncLock Statement
 
 A `SyncLock` statement allows statements to be synchronized on an expression, which ensures that multiple threads of execution do not execute the same statements at the same time. The expression must be classified as a value and is evaluated once, upon entry to the block. When entering the `SyncLock` block, the `Shared` method `System.Threading.Monitor.Enter` is called on the specified expression, which blocks until the thread of execution has an exclusive lock on the object returned by the expression. The type of the expression in a `SyncLock` statement must be a reference type. For example:
 
-```VB.net
+```vb
 Class Test
     Private count As Integer = 0
 
@@ -557,7 +572,7 @@ The example above synchronizes on the specific instance of the class `Test` to e
 
 The `SyncLock` block is implicitly contained by a `Try` statement whose `Finally` block calls the `Shared` method `System.Threading.Monitor.Exit` on the expression. This ensures the lock is freed even when an exception is thrown. As a result, it is invalid to branch into a `SyncLock` block from outside of the block, and a `SyncLock` block is treated as a single statement for the purposes of `Resume` and `Resume Next`. The above example is equivalent to the following code:
 
-```VB.net
+```vb
 Class Test
     Private count As Integer = 0
 
@@ -585,19 +600,25 @@ Class Test
 End Class
 ```
 
-<pre>SyncLockStatement  ::=
-<b>SyncLock</b>  Expression  StatementTerminator
-    [  Block  ]
-<b>End</b><b>SyncLock</b>  StatementTerminator</pre>
+```antlr
+SyncLockStatement
+    : 'SyncLock' Expression StatementTerminator
+      Block?
+      'End' 'SyncLock' StatementTerminator
+    ;
+```
 
 ## Event Statements
 
 The `RaiseEvent`, `AddHandler`, and `RemoveHandler` statements raise events and handle events dynamically.
 
-<pre>EventStatement  ::=
-    RaiseEventStatement  |
-    AddHandlerStatement  |
-    RemoveHandlerStatement</pre>
+```antlr
+EventStatement
+    : RaiseEventStatement
+    | AddHandlerStatement
+    | RemoveHandlerStatement
+    ;
+```
 
 ### RaiseEvent Statement
 
@@ -605,7 +626,7 @@ A `RaiseEvent` statement notifies event handlers that a particular event has occ
 
 The `RaiseEvent` statement is processed as a call to the `Invoke` method of the event's delegate, using the supplied parameters, if any. If the delegate's value is `Nothing`, no exception is thrown. If there are no arguments, the parentheses may be omitted. For example:
 
-```VB.net
+```vb
 Class Raiser
     Public Event E1(Count As Integer)
 
@@ -635,7 +656,7 @@ End Module
 
 The class `Raiser` above is equivalent to:
 
-```VB.net
+```vb
 Class Raiser
     Public Event E1(Count As Integer)
 
@@ -654,8 +675,12 @@ Class Raiser
 End Class
 ```
 
-<pre>RaiseEventStatement  ::=  <b>RaiseEvent</b>  IdentifierOrKeyword  [  OpenParenthesis
-    [  ArgumentList  ]  CloseParenthesis  ]     StatementTerminator</pre>
+```antlr
+RaiseEventStatement
+    : 'RaiseEvent' IdentifierOrKeyword
+      ( OpenParenthesis ArgumentList? CloseParenthesis )? StatementTerminator
+    ;
+```
 
 ### AddHandler and RemoveHandler Statements
 
@@ -663,7 +688,7 @@ Although most event handlers are automatically hooked up through `WithEvents` va
 
 Each statement takes two arguments: the first argument must be an expression that is classified as an event access and the second argument must be an expression that is classified as a value. The second argument's type must be the delegate type associated with the event access. For example:
 
-```VB.net
+```vb
 Public Class Form1
     Public Sub New()
         ' Add Button1_Click as an event handler for Button1's Click event.
@@ -684,7 +709,7 @@ End Class
 
 Given an event `E,` the statement calls the relevant `add_E` or `remove_E` method on the instance to add or remove the delegate as a handler for the event. Thus, the above code is equivalent to:
 
-```VB.net
+```vb
 Public Class Form1
     Public Sub New()
         Button1.add_Click(AddressOf Button1_Click)
@@ -702,18 +727,27 @@ Public Class Form1
 End Class
 ```
 
-<pre>AddHandlerStatement  ::=  <b>AddHandler</b>  Expression  Comma  Expression  StatementTerminator</pre>
+```antlr
+AddHandlerStatement
+    : 'AddHandler' Expression Comma Expression StatementTerminator
+    ;
 
-<pre>RemoveHandlerStatement  ::=  <b>RemoveHandler</b>  Expression  Comma  Expression  StatementTerminator</pre>
+RemoveHandlerStatement
+    : 'RemoveHandler' Expression Comma Expression StatementTerminator
+    ;
+```
 
 ## Assignment Statements
 
 An assignment statement assigns the value of an expression to a variable. There are several types of assignment.
 
-<pre>AssignmentStatement  ::=
-    RegularAssignmentStatement  |
-    CompoundAssignmentStatement  |
-    MidAssignmentStatement</pre>
+```antlr
+AssignmentStatement
+    : RegularAssignmentStatement
+    | CompoundAssignmentStatement
+    | MidAssignmentStatement
+    ;
+```
 
 ### Regular Assignment Statements
 
@@ -721,7 +755,7 @@ A simple assignment statement stores the result of an expression in a variable. 
 
 If the variable being assigned into is an array element of a reference type, a run-time check will be performed to ensure that the expression is compatible with the array-element type. In the following example, the last assignment causes a `System.ArrayTypeMismatchException` to be thrown, because an instance of `ArrayList` cannot be stored in an element of a `String` array.
 
-```VB.net
+```vb
 Dim sa(10) As String
 Dim oa As Object() = sa
 oa(0) = Nothing         ' This is allowed.
@@ -731,7 +765,7 @@ oa(2) = New ArrayList() ' System.ArrayTypeMismatchException is thrown.
 
 If the expression on the left side of the assignment operator is classified as a variable, then the assignment statement stores the value in the variable. If the expression is classified as a property access, then the assignment statement turns the property access into an invocation of the `Set` accessor of the property with the value substituted for the value parameter. For example:
 
-```VB.net
+```vb
 Module Test
     Private PValue As Integer
 
@@ -755,7 +789,7 @@ End Module
 
 If the target of the variable or property access is typed as a value type but not classified as a variable, a compile-time error occurs. For example:
 
-```VB.net
+```vb
 Structure S
     Public F As Integer
 End Structure
@@ -788,25 +822,25 @@ Module Test
 End Module
 ```
 
-> __Note__
+Note that the semantics of the assignment depend on the type of the variable or property to which it is being assigned. If the variable to which it is being assigned is a value type, the assignment copies the value of the expression into the variable. If the variable to which it is being assigned is a reference type, the assignment copies the reference, not the value itself, into the variable. If the type of the variable is `Object`, the assignment semantics are determined by whether the value's type is a value type or a reference type at run time.
 
-> The semantics of the assignment depend on the type of the variable or property to which it is being assigned. If the variable to which it is being assigned is a value type, the assignment copies the value of the expression into the variable. If the variable to which it is being assigned is a reference type, the assignment copies the reference, not the value itself, into the variable. If the type of the variable is `Object`, the assignment semantics are determined by whether the value's type is a value type or a reference type at run time.
-
-<br/>
 
 > __Annotation__
-
 > For intrinsic types such as `Integer` and `Date`, reference and value assignment semantics are the same because the types are immutable. As a result, the language is free to use reference assignment on boxed intrinsic types as an optimization. From a value perspective, the result is the same.
 
 Because the equals character (`=`) is used both for assignment and for equality, there is an ambiguity between a simple assignment and an invocation statement in situations such as `x = y.ToString()`. In all such cases, the assignment statement takes precedence over the equality operator. This means that the example expression is interpreted as `x = (y.ToString())` rather than `(x = y).ToString()`.
 
-<pre>RegularAssignmentStatement  ::=  Expression  Equals  Expression  StatementTerminator</pre>
+```antlr
+RegularAssignmentStatement
+    : Expression Equals Expression StatementTerminator
+    ;
+```
 
 ### Compound Assignment Statements
 
 A *compound assignment statement* takes the form *V OP= E* (where *OP* is a valid binary operator). The expression on the left side of the assignment operator must be classified as a variable or property access, while the expression on the right side of the assignment operator must be classified as a value. The compound assignment statement is equivalent to the statement *V = V OP E* with the difference that the variable on the left side of the compound assignment operator is only evaluated once. The following example demonstrates this difference:
 
-```VB.net
+```vb
 Module Test
     Function GetIndex() As Integer
         Console.WriteLine("Getting index")
@@ -827,7 +861,7 @@ End Module
 
 The expression `a(GetIndex())` is evaluated twice for simple assignment but only once for compound assignment, so the code prints:
 
-```VB.net
+```vb
 Simple assignment
 Getting index
 Getting index
@@ -835,10 +869,16 @@ Compound assignment
 Getting index
 ```
 
-<pre>CompoundAssignmentStatement  ::=  Expression  CompoundBinaryOperator  [  LineTerminator  ]
-        Expression  StatementTerminator</pre>
+```antlr
+CompoundAssignmentStatement
+    : Expression CompoundBinaryOperator LineTerminator? Expression StatementTerminator
+    ;
 
-<pre>CompoundBinaryOperator  ::=  <b>^</b><b>=</b>  |  <b>*</b><b>=</b>  |  <b>/</b><b>=</b>  |  <b>\</b><b>=</b>  |  <b>+</b><b>=</b>  |  <b>-</b><b>=</b>  |  <b>&</b><b>=</b>  |  <b><</b><b><</b><b>=</b>  |  <b>></b><b>></b><b>=</b></pre>
+CompoundBinaryOperator
+    : '^' '=' | '*' '=' | '/' '=' | '\\' '=' | '+' '=' | '-' '='
+    | '&' '=' | '<' '<' '=' | '>' '>' '='
+    ;
+```
 
 ### Mid Assignment Statement
 
@@ -846,7 +886,7 @@ A `Mid` assignment statement assigns a string into another string. The left side
 
 The following example displays `ab123fg`:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim s1 As String = "abcdefg"
@@ -859,12 +899,14 @@ End Module
 ```
 
 > __Note__
-
 > `Mid` is not a reserved word.
 
-<pre>MidAssignmentStatement  ::=
-<b>Mid</b>  [  <b>$</b>  ]  OpenParenthesis  Expression  Comma  Expression  [  Comma  Expression  ]  CloseParenthesis
-        Equals  Expression  StatementTerminator</pre>
+```antlr
+MidAssignmentStatement
+    : 'Mid' '$'? OpenParenthesis Expression Comma Expression
+      ( Comma Expression )? CloseParenthesis Equals Expression StatementTerminator
+    ;
+```
 
 ## Invocation Statements
 
@@ -874,7 +916,7 @@ If the `Call` keyword is omitted, then the invocation expression must start with
 
 There is another difference between the invocation statements and invocation expressions: if an invocation statement includes an argument list, then this is always taken as the argument list of the invocation. The following example illustrates the difference:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Call {Function() 15}(0)
@@ -902,13 +944,22 @@ Module Test
 End Module
 ```
 
-<pre>InvocationStatement  ::=  [  <b>Call</b>  ]  InvocationExpression  StatementTerminator</pre>
+```antlr
+InvocationStatement
+    : 'Call'? InvocationExpression StatementTerminator
+    ;
+```
 
 ## Conditional Statements
 
 Conditional statements allow conditional execution of statements based on expressions evaluated at run time.
 
-<pre>ConditionalStatement  ::=  IfStatement  |  SelectStatement</pre>
+```antlr
+ConditionalStatement
+    : IfStatement
+    | SelectStatement
+    ;
+```
 
 ### If...Then...Else Statements
 
@@ -916,7 +967,7 @@ An `If...Then...Else` statement is the basic conditional statement. Each express
 
 The line version of the `If` statement has a single set of statements to be executed if the `If` expression is `True` and an optional set of statements to be executed if the expression is `False`. For example:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim a As Integer = 10
@@ -935,29 +986,38 @@ Module Test
 End Module
 ```
 
-<pre>IfStatement  ::=  BlockIfStatement  |  LineIfThenStatement</pre>
+```antlr
+IfStatement
+    : BlockIfStatement
+    | LineIfThenStatement
+    ;
 
-<pre>BlockIfStatement  ::=
-<b>If</b>  BooleanExpression  [  <b>Then</b>  ]  StatementTerminator
-    [  Block  ]
-    [  ElseIfStatement+  ]
-    [  ElseStatement  ]
-<b>End</b><b>If</b>  StatementTerminator</pre>
+BlockIfStatement
+    : 'If' BooleanExpression 'Then'? StatementTerminator
+      Block?
+      ElseIfStatement*
+      ElseStatement?
+      'End' 'If' StatementTerminator
+    ;
 
-<pre>ElseIfStatement  ::=
-    ElseIf  BooleanExpression  [  <b>Then</b>  ]  StatementTerminator
-    [  Block  ]</pre>
+ElseIfStatement
+    : ElseIf BooleanExpression 'Then'? StatementTerminator
+      Block?
+    ;
 
-<pre>ElseStatement  ::=
-<b>Else</b>  StatementTerminator
-    [  Block  ]</pre>
+ElseStatement
+    : 'Else' StatementTerminator
+      Block?
+    ;
 
-<pre>LineIfThenStatement  ::=
-<b>If</b>  BooleanExpression  <b>Then</b>  Statements  [  <b>Else</b>  Statements  ]  StatementTerminator</pre>
+LineIfThenStatement
+    : 'If' BooleanExpression 'Then' Statements ( 'Else' Statements )? StatementTerminator
+    ;
+```
 
 The line version of the If statement binds less tightly than ":", and its `Else` binds to the lexically nearest preceding `If` that is allowed by the syntax. For example, the following two versions are equivalent:
 
-```VB.net
+```vb
 If True Then _
 If True Then Console.WriteLine("a") Else Console.WriteLine("b") _
 Else Console.WriteLine("c") : Console.WriteLine("d")
@@ -974,7 +1034,7 @@ End If
 
 All statements other than label declaration statements are allowed inside a line `If` statement, including block statements. However, they may not use LineTerminators as StatementTerminators except inside multi-line lambda expressions. For example:
 
-```VB.net
+```vb
 ' Allowed, since it uses : instead of LineTerminator to separate statements
 If b Then With New String("a"(0),5) : Console.WriteLine(.Length) : End With
 
@@ -995,7 +1055,7 @@ A `Select Case` statement executes statements based on the value of an expressio
 
 Execution of a `Case` block is not permitted to "fall through" to the next switch section. This prevents a common class of bugs that occur in other languages when a `Case` terminating statement is accidentally omitted. The following example illustrates this behavior:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim x As Integer = 10
@@ -1016,7 +1076,7 @@ End Module
 
 The code prints:
 
-```VB.net
+```vb
 x = 10
 ```
 
@@ -1026,29 +1086,37 @@ A `Case` clause may take two forms. One form is an optional `Is` keyword, a comp
 
 The other form is an expression optionally followed by the keyword `To` and a second expression. Both expressions are converted to the type of the `Select` expression; if either expression is not implicitly convertible to the type of the `Select` expression, a compile-time error occurs. If the `Select` expression is *E,* the first `Case` expression is *E1*, and the second `Case` expression is *E2*, the `Case` is evaluated either as *E = E1* (if no *E2* is specified) or *(E >= E1) And (E <= E2)*. The operators must be valid for the types of the two expressions; otherwise a compile-time error occurs.
 
-<pre>SelectStatement  ::=
-<b>Select</b>  [  <b>Case</b>  ]  Expression  StatementTerminator
-    [  CaseStatement+  ]
-    [  CaseElseStatement  ]
-<b>End</b><b>Select</b>  StatementTerminator</pre>
+```antlr
+SelectStatement
+    : 'Select' 'Case'? Expression StatementTerminator
+      CaseStatement*
+      CaseElseStatement?
+      'End' 'Select' StatementTerminator
+    ;
 
-<pre>CaseStatement  ::=
-<b>Case</b>  CaseClauses  StatementTerminator
-    [  Block  ]</pre>
+CaseStatement
+    : 'Case' CaseClauses StatementTerminator
+      Block?
+    ;
 
-<pre>CaseClauses  ::=
-    CaseClause  |
-    CaseClauses  Comma  CaseClause</pre>
+CaseClauses
+    : CaseClause ( Comma CaseClause )*
+    ;
 
-<pre>CaseClause  ::=
-    [  <b>Is</b>  [  LineTerminator  ]  ]  ComparisonOperator  [ LineTerminator ] Expression  |
-    Expression  [  <b>To</b>  Expression  ]</pre>
+CaseClause
+    : ( 'Is' LineTerminator? )? ComparisonOperator LineTerminator? Expression
+    | Expression ( 'To' Expression )?
+    ;
 
-<pre>ComparisonOperator  ::=  <b>=</b>  |  <b><</b><b>></b>  |  <b><</b>  |  <b>></b>  |  <b>></b><b>=</b>  |  <b><</b><b>=</b></pre>
+ComparisonOperator
+    : '=' | '<' '>' | '<' | '>' | '>' '=' | '<' '='
+    ;
 
-<pre>CaseElseStatement  ::=
-<b>Case</b><b>Else</b>  StatementTerminator
-    [  Block  ]</pre>
+CaseElseStatement
+    : 'Case' 'Else' StatementTerminator
+      Block?
+    ;
+```
 
 ## Loop Statements
 
@@ -1056,7 +1124,7 @@ Loop statements allow repeated execution of the statements in their body.
 
 Each time a loop body is entered, a fresh copy is made of all local variables declared in that body, initialized to the previous values of the variables. Any reference to a variable within the loop body will use the most recently made copy. This code shows an example:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim lambdas As New List(Of Action)
@@ -1077,7 +1145,7 @@ End Module
 
 The code produces the output:
 
-```VB.net
+```vb
 31    32    33
 ```
 
@@ -1085,17 +1153,20 @@ When the loop body is executed, it uses whichever copy of the variable is curren
 
 Note that if there are no lambdas or LINQ expressions, then it's impossible to know that a fresh copy is made on loop entry. Indeed, compiler optimizations will avoid making copies in this case. Note too that it's illegal to `GoTo` into a loop that contains lambdas or LINQ expressions.
 
-<pre>LoopStatement  ::=
-    WhileStatement  |
-    DoLoopStatement  |
-    ForStatement  |
-    ForEachStatement</pre>
+```antlr
+LoopStatement
+    : WhileStatement
+    | DoLoopStatement
+    | ForStatement
+    | ForEachStatement
+    ;
+```
 
 ### While...End While and Do...Loop Statements
 
 A `While` or `Do` loop statement loops based on a Boolean expression. A `While` loop statement loops as long as the Boolean expression evaluates to true; a `Do` loop statement may contain a more complex condition. An expression may be placed after the `Do` keyword or after the `Loop` keyword, but not after both. The Boolean expression is evaluated as per Section 11.19. (Note: this does not require the expression to have Boolean type). It is also valid to specify no expression at all; in that case, the loop will never exit. If the expression is placed after `Do`, it will be evaluated before the loop block is executed on each iteration. If the expression is placed after `Loop`, it will be evaluated after the loop block has executed on each iteration. Placing the expression after `Loop` will therefore generate one more loop than placement after `Do`. The following example demonstrates this behavior:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim x As Integer
@@ -1114,34 +1185,43 @@ End Module
 
 The code produces the output:
 
-```VB.net
+```vb
 Second Loop
 ```
 
 In the case of the first loop, the condition is evaluated before the loop executes. In the case of the second loop, the condition is executed after the loop executes. The conditional expression must be prefixed with either a `While` keyword or an `Until` keyword. The former breaks the loop if the condition evaluates to false, the latter when the condition evaluates to true.
 
 > __Note__
-
 > `Until` is not a reserved word.
 
-<pre>WhileStatement  ::=
-<b>While</b>  BooleanExpression  StatementTerminator
-    [  Block  ]
-<b>End</b><b>While</b>  StatementTerminator</pre>
+```antlr
+WhileStatement
+    : 'While' BooleanExpression StatementTerminator
+      Block?
+      'End' 'While' StatementTerminator
+    ;
 
-<pre>DoLoopStatement  ::=  DoTopLoopStatement  |  DoBottomLoopStatement</pre>
+DoLoopStatement
+    : DoTopLoopStatement
+    | DoBottomLoopStatement
+    ;
 
-<pre>DoTopLoopStatement  ::=
-<b>Do</b>  [  WhileOrUntil  BooleanExpression  ]  StatementTerminator
-    [  Block  ]
-<b>Loop</b>  StatementTerminator</pre>
+DoTopLoopStatement
+    : 'Do' ( WhileOrUntil BooleanExpression )? StatementTerminator
+      Block?
+      'Loop' StatementTerminator
+    ;
 
-<pre>DoBottomLoopStatement  ::=
-<b>Do</b>  StatementTerminator
-    [  Block  ]
-    Loop  WhileOrUntil  BooleanExpression  StatementTerminator</pre>
+DoBottomLoopStatement
+    : 'Do' StatementTerminator
+      Block?
+      'Loop' WhileOrUntil BooleanExpression StatementTerminator
+    ;
 
-<pre>WhileOrUntil  ::=  <b>While</b>  |  <b>Until</b></pre>
+WhileOrUntil
+    : 'While' | 'Until'
+    ;
+```
 
 ### For...Next Statements
 
@@ -1162,7 +1242,7 @@ A loop control variable cannot be used by another enclosing `For...Next` stateme
 3. `Object`
 4. A type `T` that has the following operators, where `B` is a type that can be used in a Boolean expression:
 
-```VB.net
+```vb
 Public Shared Operator >= (op1 As T, op2 As T) As B
 Public Shared Operator <= (op1 As T, op2 As T) As B
 Public Shared Operator - (op1 As T, op2 As T) As T
@@ -1177,24 +1257,29 @@ A `For` statement must be closed by a matching `Next` statement. A `Next` statem
 
 At the beginning of the loop, the three expressions are evaluated in textual order and the lower bound expression is assigned to the loop control variable. If the step value is omitted, it is implicitly the literal `1`, converted to the type of the loop control variable. The three expressions are only ever evaluated at the beginning of the loop.
 
-At the beginning of each loop, the control variable is compared to see if it is greater than the end point if the step expression is positive, or less than the end point if the step expression is negative. If it is, the `For` loop terminates; otherwise the loop block executes. If the loop control variable is not a primitive type, the comparison operator is determined by whether the expression `step >= step – step` is true or false. At the `Next` statement, the step value is added to the control variable and execution returns to the top of the loop.
+At the beginning of each loop, the control variable is compared to see if it is greater than the end point if the step expression is positive, or less than the end point if the step expression is negative. If it is, the `For` loop terminates; otherwise the loop block executes. If the loop control variable is not a primitive type, the comparison operator is determined by whether the expression `step >= step -- step` is true or false. At the `Next` statement, the step value is added to the control variable and execution returns to the top of the loop.
 
 Note that a new copy of the loop control variable is *not* created on each iteration of the loop block. In this respect, the `For` statement differs from `For Each` (Section 10.9.3).
 
 It is not valid to branch into a `For` loop from outside the loop.
 
-<pre>ForStatement  ::=
-<b>For</b>  LoopControlVariable  Equals  Expression  <b>To</b>  Expression  [  <b>Step</b>  Expression  ]  StatementTerminator
-    [  Block  ]
-    [  <b>Next</b>  [  NextExpressionList  ]  StatementTerminator  ]</pre>
+```antlr
+ForStatement
+    : 'For' LoopControlVariable Equals Expression 'To' Expression
+      ( 'Step' Expression )? StatementTerminator
+      Block?
+      ( 'Next' NextExpressionList? StatementTerminator )?
+    ;
 
-<pre>LoopControlVariable  ::=
-    Identifier  [  IdentifierModifiers  <b>As</b>  TypeName  ]  |
-    Expression</pre>
+LoopControlVariable
+    : Identifier ( IdentifierModifiers 'As' TypeName )?
+    | Expression
+    ;
 
-<pre>NextExpressionList  ::=
-    Expression  |
-    NextExpressionList  Comma  Expression</pre>
+NextExpressionList
+    : Expression ( Comma Expression )*
+    ;
+```
 
 ### For Each...Next Statements
 
@@ -1215,7 +1300,7 @@ A type `C` is said to be a *collection type* if:
 
 Following is an example of a class that can be enumerated:
 
-```VB.net
+```vb
 Public Class IntegerCollection
     Private integers(10) As Integer
 
@@ -1261,7 +1346,6 @@ End Class
 Before the loop begins, the enumerator expression is evaluated. If the type of the expression does not satisfy the design pattern, then the expression is cast to `System.Collections.IEnumerable` or `System.Collections.Generic.IEnumerable(Of T)`. If the expression type implements the generic interface, the generic interface is preferred at compile-time but the non-generic interface is preferred at run-time. If the expression type implements the generic interface multiple times, the statement is considered ambiguous and a compile-time error occurs.
 
 > __Annotation__
-
 > The non-generic interface is preferred in the late bound case, because picking the generic interface would mean that all the calls to the interface methods would involve type parameters. Since it is not possible to know the matching type arguments at run-time, all such calls would have to be made using late-bound calls. This would be slower than calling the non-generic interface because the non-generic interface could be called using compile-time calls.
 
 `GetEnumerator` is called on the resulting value and the return value of the function is stored in a temporary. Then at the beginning of each iteration, `MoveNext` is called on the temporary. If it returns `False`, the loop terminates. Otherwise, each iteration of the loop is executed as follows:
@@ -1271,11 +1355,9 @@ Before the loop begins, the enumerator expression is evaluated. If the type of t
 3. The loop block executes.
 
 > __Annotation__
-
 > There is a slight change in behavior between version 10.0 and 11.0 of the language. Prior to 11.0, a fresh iteration variable was *not* created for each iteration of the loop. This difference is observable only if the iteration variable is captured by a lambda or a LINQ expression which is then invoked after the loop.
-
-> ```VB.net
-
+>
+> ```vb
 > Dim lambdas As New List(Of Action)
 > For Each x In {1,2,3}
 >    lambdas.Add(Sub() Console.WriteLine(x)
@@ -1284,18 +1366,18 @@ Before the loop begins, the enumerator expression is evaluated. If the type of t
 > lambdas(1).Invoke()
 > lambdas(2).Invoke()
 > ```
-
+>
 > Up to Visual Basic 10.0, this produced a warning at compile-time and printed "3" three times. That was because there was only a single variable "x" shared by all iterations of the loop, and all three lambdas captured the same "x", and by the time the lambdas were executed it then held the number 3.
-
+>
 > As of Visual Basic 11.0, it prints "1, 2, 3". That is because each lambda captures a different variable "x".
-
+>
 > The current element of the iteration is converted to the type of the loop control variable even if the conversion is explicit because there is no convenient place to introduce a conversion operator in the statement. This became particularly troublesome when working with the now-obsolete type `System.Collections.ArrayList`, because its element type is `Object`. This would have required casts in a great many loops, something we felt was not ideal.
-
+>
 > Ironically, generics enabled the creation of a strongly-typed collection, `System.Collections.Generic.List(Of T)`, which might have made us rethink this design point, but for compatibility's sake, this cannot be changed now.
 
 When the `Next` statement is reached, execution returns to the top of the loop. If a variable is specified after the `Next` keyword, it must be the same as the first variable after the `For Each`. For example, consider the following code:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim i As Integer
@@ -1310,7 +1392,7 @@ End Module
 
 It is equivalent to the following code:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim i As Integer
@@ -1331,12 +1413,11 @@ End Module
 If the type `E` of the enumerator implements `System.IDisposable`, then the enumerator is disposed upon exiting the loop by calling the `Dispose` method. This ensures that resources held by the enumerator are released. If the method containing the `For Each` statement does not use unstructured error handling, then the `For Each` statement is wrapped in a `Try` statement with the `Dispose` method called in the `Finally` to ensure cleanup.
 
 > __Note__
-
 > The `System.Array` type is a collection type, and since all array types derive from `System.Array`, any array type expression is permitted in a `For Each` statement. For single-dimensional arrays, the `For Each` statement enumerates the array elements in increasing index order, starting with index 0 and ending with index Length - 1. For multidimensional arrays, the indices of the rightmost dimension are increased first.
 
 For example, the following code prints `1 2 3 4`:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim x(,) As Integer = { { 1, 2 }, { 3, 4 } }
@@ -1351,18 +1432,24 @@ End Module
 
 It is not valid to branch into a `For Each` statement block from outside the block.
 
-<pre>ForEachStatement  ::=
-<b>For</b><b>Each</b>  LoopControlVariable  <b>In</b>  [  LineTerminator  ]  Expression  StatementTerminator
-    [  Block  ]
-    [  <b>Next</b>  [  NextExpressionList  ]  StatementTerminator  ]</pre>
+```antlr
+ForEachStatement
+    : 'For' 'Each' LoopControlVariable 'In' LineTerminator? Expression StatementTerminator
+      Block?
+      ( 'Next' NextExpressionList? StatementTerminator )?
+    ;
+```
 
 ## Exception-Handling Statements
 
 Visual Basic supports structured exception handling and unstructured exception handling. Only one style of exception handling may be used in a method, but the `Error` statement may be used in structured exception handling. If a method uses both styles of exception handling, a compile-time error results.
 
-<pre>ErrorHandlingStatement  ::=
-    StructuredErrorStatement  |
-    UnstructuredErrorStatement</pre>
+```antlr
+ErrorHandlingStatement
+    : StructuredErrorStatement
+    | UnstructuredErrorStatement
+    ;
+```
 
 ### Structured Exception-Handling Statements
 
@@ -1370,7 +1457,7 @@ Structured exception handling is a method of handling errors by declaring explic
 
 For example:
 
-```VB.net
+```vb
 Module Test
     Sub ThrowException()
         Throw New Exception()
@@ -1390,16 +1477,20 @@ End Module
 
 A `Try` statement is made up of three kinds of blocks: try blocks, catch blocks, and finally blocks. A *try block* is a statement block that contains the statements to be executed. A *catch block* is a statement block that handles an exception. A *finally block* is a statement block that contains statements to be run when the `Try` statement is exited, regardless of whether an exception has occurred and been handled. A `Try` statement, which can only contain one try block and one finally block, must contain at least one catch block or finally block. It is invalid to explicitly transfer execution into a try block except from within a catch block in the same statement.
 
-<pre>StructuredErrorStatement  ::=
-    ThrowStatement  |
-    TryStatement</pre>
+```antlr
+StructuredErrorStatement
+    : ThrowStatement
+    | TryStatement
+    ;
 
-<pre>TryStatement  ::=
-<b>Try</b>  StatementTerminator
-    [  Block  ]
-    [  CatchStatement+  ]
-    [  FinallyStatement  ]
-<b>End</b><b>Try</b>  StatementTerminator</pre>
+TryStatement
+    : 'Try' StatementTerminator
+      Block?
+      CatchStatement*
+      FinallyStatement?
+      'End' 'Try' StatementTerminator
+    ;
+```
 
 #### Finally Blocks
 
@@ -1409,9 +1500,12 @@ Note that the `Await` expression in an async method, and the `Yield` statement i
 
 It is invalid to explicitly transfer execution into a `Finally` block; it is also invalid to transfer execution out of a `Finally` block except through an exception.
 
-<pre>FinallyStatement  ::=
-<b>Finally</b>  StatementTerminator
-    [  Block  ]</pre>
+```antlr
+FinallyStatement
+    : 'Finally' StatementTerminator
+      Block?
+    ;
+```
 
 #### Catch Blocks
 
@@ -1421,7 +1515,7 @@ A `Catch` clause with no identifier will catch all exceptions derived from `Syst
 
 A `Catch` clause with a `When` clause will only catch exceptions when the expression evaluates to `True`; the type of the expression must be a Boolean expression as per Section 11.19. A `When` clause is only applied after checking the type of the exception, and the expression may refer to the identifier representing the exception, as this example demonstrates:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim i As Integer = 5
@@ -1442,7 +1536,7 @@ End Module
 
 This example prints:
 
-```VB.net
+```vb
 Third handler
 ```
 
@@ -1451,10 +1545,9 @@ If a `Catch` clause handles the exception, execution transfers to the `Catch` bl
 It is invalid to explicitly transfer execution into a `Catch` block.
 
 > __Annotation__
-
 > The filters in When clauses are normally evaluated prior to the exception being thrown. For instance, the following code will print "Filter, Finally, Catch".
-
-> ```VB.net
+>
+> ```vb
 >     Sub Main()
 >        Try
 >            Foo()
@@ -1476,12 +1569,15 @@ It is invalid to explicitly transfer execution into a `Catch` block.
 >        Return True
 >    End Function
 > ```
-
+>
 > However, Async and Iterator methods cause all finally blocks inside them to be executed prior to any filters outside. For instance, if the above code had "`Async Sub Foo()`", then the output would be "Finally, Filter, Catch".
 
-<pre>CatchStatement  ::=
-<b>Catch</b>  [  Identifier  [  <b>As</b>  NonArrayTypeName  ]  ]  [  <b>When</b>  BooleanExpression  ]  StatementTerminator
-    [  Block  ]</pre>
+```antlr
+CatchStatement
+    : 'Catch' ( Identifier ( 'As' NonArrayTypeName )? )? ( 'When' BooleanExpression )? StatementTerminator
+      Block?
+    ;
+```
 
 #### Throw Statement
 
@@ -1489,7 +1585,7 @@ The `Throw` statement raises an exception, which is represented by an instance o
 
 A `Throw` statement may omit the expression within a catch block of a `Try` statement, as long as there is no intervening finally block. In that case, the statement rethrows the exception currently being handled within the catch block. For example:
 
-```VB.net
+```vb
 Sub Test(x As Integer)
     Try
         Throw New Exception()
@@ -1509,13 +1605,17 @@ Sub Test(x As Integer)
 End Sub
 ```
 
-<pre>ThrowStatement  ::=  <b>Throw</b>  [  Expression  ]  StatementTerminator</pre>
+```antlr
+ThrowStatement
+    : 'Throw' Expression? StatementTerminator
+    ;
+```
 
 ### Unstructured Exception-Handling Statements
 
 Unstructured exception handling is a method of handling errors by indicating statements to branch to when an exception occurs. Unstructured exception handling is implemented using three statements: the `Error` statement, the `On Error` statement, and the `Resume` statement. For example:
 
-```VB.net
+```vb
 Module Test
     Sub ThrowException()
         Error 5
@@ -1538,16 +1638,23 @@ When a method uses unstructured exception handling, a single structured exceptio
 
 Unstructured error handling statements are not allowed in iterator or async methods.
 
-<pre>UnstructuredErrorStatement  ::=
-    ErrorStatement  |
-    OnErrorStatement  |
-    ResumeStatement</pre>
+```antlr
+UnstructuredErrorStatement
+    : ErrorStatement
+    | OnErrorStatement
+    | ResumeStatement
+    ;
+```
 
 #### Error Statement
 
 An `Error` statement throws a `System.Exception` exception containing a Visual Basic 6 exception number. The expression must be classified as a value and its type must be implicitly convertible to `Integer`.
 
-<pre>ErrorStatement  ::=  <b>Error</b>  Expression  StatementTerminator</pre>
+```antlr
+ErrorStatement
+    : 'Error' Expression StatementTerminator
+    ;
+```
 
 #### On Error Statement
 
@@ -1561,13 +1668,18 @@ An `On Error` statement modifies the most recent exception-handling state. It ma
 
 `On Error  ``Next`, establishes the `Resume Next` behavior as the most recent exception-handler location.
 
-<pre>OnErrorStatement  ::=  <b>On</b><b>Error</b>  ErrorClause  StatementTerminator</pre>
+```antlr
+OnErrorStatement
+    : 'On' 'Error' ErrorClause StatementTerminator
+    ;
 
-<pre>ErrorClause  ::=
-<b>GoTo</b><b>-</b><b>1</b>  |
-<b>GoTo</b><b>0</b>  |
-    GoToStatement  |
-<b>Resume</b><b>Next</b></pre>
+ErrorClause
+    : 'GoTo' '-' '1'
+    | 'GoTo' '0'
+    | GoToStatement
+    | 'Resume' 'Next'
+    ;
+```
 
 #### Resume Statement
 
@@ -1575,7 +1687,7 @@ A `Resume` statement returns execution to the statement that caused the most rec
 
 Because the `SyncLock` statement contains an implicit structured error-handling block, `Resume` and `Resume Next` have special behaviors for exceptions that occur in `SyncLock` statements. `Resume` returns execution to the beginning of the `SyncLock` statement, while `Resume Next` returns execution to the next statement following the `SyncLock` statement. For example, consider the following code:
 
-```VB.net
+```vb
 Class LockClass
 End Class
 
@@ -1608,7 +1720,7 @@ End Module
 
 It prints the following result.
 
-```VB.net
+```vb
 Before exception
 Before exception
 After SyncLock
@@ -1618,9 +1730,16 @@ The first time through the `SyncLock` statement, `Resume` returns execution to t
 
 In all cases, when a `Resume` statement is executed, the most recent exception is set to `Nothing`. If a `Resume` statement is executed with no most recent exception, the statement raises a `System.Exception` exception containing the Visual Basic error number `20` (Resume without error).
 
-<pre>ResumeStatement  ::=  <b>Resume</b>  [  ResumeClause  ]  StatementTerminator</pre>
+```antlr
+ResumeStatement
+    : 'Resume' ResumeClause? StatementTerminator
+    ;
 
-<pre>ResumeClause  ::=  <b>Next</b>  |  LabelName</pre>
+ResumeClause
+    : 'Next'
+    | LabelName
+    ;
+```
 
 ## Branch Statements
 
@@ -1633,43 +1752,65 @@ Branch statements modify the flow of execution in a method. There are six branch
 5. An `End` statement terminates the program. Finalizers are run before shutdown, but the finally blocks of any currently executing `Try` statements are not executed. This statement may not be used in programs that are not executable (for example, DLLs).
 6. A `Return` statement with no expression is equivalent to an `Exit Sub` or `Exit Function` statement. A `Return` statement with an expression is only allowed in a regular method that is a function, or in an async method that is a function with return type `Task(Of T)` for some `T`. The expression must be classified as a value which is implicitly convertible to the *function return variable* (in the case of regular methods) or to the *task return variable* (in the case of async methods). Its behavior is to evaluate its expression, then store it in the return variable, then execute an implicit `Exit Function` statement.
 
-<pre>BranchStatement  ::=
-    GoToStatement  |
-    ExitStatement  |
-    ContinueStatement  |
-    StopStatement  |
-    EndStatement  |
-    ReturnStatement</pre>
+```antlr
+BranchStatement
+    : GoToStatement
+    | ExitStatement
+    | ContinueStatement
+    | StopStatement
+    | EndStatement
+    | ReturnStatement
+    ;
 
-<pre>GoToStatement  ::=  <b>GoTo</b>  LabelName  StatementTerminator</pre>
+GoToStatement
+    : 'GoTo' LabelName StatementTerminator
+    ;
 
-<pre>ExitStatement  ::=  <b>Exit</b>  ExitKind  StatementTerminator</pre>
+ExitStatement
+    : 'Exit' ExitKind StatementTerminator
+    ;
 
-<pre>ExitKind  ::=  <b>Do</b>  |  <b>For</b>  |  <b>While</b>  |  <b>Select</b>  |  <b>Sub</b>  |  <b>Function</b>  |  <b>Property</b>  |  <b>Try</b></pre>
+ExitKind
+    : 'Do' | 'For' | 'While' | 'Select' | 'Sub' | 'Function' | 'Property' | 'Try'
+    ;
 
-<pre>ContinueStatement  ::=  <b>Continue</b>  ContinueKind  StatementTerminator</pre>
+ContinueStatement
+    : 'Continue' ContinueKind StatementTerminator
+    ;
 
-<pre>ContinueKind  ::=  <b>Do</b>  |  <b>For</b>  |  <b>While</b></pre>
+ContinueKind
+    : 'Do' | 'For' | 'While'
+    ;
 
-<pre>StopStatement  ::=  <b>Stop</b>  StatementTerminator</pre>
+StopStatement
+    : 'Stop' StatementTerminator
+    ;
 
-<pre>EndStatement  ::=  <b>End</b>  StatementTerminator</pre>
+EndStatement
+    : 'End' StatementTerminator
+    ;
 
-<pre>ReturnStatement  ::=  <b>Return</b>  [  Expression  ]  StatementTerminator</pre>
+ReturnStatement
+    : 'Return' Expression? StatementTerminator
+    ;
+```
 
 ## Array-Handling Statements
 
 Two statements simplify working with arrays: `ReDim` statements and `Erase` statements.
 
-<pre>ArrayHandlingStatement  ::=
-    RedimStatement  |
-    EraseStatement</pre>
+```antlr
+ArrayHandlingStatement
+    : RedimStatement
+    | EraseStatement
+    ;
+```
 
 ### ReDim Statement
 
 A `ReDim` statement instantiates new arrays. Each clause in the statement must be classified as a variable or a property access whose type is an array type or `Object`, and be followed by a list of array bounds. The number of the bounds must be consistent with the type of the variable; any number of bounds is allowed for `Object`. At run time, an array is instantiated for each expression from left to right with the specified bounds and then assigned to the variable or property. If the variable type is `Object`, the number of dimensions is the number of dimensions specified, and the array element type is `Object`. If the given number of dimensions is incompatible with the variable or property at run time a compile-time error occurs. For example:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim o As Object
@@ -1692,7 +1833,7 @@ End Module
 
 If the `Preserve` keyword is specified, then the expressions must also be classifiable as a value, and the new size for each dimension except for the rightmost one must be the same as the size of the existing array. The values in the existing array are copied into the new array: if the new array is smaller, the existing values are discarded; if the new array is bigger, the extra elements will be initialized to the default value of the element type of the array. For example, consider the following code:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim x(5, 5) As Integer
@@ -1707,29 +1848,34 @@ End Module
 
 It prints the following result:
 
-```VB.net
+```vb
 3, 0
 ```
 
 If the existing array reference is a null value at run time, no error is given. Other than the rightmost dimension, if the size of a dimension changes, a `System.ArrayTypeMismatchException` will be thrown.
 
 > __Note__
-
 > `Preserve` is not a reserved word.
 
-<pre>RedimStatement  ::=  <b>ReDim</b>  [  <b>Preserve</b>  ]  RedimClauses  StatementTerminator</pre>
+```antlr
+RedimStatement
+    : 'ReDim' 'Preserve'? RedimClauses StatementTerminator
+    ;
 
-<pre>RedimClauses  ::=
-    RedimClause  |
-    RedimClauses  Comma  RedimClause</pre>
+RedimClauses
+    : RedimClause ( Comma RedimClause )*
+    ;
 
-<pre>RedimClause  ::=  Expression  ArraySizeInitializationModifier</pre>
+RedimClause
+    : Expression ArraySizeInitializationModifier
+    ;
+```
 
 ### Erase Statement
 
 An `Erase` statement sets each of the array variables or properties specified in the statement to `Nothing`. Each expression in the statement must be classified as a variable or property access whose type is an array type or `Object`. For example:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim x() As Integer = New Integer(5) {}
@@ -1741,17 +1887,21 @@ Module Test
 End Module
 ```
 
-<pre>EraseStatement  ::=  <b>Erase</b>  EraseExpressions  StatementTerminator</pre>
+```antlr
+EraseStatement
+    : 'Erase' EraseExpressions StatementTerminator
+    ;
 
-<pre>EraseExpressions  ::=
-    Expression  |
-    EraseExpressions  Comma  Expression</pre>
+EraseExpressions
+    : Expression ( Comma Expression )*
+    ;
+```
 
 ## Using statement
 
 Instances of types are automatically released by the garbage collector when a collection is run and no live references to the instance are found. If a type holds on a particularly valuable and scarce resource (such as database connections or file handles), it may not be desirable to wait until the next garbage collection to clean up a particular instance of the type that is no longer in use. To provide a lightweight way of releasing resources before a collection, a type may implement the `System.IDisposable` interface. A type that does so exposes a `Dispose` method that can be called to force valuable resources to be released immediately, as such:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim x As DBConnection = New DBConnection("...")
@@ -1770,7 +1920,7 @@ If the resource is a local variable declaration statement then the type of the l
 
 The `Using` block is implicitly contained by a `Try` statement whose finally block calls the method `IDisposable.Dispose` on the resource. This ensures the resource is disposed even when an exception is thrown. As a result, it is invalid to branch into a `Using` block from outside of the block, and a `Using` block is treated as a single statement for the purposes of `Resume` and `Resume Next`. If the resource is `Nothing`, then no call to `Dispose` is made. Thus, the example:
 
-```VB.net
+```vb
 Using f As C = New C()
     ...
 End Using
@@ -1778,7 +1928,7 @@ End Using
 
 is equivalent to:
 
-```VB.net
+```vb
 Dim f As C = New C()
 Try
     ...
@@ -1791,7 +1941,7 @@ End Try
 
 A `Using` statement that has a local variable declaration statement may acquire multiple resources at a time, which is equivalent to nested `Using` statements.  For example, a `Using` statement of the form:
 
-```VB.net
+```vb
 Using r1 As R = New R(), r2 As R = New R()
     r1.F()
     r2.F()
@@ -1800,7 +1950,7 @@ End Using
 
 is equivalent to:
 
-```VB.net
+```vb
 Using r1 As R = New R()
     Using r2 As R = New R()
         r1.F()
@@ -1809,12 +1959,18 @@ Using r1 As R = New R()
 End Using
 ```
 
-<pre>UsingStatement  ::=
-<b>Using</b>  UsingResources  StatementTerminator
-    [  Block  ]
-<b>End</b><b>Using</b>  StatementTerminator</pre>
+```antlr
+UsingStatement
+    : 'Using' UsingResources StatementTerminator
+      Block?
+      'End' 'Using' StatementTerminator
+    ;
 
-<pre>UsingResources  ::=  VariableDeclarators  |  Expression</pre>
+UsingResources
+    : VariableDeclarators
+    | Expression
+    ;
+```
 
 ## Await Statements
 
@@ -1822,7 +1978,11 @@ An await statement has the same syntax as an await operator expression (11.25), 
 
 However, it may be classified as either a value or void. Any value resulting from evaluation of the await operator expression is discarded.
 
-<pre>AwaitStatement  ::=  AwaitOperatorExpression  StatementTerminator</pre>
+```antlr
+AwaitStatement 
+    : AwaitOperatorExpression StatementTerminator
+    ;
+```
 
 ## Yield Statements
 
@@ -1836,4 +1996,8 @@ Control flow only ever reaches a `Yield` statement when the `MoveNext` method is
 
 When a `Yield` statement is executed, its expression is evaluated and stored in the *iterator current variable* of the iterator method instance associated with that iterator object. The value `True` is returned to the invoker of `MoveNext`, and the control point of this instance stops advancing until the next invocation of `MoveNext` on the iterator object.
 
-<pre>YieldStatement  ::=  <b>Yield</b>*Expression*  StatementTerminator</pre>
+```antlr
+YieldStatement 
+    : 'Yield' Expression StatementTerminator
+    ;
+```

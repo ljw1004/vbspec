@@ -74,15 +74,20 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GenerateDocx.vb" />
+    <Compile Include="GenerateGrammar.vb" />
     <Compile Include="Module1.vb" />
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />
+    <None Include="type-providers.md" />
     <None Include="vb-reference.docx" />
     <Content Include="vb-template.docx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="vb11.g" />
+    <Content Include="vb11.g4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="My Project\" />

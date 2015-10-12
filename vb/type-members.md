@@ -8,7 +8,7 @@ Methods, events, and properties can implement interface members. To implement an
 
 For an interface implementation to be valid, the implements list of the containing type must name an interface that contains a compatible member. A compatible member is one whose signature matches the signature of the implementing member. If a generic interface is being implemented, then the type argument supplied in the Implements clause is substituted into the signature when checking compatibility. For example:
 
-```VB.net
+```vb
 Interface I1(Of T)
     Sub F(x As T)
 End Interface
@@ -30,7 +30,7 @@ End Class
 
 If an event declared using a delegate type is implementing an interface event, then a compatible event is one whose underlying delegate type is the same type. Otherwise, the event uses the delegate type from the interface event it is implementing. If such an event implements multiple interface events, all the interface events must have the same underlying delegate type. For example:
 
-```VB.net
+```vb
 Interface ClickEvents
     Event LeftClick(x As Integer, y As Integer)
     Event RightClick(x As Integer, y As Integer)
@@ -59,7 +59,7 @@ End Class
 
 An interface member in the implements list is specified using a type name, a period, and an identifier. The type name must be an interface in the implements list or a base interface of an interface in the implements list, and the identifier must be a member of the specified interface. A single member can implement more than one matching interface member.
 
-```VB.net
+```vb
 Interface ILeft
     Sub F()
 End Interface
@@ -78,7 +78,7 @@ End Class
 
 If the interface member being implemented is unavailable in all explicitly implemented interfaces because of multiple interface inheritance, the implementing member must explicitly reference a base interface on which the member is available. For example, if `I1` and `I2` contain a member `M`, and `I3` inherits from `I1` and `I2`, a type implementing `I3` will implement `I1.M` and `I2.M`. If an interface shadows multiply inherited members, an implementing type will have to implement the inherited members and the member(s) shadowing them.
 
-```VB.net
+```vb
 Interface ILeft
     Sub F()
 End Interface
@@ -109,7 +109,7 @@ End Class
 
 If the containing interface of the interface member be implemented is generic, the same type arguments as the interface being implements must be supplied. For example:
 
-```VB.net
+```vb
 Interface I1(Of T)
     Function F() As T
 End Interface
@@ -137,19 +137,25 @@ Class C2(Of U)
 End Class
 ```
 
-<pre>ImplementsClause  ::=  [  <b>Implements</b>  ImplementsList  ]</pre>
+```antlr
+ImplementsClause
+    : ( 'Implements' ImplementsList )?
+    ;
 
-<pre>ImplementsList  ::=
-    InterfaceMemberSpecifier  |
-    ImplementsList  Comma  InterfaceMemberSpecifier</pre>
+ImplementsList
+    : InterfaceMemberSpecifier ( Comma InterfaceMemberSpecifier )*
+    ;
 
-<pre>InterfaceMemberSpecifier  ::=  NonArrayTypeName  Period  IdentifierOrKeyword</pre>
+InterfaceMemberSpecifier
+    : NonArrayTypeName Period IdentifierOrKeyword
+    ;
+```
 
 ## Methods
 
 Methods contain the executable statements of a program. Methods, which have an optional list of parameters and an optional return value, are either shared or not shared. Shared methods are accessed through the class or instances of the class. Non-shared methods, also called instance methods, are accessed through instances of the class. The following example shows a class `Stack` that has several shared methods (`Clone` and `Flip`), and several instance methods (`Push`, `Pop`, and `ToString`):
 
-```VB.net
+```vb
 Public Class Stack
     Public Shared Function Clone(s As Stack) As Stack
         ...
@@ -193,7 +199,7 @@ End Module
 
 Methods can be overloaded, which means that multiple methods may have the same name so long as they have unique signatures. The signature of a method consists of the number and types of its parameters. The signature of a method specifically does not include the return type or parameter modifiers such as Optional, ByRef or ParamArray. The following example shows a class with a number of overloads:
 
-```VB.net
+```vb
 Module Test
     Sub F()
         Console.WriteLine("F()")
@@ -238,7 +244,7 @@ End Module
 
 The output of the program is:
 
-```VB.net
+```vb
 F()
 F(Integer)
 F(Object)
@@ -249,27 +255,32 @@ G(String, Optional String)
 ```
 
 > __Annotation__
-
 > Overloads that differ only in optional parameters can be used for "versioning" of libraries. For instance, v1 of a library might include a function with optional parameters:
-
-> ```VB.net
->     Sub fopen(fileName As String, Optional accessMode as Integer = 0)
+>
+> ```vb
+> Sub fopen(fileName As String, Optional accessMode as Integer = 0)
 > ```
-
+>
 > Then v2 of the library wants to add another optional parameter "password", and it wants to do so without breaking source compatibility (so applications that used to target v1 can be recompiled), and without breaking binary compatibility (so applications that used to reference v1 can now reference v2 without recompilation). This is how v2 will look:
-
-> ```VB.net
->    Sub fopen(file As String, mode as Integer)
->    Sub fopen(file As String, Optional mode as Integer = 0, _
->              Optional pword As String = "")
+>
+> ```vb
+> Sub fopen(file As String, mode as Integer)
+> Sub fopen(file As String, Optional mode as Integer = 0, Optional pword As String = "")
 > ```
+>
+> Note that optional parameters in a public API are not CLS-compliant. However, they can be consumed at least by Visual Basic and C#4 and F#.
 
-> Note that optional parameters in a public API are not CLS-compliant. However, they can be consumed at least by Visual Basic and C# 4 and F#.
+```antlr
+MethodMemberDeclaration
+    : MethodDeclaration
+    | ExternalMethodDeclaration
+    ;
 
+InterfaceMethodMemberDeclaration
+    : InterfaceMethodDeclaration
+    ;
+```
 
-<pre>MethodMemberDeclaration  ::=  MethodDeclaration  |  ExternalMethodDeclaration</pre>
-
-<pre>InterfaceMethodMemberDeclaration  ::=  InterfaceMethodDeclaration</pre>
 
 ### Regular, Async and Iterator Method Declarations
 
@@ -281,9 +292,9 @@ An __iterator method__ is one with the `Iterator` modifier and no `Async` modifi
 
 An __async method__ is one with the `Async` modifier and no `Iterator` modifier. It must be either a subroutine, or a function with return type `Task` or `Task(Of T)` for some `T`, and must have no `ByRef` parameters. Section 10.1.3 details what happens when an async method is invoked.
 
-It is a compile-time error if a method is not one of these three kinds of method.Subroutine and function declarations are special in that their beginning and end statements must each start at the beginning of a logical line. Additionally, the body of a non-`MustOverride` subroutine or function declaration must start at the beginning of a logical line. For example:
+It is a compile-time error if a method is not one of these three kinds of method. Subroutine and function declarations are special in that their beginning and end statements must each start at the beginning of a logical line. Additionally, the body of a non-`MustOverride` subroutine or function declaration must start at the beginning of a logical line. For example:
 
-```VB.net
+```vb
 Module Test
     ' Illegal: Subroutine doesn't start the line
     Public x As Integer : Sub F() : End Sub
@@ -297,64 +308,81 @@ Module Test
 End Module
 ```
 
-<pre>MethodDeclaration  ::=
-    SubDeclaration  |
-    MustOverrideSubDeclaration  |
-    FunctionDeclaration  |
-    MustOverrideFunctionDeclaration</pre>
+```antlr
+MethodDeclaration
+    : SubDeclaration
+    | MustOverrideSubDeclaration
+    | FunctionDeclaration
+    | MustOverrideFunctionDeclaration
+    ;
 
-<pre>InterfaceMethodDeclaration  ::=
-    InterfaceSubDeclaration  |
-    InterfaceFunctionDeclaration</pre>
+InterfaceMethodDeclaration
+    : InterfaceSubDeclaration
+    | InterfaceFunctionDeclaration
+    ;
 
-<pre>SubSignature  ::=  <b>Sub</b>  Identifier  [  TypeParameterList  ]
-    [  OpenParenthesis  [  ParameterList  ]  CloseParenthesis  ]</pre>
+SubSignature
+    : 'Sub' Identifier TypeParameterList?
+      ( OpenParenthesis ParameterList? CloseParenthesis )?
+    ;
 
-<pre>FunctionSignature  ::=  <b>Function</b>  Identifier  [  TypeParameterList  ]
-        [  OpenParenthesis  [  ParameterList  ]  CloseParenthesis  ]  [  <b>As</b>  [  Attributes  ]  TypeName  ]</pre>
+FunctionSignature
+    : 'Function' Identifier TypeParameterList?
+      ( OpenParenthesis ParameterList? CloseParenthesis )?
+      ( 'As' Attributes? TypeName )?
+    ;
 
-<pre>SubDeclaration  ::=
-    [  Attributes  ]  [  ProcedureModifier+  ]  SubSignature  [  HandlesOrImplements  ]  LineTerminator
-    Block
-<b>End</b><b>Sub</b>  StatementTerminator</pre>
+SubDeclaration
+    : Attributes? ProcedureModifier* SubSignature
+      HandlesOrImplements? LineTerminator
+      Block
+      'End' 'Sub' StatementTerminator
+    ;
 
-<pre>MustOverrideSubDeclaration  ::=
-    [  Attributes  ]  MustOverrideProcedureModifier+  SubSignature  [  HandlesOrImplements  ]
-        StatementTerminator</pre>
+MustOverrideSubDeclaration
+    : Attributes? MustOverrideProcedureModifier+ SubSignature
+      HandlesOrImplements? StatementTerminator
+    ;
 
-<pre>InterfaceSubDeclaration  ::=
-    [  Attributes  ]  [  InterfaceProcedureModifier+  ]  SubSignature  StatementTerminator</pre>
+InterfaceSubDeclaration
+    : Attributes? InterfaceProcedureModifier* SubSignature StatementTerminator
+    ;
 
-<pre>FunctionDeclaration  ::=
-    [  Attributes  ]  [  ProcedureModifier+  ]  FunctionSignature  [  HandlesOrImplements  ]
-        LineTerminator
-    Block
-<b>End</b><b>Function</b>  StatementTerminator</pre>
+FunctionDeclaration
+    : Attributes? ProcedureModifier* FunctionSignature
+      HandlesOrImplements? LineTerminator
+      Block
+      'End' 'Function' StatementTerminator
+    ;
 
-<pre>MustOverrideFunctionDeclaration  ::=
-    [  Attributes  ]  MustOverrideProcedureModifier+  FunctionSignature  [  HandlesOrImplements  ]
-        StatementTerminator</pre>
+MustOverrideFunctionDeclaration
+    : Attributes? MustOverrideProcedureModifier+ FunctionSignature
+      HandlesOrImplements? StatementTerminator
+    ;
 
-<pre>InterfaceFunctionDeclaration  ::=
-    [  Attributes  ]  [  InterfaceProcedureModifier+  ]  FunctionSignature  StatementTerminator</pre>
+InterfaceFunctionDeclaration
+    : Attributes? InterfaceProcedureModifier* FunctionSignature StatementTerminator
+    ;
 
-<pre>ProcedureModifier  ::=
-    AccessModifier  |
-<b>Shadows</b>  |
-<b>Shared</b>  |
-<b>Overridable</b>  |
-<b>NotOverridable</b>  |
-<b>Overrides</b>  |
-<b>Overloads</b>  |
-<b>Partial</b>  |
-<b>Iterator</b>  |
-<b>Async</b></pre>
+ProcedureModifier
+    : AccessModifier | 'Shadows' | 'Shared' | 'Overridable' | 'NotOverridable' | 'Overrides'
+    | 'Overloads' | 'Partial' | 'Iterator' | 'Async'
+    ;
 
-<pre>MustOverrideProcedureModifier  ::=  ProcedureModifier  |  <b>MustOverride</b></pre>
+MustOverrideProcedureModifier
+    : ProcedureModifier
+    | 'MustOverride'
+    ;
 
-<pre>InterfaceProcedureModifier  ::=  <b>Shadows</b>  |  <b>Overloads</b></pre>
+InterfaceProcedureModifier
+    : 'Shadows' | 'Overloads'
+    ;
 
-<pre>HandlesOrImplements  ::=  HandlesClause  |  ImplementsClause</pre>
+HandlesOrImplements
+    : HandlesClause
+    | ImplementsClause
+    ;
+```
 
 ### External Method Declarations
 
@@ -364,7 +392,7 @@ The library clause of an external method declaration specifies the name of the e
 
 If `Ansi` or `Unicode` is specified, then the method name is looked up in the external file with no modification. If `Auto` is specified, then method name lookup depends on the platform. If the platform is considered to be ANSI (for example, Windows 95, Windows 98, Windows ME), then the method name is looked up with no modification. If the lookup fails, an `A` is appended and the lookup tried again. If the platform is considered to be Unicode (for example, Windows NT, Windows 2000, Windows XP), then a `W` is appended and the name is looked up. If the lookup fails, the lookup is tried again without the `W`. For example:
 
-```VB.net
+```vb
 Module Test
     ' All platforms bind to "ExternSub".
     Declare Ansi Sub ExternSub Lib "ExternDLL" ()
@@ -382,7 +410,7 @@ Data types being passed to external methods are marshaled according to the .NET 
 
 The example demonstrates use of external methods:
 
-```VB.net
+```vb
 Class Path
     Declare Function CreateDirectory Lib "kernel32" ( _
         Name As String, sa As SecurityAttributes) As Boolean
@@ -395,28 +423,44 @@ Class Path
 End Class
 ```
 
-<pre>ExternalMethodDeclaration  ::=
-    ExternalSubDeclaration  |
-    ExternalFunctionDeclaration</pre>
+```antlr
+ExternalMethodDeclaration
+    : ExternalSubDeclaration
+    | ExternalFunctionDeclaration
+    ;
 
-<pre>ExternalSubDeclaration  ::=
-    [  Attributes  ]  [  ExternalMethodModifier+  ]  <b>Declare</b>  [  CharsetModifier  ]  <b>Sub</b>  Identifier
-        LibraryClause  [  AliasClause  ]  [  OpenParenthesis  [  ParameterList  ]  CloseParenthesis  ] 
-        StatementTerminator</pre>
+ExternalSubDeclaration
+    : Attributes? ExternalMethodModifier* 'Declare' CharsetModifier? 'Sub'
+      Identifier LibraryClause AliasClause?
+      ( OpenParenthesis ParameterList? CloseParenthesis )? StatementTerminator
+    ;
 
-<pre>ExternalFunctionDeclaration  ::=
-    [  Attributes  ]  [  ExternalMethodModifier+  ]  <b>Declare</b>  [  CharsetModifier  ]  <b>Function</b>  Identifier
-        LibraryClause  [  AliasClause  ]  [  OpenParenthesis  [  ParameterList  ]  CloseParenthesis  ]
-        [  <b>As</b>  [  Attributes  ]  TypeName  ]
-        StatementTerminator</pre>
+ExternalFunctionDeclaration
+    : Attributes? ExternalMethodModifier* 'Declare' CharsetModifier? 'Function'
+      Identifier LibraryClause AliasClause?
+      ( OpenParenthesis ParameterList? CloseParenthesis )?
+      ( 'As' Attributes? TypeName )?
+      StatementTerminator
+    ;
 
-<pre>ExternalMethodModifier  ::=  AccessModifier  |  <b>Shadows</b>  |  <b>Overloads</b></pre>
+ExternalMethodModifier
+    : AccessModifier
+    | 'Shadows'
+    | 'Overloads'
+    ;
 
-<pre>CharsetModifier  ::=  <b>Ansi</b>  |  <b>Unicode</b>  |  <b>Auto</b></pre>
+CharsetModifier
+    : 'Ansi' | 'Unicode' | 'Auto'
+    ;
 
-<pre>LibraryClause  ::=  <b>Lib</b>  StringLiteral</pre>
+LibraryClause
+    : 'Lib' StringLiteral
+    ;
 
-<pre>AliasClause  ::=  <b>Alias</b>  StringLiteral</pre>
+AliasClause
+    : 'Alias' StringLiteral
+    ;
+```
 
 ### Overridable Methods
 
@@ -446,7 +490,7 @@ Methods in `NotInheritable` classes may not be declared `Overridable` or `MustOv
 
 The following example illustrates the differences between overridable and nonoverridable methods:
 
-```VB.net
+```vb
 Class Base
     Public Sub F()
         Console.WriteLine("Base.F")
@@ -484,7 +528,7 @@ End Module
 
 In the example, class `Base` introduces a method `F` and an `Overridable` method `G`. The class `Derived` introduces a new method `F`, thus shadowing the inherited `F`, and also overrides the inherited method `G`. The example produces the following output:
 
-```VB.net
+```vb
 Base.F
 Derived.F
 Derived.G
@@ -501,7 +545,7 @@ A method declared in a structure or class without a `Shared` modifier is an *ins
 
 The following example illustrates the rules for accessing shared and instance members:
 
-```VB.net
+```vb
 Class Test
     Private x As Integer
     Private Shared y As Integer
@@ -539,17 +583,24 @@ Parameter names are scoped to the entire body of the method and are always publi
 
 The identifier may be followed by the nullable name modifier `?` to indicate that it is nullable, and also by array name modifiers to indicate that it is an array. They may be combined, e.g. "`ByVal x?() As Integer`". It is not allowed to use explicit array bounds; also, if the nullable name modifier is present then an `As` clause must be present.
 
-<pre>ParameterList  ::=
-    Parameter  |
-    ParameterList  Comma  Parameter</pre>
+```antlr
+ParameterList
+    : Parameter ( Comma Parameter )*
+    ;
 
-<pre>Parameter  ::=
-    [  Attributes  ]  [  ParameterModifier+  ]  ParameterIdentifier  [  <b>As</b>  TypeName  ]
-        [  *Equals*  ConstantExpression  ]</pre>
+Parameter
+    : Attributes? ParameterModifier* ParameterIdentifier ( 'As' TypeName )?
+      ( Equals ConstantExpression )?
+    ;
 
-<pre>ParameterModifier  ::=  <b>ByVal</b>  |  <b>ByRef</b>  |  <b>Optional</b>  |  <b>ParamArray</b></pre>
+ParameterModifier
+    : 'ByVal' | 'ByRef' | 'Optional' | 'ParamArray'
+    ;
 
-<pre>ParameterIdentifier  ::=  Identifier  IdentifierModifiers</pre>
+ParameterIdentifier
+    : Identifier IdentifierModifiers
+    ;
+```
 
 #### Value Parameters
 
@@ -559,7 +610,7 @@ A method is permitted to assign new values to a value parameter. Such assignment
 
 A value parameter is used when the value of an argument is passed into a method, and modifications of the parameter do not impact the original argument. A value parameter refers to its own variable, one that is distinct from the variable of the corresponding argument. This variable is initialized by copying the value of the corresponding argument. The following example shows a method `F` that has a value parameter named `p`:
 
-```VB.net
+```vb
 Module Test
     Sub F(p As Integer)
         Console.WriteLine("p = " & p)
@@ -578,7 +629,7 @@ End Module
 
 The example produces the following output, even though the value parameter `p` is modified:
 
-```VB.net
+```vb
 pre: a = 1
 p = 1
 post: a = 1
@@ -592,7 +643,7 @@ Reference parameters act in two modes, either as *aliases* or through *copy-in c
 
 __Aliases.__ A reference parameter is used when the parameter acts as an alias for a caller-provided argument. A reference parameter does not itself define a variable, but rather refers to the variable of the corresponding argument. Modifications of a reference parameter directly and immediately impact the corresponding argument. The following example shows a method `Swap` that has two reference parameters:
 
-```VB.net
+```vb
 Module Test
     Sub Swap(ByRef a As Integer, ByRef b As Integer)
         Dim t As Integer = a
@@ -613,7 +664,7 @@ End Module
 
 The output of the program is:
 
-```VB.net
+```vb
 pre: x = 1, y = 2
 post: x = 2, y = 1
 ```
@@ -622,7 +673,7 @@ For the invocation of method `Swap` in class `Main`, `a` represents `x,` and `b`
 
 In a method that takes reference parameters, it is possible for multiple names to represent the same storage location:
 
-```VB.net
+```vb
 Module Test
     Private s As String
 
@@ -642,7 +693,7 @@ In the example the invocation of method `F` in `G` passes a reference to `s` for
 
 __Copy-in copy-back.__ If the type of the variable being passed to a reference parameter is not compatible with the reference parameter's type, or if a non-variable (e.g. a property) is passed as an argument to a reference parameter, or if the invocation is late-bound, then a temporary variable is allocated and passed to the reference parameter. The value being passed in will be copied into this temporary variable before the method is invoked and will be copied back to the original variable (if there is one and if it's writable) when the method returns. Thus, a reference parameter may not necessarily contain a reference to the exact storage of the variable being passed in, and any changes to the reference parameter may not be reflected in the variable until the method exits. For example:
 
-```VB.net
+```vb
 Class Base
 End Class
 
@@ -679,7 +730,7 @@ An optional parameter is declared with the `Optional` modifier. Parameters that 
 
 Optional parameters are the only situation in which an initializer on a parameter is valid. The initialization is always done as a part of the invocation expression, not within the method body itself.
 
-```VB.net
+```vb
 Module Test
     Sub F(x As Integer, Optional y As Integer = 20)
         Console.WriteLine("x = " & x & ", y = " & y)
@@ -694,7 +745,7 @@ End Module
 
 The output of the program is:
 
-```VB.net
+```vb
 x = 10, y = 20
 x = 30, y = 40
 ```
@@ -715,7 +766,7 @@ Alternatively, the invocation can specify zero or more arguments for the `ParamA
 
 Except for allowing a variable number of arguments in an invocation, a `ParamArray` is precisely equivalent to a value parameter of the same type, as the following example illustrates.
 
-```VB.net
+```vb
 Module Test
     Sub F(ParamArray args() As Integer)
         Dim i As Integer
@@ -739,7 +790,7 @@ End Module
 
 The example produces the output
 
-```VB.net
+```vb
 Array contains 3 elements: 1 2 3
 Array contains 4 elements: 10 20 30 40
 Array contains 0 elements:
@@ -747,7 +798,7 @@ Array contains 0 elements:
 
 The first invocation of `F` simply passes the array `a` as a value parameter. The second invocation of `F` automatically creates a four-element array with the given element values and passes that array instance as a value parameter. Likewise, the third invocation of `F` creates a zero-element array and passes that instance as a value parameter. The second and third invocations are precisely equivalent to writing:
 
-```VB.net
+```vb
 F(New Integer() {10, 20, 30, 40})
 F(New Integer() {})
 ```
@@ -764,7 +815,7 @@ The second identifier must specify a member of the type of the first identifier.
 
 A handler method `M` is considered a valid event handler for an event `E` if the statement `AddHandler E, AddressOf M` would also be valid. Unlike an `AddHandler` statement, however, explicit event handlers allow handling an event with a method with no arguments regardless of whether strict semantics are being used or not:
 
-```VB.net
+```vb
 Option Strict On
 
 Class C1
@@ -787,7 +838,7 @@ End Class
 
 A single member can handle multiple matching events, and multiple methods may handle a single event. A method's accessibility has no effect on its ability to handle events. The following example shows how a method can handle events:
 
-```VB.net
+```vb
 Class Raiser
     Event E1()
 
@@ -813,30 +864,35 @@ End Module
 
 This will print out:
 
-```VB.net
+```vb
 Raised
 Raised
 ```
 
 A type inherits all event handlers provided by its base type. A derived type cannot in any way alter the event mappings it inherits from its base types, but may add additional handlers to the event.
 
-<pre>HandlesClause  ::=  [  <b>Handles</b>  EventHandlesList  ]</pre>
+```antlr
+HandlesClause
+    : ( 'Handles' EventHandlesList )?
+    ;
 
-<pre>EventHandlesList  ::=
-    EventMemberSpecifier  |
-    EventHandlesList  Comma  EventMemberSpecifier</pre>
+EventHandlesList
+    : EventMemberSpecifier ( Comma EventMemberSpecifier )*
+    ;
 
-<pre>EventMemberSpecifier  ::=
-    Identifier  Period  IdentifierOrKeyword  |
-<b>MyBase</b>  Period  IdentifierOrKeyword  |
-<b>My</b><b>Class</b>  Period  IdentifierOrKeyword  |
-<b>Me</b>  Period  IdentifierOrKeyword</pre>
+EventMemberSpecifier
+    : Identifier Period IdentifierOrKeyword
+    | 'MyBase' Period IdentifierOrKeyword
+    | 'MyClass' Period IdentifierOrKeyword
+    | 'Me' Period IdentifierOrKeyword
+    ;
+```
 
 ### Extension Methods
 
 Methods can be added to types from outside of the type declaration using *extension methods*. Extension methods are methods with the `System.Runtime.CompilerServices.ExtensionAttribute` attribute applied to them. They can only be declared in standard modules and must have at least one parameter, which specifies the type the method extends. For example, the following extension method extends the type `String`:
 
-```VB.net
+```vb
 Imports System.Runtime.CompilerServices
 
 Module StringExtensions
@@ -848,12 +904,11 @@ End Module
 ```
 
 > __Annotation__
-
 > Although Visual Basic requires extension methods to be declared in a standard module, other languages such as C# may allow them to be declared in other kinds of types. As long as the methods follow the other conventions outlined here and the containing type is not an open generic type and cannot be instantiated, Visual Basic will recognize the extension methods.
 
 When an extension method is invoked, the instance it is being invoked on is passed to the first parameter. The first parameter cannot be declared `Optional` or `ParamArray`. Any type, including a type parameter, can appear as the first parameter of an extension method. For example, the following methods extend the types `Integer()`, any type that implements `System.Collections.Generic.IEnumerable(Of T)`, and any type at all:
 
-```VB.net
+```vb
 Imports System.Runtime.CompilerServices
 
 Module Extensions
@@ -876,7 +931,7 @@ End Module
 
 As the previous example shows, interfaces can be extended. Interface extension methods supply the implementation of the method, so types that implement an interface that has extension methods defined on it still only implement the members originally declared by the interface. For example:
 
-```VB.net
+```vb
 Imports System.Runtime.CompilerServices
 
 Interface IAction
@@ -906,7 +961,7 @@ End Class
 
 Extension methods can also have type constraints on their type parameters and, just as with non-extension generic methods, type argument can be inferred:
 
-```VB.net
+```vb
 Imports System.Runtime.CompilerServices
 
 Module IEnumerableComparableExtensions
@@ -920,7 +975,7 @@ End Module
 
 Extension methods can also be accessed through implicit instance expressions within the type being extended:
 
-```VB.net
+```vb
 Imports System.Runtime.CompilerServices
 
 Class C1
@@ -938,11 +993,11 @@ Module C1Extensions
 End Module
 ```
 
-For the purposes of accessibility, extension methods are also treated as members of the standard module they are declared in – they have no extra access to the members of the type they are extending beyond the access they have by virtue of their declaration context.
+For the purposes of accessibility, extension methods are also treated as members of the standard module they are declared in -- they have no extra access to the members of the type they are extending beyond the access they have by virtue of their declaration context.
 
 Extensions methods are only available when the standard module method is in scope. Otherwise, the original type will not appear to have been extended. For example:
 
-```VB.net
+```vb
 Imports System.Runtime.CompilerServices
 
 Class C1
@@ -971,7 +1026,7 @@ Referring to a type when only an extension method on the type is available will 
 
 It is important to note that extension methods are considered to be members of the type in all contexts where members are bound, such as the strongly-typed `For Each` pattern. For example:
 
-```VB.net
+```vb
 Imports System.Runtime.CompilerServices
 
 Class C1
@@ -1010,7 +1065,7 @@ End Module
 
 Delegates can also be created that refer to extension methods. Thus, the code:
 
-```VB.net
+```vb
 Delegate Sub D1()
 
 Module Test
@@ -1026,7 +1081,7 @@ End Module
 
 is roughly equivalent to:
 
-```VB.net
+```vb
 Delegate Sub D1()
 
 Module Test
@@ -1042,7 +1097,6 @@ End Module
 ```
 
 > __Annotation__
-
 > Visual Basic normally inserts a check on an instance method call that causes a `System.NullReferenceException` to occur if the instance the method is being invoked on is `Nothing`. In the case of extension methods, there is no efficient way to insert this check, so extension methods will need to explicitly check for `Nothing`. 
 
 > Additionally, a value type will be boxed when being passed as a `ByVal` argument to a parameter typed as an interface.  This implies that side effects of the extension method will operate on a copy of the structure instead of the original. While the language puts no restrictions on the first argument of an extension method, it is recommended that extension methods are not used to extend value types or that when extending value types, the first parameter is passed `ByRef` to ensure that side effects operate on the original value.
@@ -1053,7 +1107,7 @@ A *partial method* is a method that specifies a signature but not the body of th
 
 a.vb:
 
-```VB.net
+```vb
 ' Designer generated code
 Public Partial Class MyForm
     Private Partial Sub ValidateControls()
@@ -1070,7 +1124,7 @@ End Class
 
 b.vb:
 
-```VB.net
+```vb
 Public Partial Class MyForm
     Public Sub ValidateControls()
         ' Validation logic goes here
@@ -1083,7 +1137,7 @@ In this example, a partial declaration of the class `MyForm` declares a partial 
 
 Partial methods can be called regardless of whether a body has been supplied; if no method body is supplied, the call is ignored. For example:
 
-```VB.net
+```vb
 Public Class C1
     Private Partial Sub M1()
     End Sub
@@ -1098,14 +1152,13 @@ End Class
 Any expressions that are passed in as arguments to a partial method call that is ignored are ignored also and not evaluated.
 
 > __Annotation__
-
 > This means that partial methods are a very efficient way of providing behavior that is defined across two partial types, since the partial methods have no cost if they are not used.
 
 The partial method declaration must be declared as `Private` and must always be a subroutine with no statements in its body. Partial methods cannot themselves implement interface methods, although the method that supplies their body can.
 
 Only one method can supply a body to a partial method. A method supplying a body to a partial method must have the same signature as the partial method, the same constraints on any type parameters, the same declaration modifiers, and the same parameter and type parameter names. Attributes on the partial method and the method that supplies its body are merged, as are any attributes on the methods' parameters. Similarly, the list of events that the methods handle is merged. For example:
 
-```VB.net
+```vb
 Class C1
     Event E1()
     Event E2()
@@ -1125,16 +1178,21 @@ End Class
 *Constructors* are special methods that allow control over initialization. They are run after the program begins or when an instance of a type is created. Unlike other members, constructors are not inherited and do not introduce a name into a type's declaration space. Constructors may only be invoked by object-creation expressions or by the .NET Framework; they may never be directly invoked.
 
 > __Note__
-
 > Constructors have the same restriction on line placement that subroutines have. The beginning statement, end statement and block must all appear at the beginning of a logical line.
 
-<pre>ConstructorMemberDeclaration  ::=
-    [  Attributes  ]  [  ConstructorModifier+  ]  <b>Sub</b><b>New</b>
-        [  OpenParenthesis  [  ParameterList  ]  CloseParenthesis  ]  LineTerminator
-    [  Block  ]
-<b>End</b><b>Sub</b>  StatementTerminator</pre>
+```antlr
+ConstructorMemberDeclaration
+    : Attributes? ConstructorModifier* 'Sub' 'New'
+      ( OpenParenthesis ParameterList? CloseParenthesis )? LineTerminator
+      Block?
+      'End' 'Sub' StatementTerminator
+    ;
 
-<pre>ConstructorModifier  ::=  AccessModifier  |  <b>Shared</b></pre>
+ConstructorModifier
+    : AccessModifier
+    | 'Shared'
+    ;
+```
 
 ### Instance Constructors
 
@@ -1144,7 +1202,7 @@ All constructors in reference types must invoke another constructor. If the invo
 
 When a constructor's first statement is of the form `MyBase.New(...)`, the constructor implicitly performs the initializations specified by the variable initializers of the instance variables declared in the type. This corresponds to a sequence of assignments that are executed immediately after invoking the direct base type constructor. Such ordering ensures that all base instance variables are initialized by their variable initializers before any statements that have access to the instance are executed. For example:
 
-```VB.net
+```vb
 Class A
     Protected x As Integer = 1
 End Class
@@ -1162,7 +1220,7 @@ End Class
 
 When `New B()` is used to create an instance of `B`, the following output is produced:
 
-```VB.net
+```vb
 x = 1, y = 1
 ```
 
@@ -1173,12 +1231,11 @@ When a type declares only `Private` constructors, it is not possible in general 
 If a type contains no instance constructor declarations, a default constructor is automatically provided. The default constructor simply invokes the parameterless constructor of the direct base type. If the direct base type does not have an accessible parameterless constructor, a compile-time error occurs. The declared access type for the default constructor is `Public` unless the type is `MustInherit`, in which case the default constructor is `Protected`.
 
 > __Annotation__
-
 > The default access for a `MustInherit` type's default constructor is `Protected` because `MustInherit` classes cannot be created directly. So there is no point in making the default constructor `Public`.
 
 In the following example a default constructor is provided because the class contains no constructor declarations:
 
-```VB.net
+```vb
 Class Message
     Dim sender As Object
     Dim text As String
@@ -1187,7 +1244,7 @@ End Class
 
 Thus, the example is precisely equivalent to the following:
 
-```VB.net
+```vb
 Class Message
     Dim sender As Object
     Dim text As String
@@ -1200,7 +1257,6 @@ End Class
 Default constructors that are emitted into a designer generated class marked with the attribute `Microsoft.VisualBasic.CompilerServices.DesignerGeneratedAttribute` will call the method `Sub InitializeComponent()`, if it exists, after the call to the base constructor.
 
 > __Annotation__
-
 > This allows designer generated files, such as those created by the WinForms designer, to omit the constructor in the designer file. This enables the programmer to specify it themselves, if they so choose.
 
 ### Shared Constructors
@@ -1211,7 +1267,7 @@ Unlike instance constructors, shared constructors have implicit public access, h
 
 The following example shows an `Employee` class with a shared constructor that initializes a shared variable:
 
-```VB.net
+```vb
 Imports System.Data
 
 Class Employee
@@ -1228,7 +1284,7 @@ End Class
 
 A separate shared constructor exists for each closed generic type. Because the shared constructor is executed exactly once for each closed type, it is a convenient place to enforce run-time checks on the type parameter that cannot be checked at compile-time via constraints. For example, the following type uses a shared constructor to enforce that the type parameter is `Integer` or `Double`:
 
-```VB.net
+```vb
 Class EnumHolder(Of T)
     Shared Sub New() 
         If Not GetType(T).IsEnum() Then
@@ -1248,7 +1304,7 @@ Shared constructors are run before the first invocation of any constructor for t
 
 The above guarantees do not apply in the situation where a shared constructor is implicitly created for shared initializers. The output from the following example is uncertain, because the exact ordering of loading and therefore of shared constructor execution is not defined:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         A.F()
@@ -1279,7 +1335,7 @@ End Class
 
 The output could be either of the following:
 
-```VB.net
+```vb
 Init A
 A.F
 Init B
@@ -1288,7 +1344,7 @@ B.F
 
 or
 
-```VB.net
+```vb
 Init B
 Init A
 A.F
@@ -1297,7 +1353,7 @@ B.F
 
 By contrast, the following example produces predictable output. Note that the `Shared` constructor for the class `A` never executes, even though class `B` derives from it:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         B.G()
@@ -1325,14 +1381,14 @@ End Class
 
 The output is:
 
-```VB.net
+```vb
 Init B
 B.G
 ```
 
 It is also possible to construct circular dependencies that allow `Shared` variables with variable initializers to be observed in their default value state, as in the following example:
 
-```VB.net
+```vb
 Class A
     Public Shared X As Integer = B.Y + 1
 End Class
@@ -1348,7 +1404,7 @@ End Class
 
 This produces the output:
 
-```VB.net
+```vb
 X = 1, Y = 2
 ```
 
@@ -1356,7 +1412,7 @@ To execute the `Main` method, the system first loads class `B`. The `Shared` con
 
 Had the `Main` method instead been located in class `A`, the example would have produced the following output:
 
-```VB.net
+```vb
 X = 2, Y = 1
 ```
 
@@ -1369,7 +1425,6 @@ Events are used to notify code of a particular occurrence. An event declaration 
 In addition to the member name added to the type's declaration space, an event declaration implicitly declares several other members. Given an event named `X`, the following members are added to the declaration space:
 
 > __Annotation__
-
 > If the form of the declaration is a method declaration, a nested delegate class named `XEventHandler` is introduced. The nested delegate class matches the method declaration and has the same accessibility as the event. The attributes in the parameter list apply to the parameters of the delegate class.
 
 A `Private` instance variable typed as the delegate, named `XEvent`.
@@ -1378,7 +1433,7 @@ Two methods named `add_X` and `remove_X` which cannot be invoked, overridden or 
 
 If a type attempts to declare a name that matches one of the above names, a compile-time error will result, and the implicit `add_X` and `remove_X` declarations are ignored for the purposes of name binding. It is not possible to override or overload any of the introduced members, although it is possible to shadow them in derived types. For example, the class declaration
 
-```VB.net
+```vb
 Class Raiser
     Public Event Constructed(i As Integer)
 End Class
@@ -1386,7 +1441,7 @@ End Class
 
 is equivalent to the following declaration
 
-```VB.net
+```vb
 Class Raiser
     Public Delegate Sub ConstructedEventHandler(i As Integer)
 
@@ -1410,7 +1465,7 @@ End Class
 
 Declaring an event without specifying a delegate type is the simplest and most compact syntax, but has the disadvantage of declaring a new delegate type for each event. For example, in the following example, three hidden delegate types are created, even though all three events have the same parameter list:
 
-```VB.net
+```vb
 Public Class Button
     Public Event Click(sender As Object, e As EventArgs)
     Public Event DoubleClick(sender As Object, e As EventArgs)
@@ -1420,7 +1475,7 @@ End Class
 
 In the following example, the events simply use the same delegate, `EventHandler`:
 
-```VB.net
+```vb
 Public Delegate Sub EventHandler(sender As Object, e As EventArgs)
 
 Public Class Button
@@ -1432,7 +1487,7 @@ End Class
 
 Events can be handled in one of two ways: statically or dynamically. Statically handling events is simpler and only requires a `WithEvents` variable and a `Handles` clause. In the following example, class `Form1` statically handles the event `Click` of object `Button`:
 
-```VB.net
+```vb
 Public Class Form1
     Public WithEvents Button1 As New Button()
 
@@ -1445,7 +1500,7 @@ End Class
 
 Dynamically handling events is more complex because the event must be explicitly connected and disconnected to in code. The statement `AddHandler` adds a handler for an event, and the statement `RemoveHandler` removes a handler for an event. The next example shows a class `Form1` that adds `Button1_Click` as an event handler for `Button1`'s `Click` event:
 
-```VB.net
+```vb
 Public Class Form1
     Public Sub New()
         ' Add Button1_Click as an event handler for Button1's Click event.
@@ -1466,24 +1521,37 @@ End Class
 
 In method `Disconnect`, the event handler is removed.
 
-<pre>EventMemberDeclaration  ::=
-    RegularEventMemberDeclaration  |
-    CustomEventMemberDeclaration</pre>
+```antlr
+EventMemberDeclaration
+    : RegularEventMemberDeclaration
+    | CustomEventMemberDeclaration
+    ;
 
-<pre>RegularEventMemberDeclaration  ::=
-    [  Attributes  ]  [  EventModifiers+  ]  <b>Event</b>  Identifier  ParametersOrType  [  ImplementsClause  ]
-        StatementTerminator</pre>
+RegularEventMemberDeclaration
+    : Attributes? EventModifiers* 'Event'
+      Identifier ParametersOrType ImplementsClause? StatementTerminator
+    ;
 
-<pre>InterfaceEventMemberDeclaration  ::=
-    [  Attributes  ]  [  InterfaceEventModifiers+  ]  <b>Event</b>  Identifier  ParametersOrType  StatementTerminator</pre>
+InterfaceEventMemberDeclaration
+    : Attributes? InterfaceEventModifiers* 'Event'
+      Identifier ParametersOrType StatementTerminator
+    ;
 
-<pre>ParametersOrType  ::=
-    [  OpenParenthesis  [  ParameterList  ]  CloseParenthesis  ]  |
-<b>As</b>  NonArrayTypeName</pre>
+ParametersOrType
+    : ( OpenParenthesis ParameterList? CloseParenthesis )?
+    | 'As' NonArrayTypeName
+    ;
 
-<pre>EventModifiers  ::=  AccessModifier  |  <b>Shadows</b>  |  <b>Shared</b></pre>
+EventModifiers
+    : AccessModifier
+    | 'Shadows'
+    | 'Shared'
+    ;
 
-<pre>InterfaceEventModifiers  ::=  <b>Shadows</b></pre>
+InterfaceEventModifiers
+    : 'Shadows'
+    ;
+```
 
 ### Custom Events
 
@@ -1491,7 +1559,7 @@ As discussed in the previous section, event declarations implicitly define a fie
 
 Custom events are declared in the same way that events that specify a delegate type are declared, with the exception that the keyword `Custom` must precede the `Event` keyword. A custom event declaration contains three declarations: an `AddHandler` declaration, a `RemoveHandler` declaration and a `RaiseEvent` declaration. None of the declarations can have any modifiers, although they can have attributes. For example:
 
-```VB.net
+```vb
 Class Test
     Private Handlers As EventHandler
 
@@ -1519,24 +1587,19 @@ End Class
 
 The `AddHandler` and `RemoveHandler` declaration take one `ByVal` parameter, which must be of the delegate type of the event. When an `AddHandler` or `RemoveHandler` statement is executed (or a `Handles` clause automatically handles an event), the corresponding declaration will be called. The `RaiseEvent` declaration takes the same parameters as the event delegate and will be called when a `RaiseEvent` statement is executed. All of the declarations must be provided and are considered to be subroutines.
 
-> __Note__
+Note that `AddHandler`, `RemoveHandler` and `RaiseEvent` declarations have the same restriction on line placement that subroutines have. The beginning statement, end statement and block must all appear at the beginning of a logical line.
 
-> `AddHandler`, `RemoveHandler` and `RaiseEvent` declarations have the same restriction on line placement that subroutines have. The beginning statement, end statement and block must all appear at the beginning of a logical line.
-
-<br/>
 
 > __Annotation__
-
 > In Microsoft Visual Basic 11.0, events declared in a file compiled with /target:winmdobj, or declared in an interface in such a file and then implemented elsewhere, are treated a little differently.
-
+>
 > 1. External tools used to build the winmd will typically allow only certain delegate types such as `System.EventHandler(Of T)` or `System.TypedEventHandle(Of T, U)`, and will disallow others.
 > 2. The `XEvent` field has type `System.Runtime.InteropServices.WindowsRuntime.EventRegistrationTokenTable(Of T)` where `T` is the delegate type.
 > 3. The AddHandler accessor returns a `System.Runtime.InteropServices.WindowsRuntime.EventRegistrationToken`, and the RemoveHandler accessor takes a single parameter of the same type.
-
+>
 > Here is an example of such a custom event.
-
-> ```VB.net
-
+>
+> ```vb
 > Imports System.Runtime.InteropServices.WindowsRuntime
 >
 > Public NotInheritable Class ClassInWinMD
@@ -1575,34 +1638,43 @@ A method named `fire_X`, corresponding to the `RaiseEvent` declaration.
 If a type attempts to declare a name that matches one of the above names, a compile-time error will result, and the implicit declarations are all ignored for the purposes of name binding. It is not possible to override or overload any of the introduced members, although it is possible to shadow them in derived types.
 
 > __Note__
-
 > `Custom` is not a reserved word.
 
-<pre>CustomEventMemberDeclaration  ::=
-    [  Attributes  ]  [  EventModifiers+  ]  <b>Custom</b><b>Event</b>  Identifier  <b>As</b>  TypeName  [  ImplementsClause  ]
-        StatementTerminator
-        EventAccessorDeclaration+
-<b>End</b><b>Event</b>  StatementTerminator</pre>
+```antlr
+CustomEventMemberDeclaration
+    : Attributes? EventModifiers* 'Custom' 'Event'
+      Identifier 'As' TypeName ImplementsClause? StatementTerminator
+      EventAccessorDeclaration+
+      'End' 'Event' StatementTerminator
+    ;
 
-<pre>EventAccessorDeclaration  ::=
-    AddHandlerDeclaration  |
-    RemoveHandlerDeclaration  |
-    RaiseEventDeclaration</pre>
+EventAccessorDeclaration
+    : AddHandlerDeclaration
+    | RemoveHandlerDeclaration
+    | RaiseEventDeclaration
+    ;
 
-<pre>AddHandlerDeclaration  ::=
-    [  Attributes  ]  <b>AddHandler</b>  OpenParenthesis  ParameterList  CloseParenthesis  LineTerminator
-    [  Block  ]
-<b>End</b><b>AddHandler</b>  StatementTerminator</pre>
+AddHandlerDeclaration
+    : Attributes? 'AddHandler'
+      OpenParenthesis ParameterList CloseParenthesis LineTerminator
+      Block?
+      'End' 'AddHandler' StatementTerminator
+    ;
 
-<pre>RemoveHandlerDeclaration  ::=
-    [  Attributes  ]  <b>RemoveHandler</b>  OpenParenthesis  ParameterList  CloseParenthesis  LineTerminator
-    [  Block  ]
-<b>End</b><b>RemoveHandler</b>  StatementTerminator</pre>
+RemoveHandlerDeclaration
+    : Attributes? 'RemoveHandler'
+      OpenParenthesis ParameterList CloseParenthesis LineTerminator
+      Block?
+      'End' 'RemoveHandler' StatementTerminator
+    ;
 
-<pre>RaiseEventDeclaration  ::=
-    [  Attributes  ]  <b>RaiseEvent</b>  OpenParenthesis  ParameterList  CloseParenthesis  LineTerminator
-    [  Block  ]
-<b>End</b><b>RaiseEvent</b>  StatementTerminator</pre>
+RaiseEventDeclaration
+    : Attributes? 'RaiseEvent'
+      OpenParenthesis ParameterList CloseParenthesis LineTerminator
+      Block?
+      'End' 'RaiseEvent' StatementTerminator
+    ;
+```
 
 ## Constants
 
@@ -1610,7 +1682,7 @@ A *constant* is a constant value that is a member of a type. Constants are impli
 
 The following example shows a class named `Constants` that has two public constants:
 
-```VB.net
+```vb
 Class Constants
     Public Const A As Integer = 1
     Public Const B As Integer = A + 1
@@ -1619,7 +1691,7 @@ End Class
 
 Constants can be accessed through the class, as in the following example, which prints out the values of `Constants.A` and `Constants.B`.
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Console.WriteLine(Constants.A & ", " & Constants.B)
@@ -1629,7 +1701,7 @@ End Module
 
 A constant declaration that declares multiple constants is equivalent to multiple declarations of single constants. The following example declares three constants in one declaration statement.
 
-```VB.net
+```vb
 Class A
     Protected Const x As Integer = 1, y As Long = 2, z As Short = 3
 End Class
@@ -1637,7 +1709,7 @@ End Class
 
 This declaration is equivalent to the following:
 
-```VB.net
+```vb
 Class A
     Protected Const x As Integer = 1
     Protected Const y As Long = 2
@@ -1649,7 +1721,7 @@ The accessibility domain of the type of the constant must be the same as or a su
 
 The compiler automatically evaluates the constant declarations in the appropriate order. In the following example, the compiler first evaluates `Y`, then `Z`, and finally `X`, producing the values 10, 11, and 12, respectively.
 
-```VB.net
+```vb
 Class A
     Public Const X As Integer = B.Z + 1
     Public Const Y As Integer = 10
@@ -1662,16 +1734,24 @@ End Class
 
 When a symbolic name for a constant value is desired, but the type of the value is not permitted in a constant declaration or when the value cannot be computed at compile time by a constant expression, a read-only variable may be used instead.
 
-<pre>ConstantMemberDeclaration  ::=
-    [  Attributes  ]  [  ConstantModifier+  ]  <b>Const</b>  ConstantDeclarators  StatementTerminator</pre>
+```antlr
+ConstantMemberDeclaration
+    : Attributes? ConstantModifier* 'Const' ConstantDeclarators StatementTerminator
+    ;
 
-<pre>ConstantModifier  ::=  AccessModifier  |  <b>Shadows</b></pre>
+ConstantModifier
+    : AccessModifier
+    | 'Shadows'
+    ;
 
-<pre>ConstantDeclarators  ::=
-    ConstantDeclarator  |
-    ConstantDeclarators  Comma  ConstantDeclarator</pre>
+ConstantDeclarators
+    : ConstantDeclarator ( Comma ConstantDeclarator )*
+    ;
 
-<pre>ConstantDeclarator  ::=  Identifier  [  <b>As</b>  TypeName  ]  Equals  ConstantExpression  StatementTerminator</pre>
+ConstantDeclarator
+    : Identifier ( 'As' TypeName )? Equals ConstantExpression StatementTerminator
+    ;
+```
 
 ## Instance and Shared Variables
 
@@ -1679,7 +1759,7 @@ An instance or shared variable is a member of a type that can store information.
 
 If an initializer is specified, only one instance or shared variable may be declared by the variable declarator:
 
-```VB.net
+```vb
 Class Test
     Dim a, b, c, d As Integer = 10  ' Invalid: multiple initialization
 End Class
@@ -1687,7 +1767,7 @@ End Class
 
 This restriction does not apply to object initializers:
 
-```VB.net
+```vb
 Class Test
     Dim a, b, c, d As New Collection() ' OK
 End Class
@@ -1697,7 +1777,7 @@ A variable declared with the `Shared` modifier is a *shared variable*. A shared 
 
 A shared variable is shared only among instances of a particular closed generic type. For example, the program:
 
-```VB.net
+```vb
 Class C(Of V) 
     Shared InstanceCount As Integer = 0
 
@@ -1728,7 +1808,7 @@ End Class
 
 Prints out:
 
-```VB.net
+```vb
 1
 1
 2
@@ -1746,7 +1826,7 @@ The accessibility domain of an instance or shared variable's type or array eleme
 
 The following example shows a `Color` class that has internal instance variables named `redPart`, `greenPart`, and `bluePart`:
 
-```VB.net
+```vb
 Class Color
     Friend redPart As Short
     Friend bluePart As Short
@@ -1760,30 +1840,37 @@ Class Color
 End Class
 ```
 
-<pre>VariableMemberDeclaration  ::=
-    [  Attributes  ]  VariableModifier+  VariableDeclarators  StatementTerminator</pre>
+```antlr
+VariableMemberDeclaration
+    : Attributes? VariableModifier+ VariableDeclarators StatementTerminator
+    ;
 
-<pre>VariableModifier  ::=
-    AccessModifier  |
-<b>Shadows</b>  |
-<b>Shared</b>  |
-<b>ReadOnly</b>  |
-<b>WithEvents</b>  |
-<b>Dim</b></pre>
+VariableModifier
+    : AccessModifier
+    | 'Shadows'
+    | 'Shared'
+    | 'ReadOnly'
+    | 'WithEvents'
+    | 'Dim'
+    ;
 
-<pre>VariableDeclarators  ::=
-    VariableDeclarator  |
-    VariableDeclarators  Comma  VariableDeclarator</pre>
+VariableDeclarators
+    : VariableDeclarator ( Comma VariableDeclarator )*
+    ;
 
-<pre>VariableDeclarator  ::=
-    VariableIdentifiers   <b>As</b>  ObjectCreationExpression  |
-    VariableIdentifiers  [  <b>As</b>  TypeName  ]  [  Equals  Expression  ]</pre>
+VariableDeclarator
+    : VariableIdentifiers 'As' ObjectCreationExpression
+    | VariableIdentifiers ( 'As' TypeName )? ( Equals Expression )?
+    ;
 
-<pre>VariableIdentifiers  ::=
-    VariableIdentifier  |
-    VariableIdentifiers  Comma  VariableIdentifier</pre>
+VariableIdentifiers
+    : VariableIdentifier ( Comma VariableIdentifier )*
+    ;
 
-<pre>VariableIdentifier  ::=  Identifier  IdentifierModifiers</pre>
+VariableIdentifier
+    : Identifier IdentifierModifiers
+    ;
+```
 
 ### Read-Only Variables
 
@@ -1799,7 +1886,7 @@ A shared read-only variable is useful when a symbolic name for a constant value 
 
 An example of the first such application follows, in which color shared variables are declared `ReadOnly` to prevent them from being changed by other programs:
 
-```VB.net
+```vb
 Class Color
     Friend redPart As Short
     Friend bluePart As Short
@@ -1822,7 +1909,7 @@ Constants and read-only shared variables have different semantics. When an expre
 
 file1.vb:
 
-```VB.net
+```vb
 Namespace Program1
     Public Class Utils
         Public Shared ReadOnly X As Integer = 1
@@ -1832,7 +1919,7 @@ End Namespace
 
 file2.vb:
 
-```VB.net
+```vb
 Namespace Program2
     Module Test
         Sub Main()
@@ -1848,7 +1935,7 @@ The namespaces `Program1` and `Program2` denote two programs that are compiled s
 
 A type can declare that it handles some set of events raised by one of its instance or shared variables by declaring the instance or shared variable that raises the events with the `WithEvents` modifier. For example:
 
-```VB.net
+```vb
 Class Raiser
     Public Event E1()
 
@@ -1876,7 +1963,7 @@ The `WithEvents` modifier causes the variable to be renamed with a leading under
 
 The implicit property created by a `WithEvents` declaration takes care of hooking and unhooking the relevant event handlers. When a value is assigned to the variable, the property first calls the `remove` method for the event on the instance currently in the variable (unhooking the existing event handler, if any). Next the assignment is made, and the property calls the `add` method for the event on the new instance in the variable (hooking up the new event handler). The following code is equivalent to the code above for the standard module `Test`:
 
-```VB.net
+```vb
 Module Test
     Private _x As Raiser
 
@@ -1919,7 +2006,7 @@ Instance and shared variable declarations in classes and instance variable decla
 
 Consider the following example:
 
-```VB.net
+```vb
 Class Test
     Public Shared x As Double = Math.Sqrt(2.0)
     Public i As Integer = 100
@@ -1937,7 +2024,7 @@ End Module
 
 The example produces the following output:
 
-```VB.net
+```vb
 x = 1.4142135623731, i = 100, s = Hello
 ```
 
@@ -1945,7 +2032,7 @@ An assignment to `x` occurs when the class is loaded, and assignments to `i` and
 
 It is useful to think of variable initializers as assignment statements that are automatically inserted in the block of the type's constructor. The following example contains several instance variable initializers.
 
-```VB.net
+```vb
 Class A
     Private x As Integer = 1
     Private y As Integer = -1
@@ -1981,7 +2068,7 @@ End Class
 
 The example corresponds to the code shown below, where each comment indicates an automatically inserted statement.
 
-```VB.net
+```vb
 Class A
     Private x, y, count As Integer
 
@@ -2023,7 +2110,7 @@ End Class
 
 All variables are initialized to the default value of their type before any variable initializers are executed. For example:
 
-```VB.net
+```vb
 Class Test
     Public Shared b As Boolean
     Public i As Integer
@@ -2039,7 +2126,7 @@ End Module
 
 Because `b` is automatically initialized to its default value when the class is loaded and `i` is automatically initialized to its default value when an instance of the class is created, the preceding code produces the following output:
 
-```VB.net
+```vb
 b = False, i = 0
 ```
 
@@ -2051,7 +2138,7 @@ There are three forms of variable initializers: regular initializers, array-size
 
 A *regular initializer* is an expression that is implicitly convertible to the type of the variable. It appears after an equal sign that follows the type name and must be classified as a value. For example:
 
-```VB.net
+```vb
 Module Test
     Dim x As Integer = 10
     Dim y As Integer = 20
@@ -2064,13 +2151,13 @@ End Module
 
 This program produces the output:
 
-```VB.net
+```vb
 x = 10, y = 20
 ```
 
 If a variable declaration has a regular initializer, then only a single variable can be declared at a time. For example:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         ' OK, only one variable declared at a time.
@@ -2086,7 +2173,7 @@ End Module
 
 An *object initializer* is specified using an object creation expression in the place of the type name. An object initializer is equivalent to a regular initializer assigning the result of the object creation expression to the variable. So
 
-```VB.net
+```vb
 Module TestModule
     Sub Main()
         Dim x As New Test(10)
@@ -2096,7 +2183,7 @@ End Module
 
 is equivalent to
 
-```VB.net
+```vb
 Module TestModule
     Sub Main()
         Dim x As Test = New Test(10)
@@ -2110,7 +2197,7 @@ The parenthesis in an object initializer is always interpreted as the argument l
 
 An *array-size initializer* is a modifier on the name of the variable that gives a set of dimension upper bounds denoted by expressions. The upper bound expressions must be classified as values and must be implicitly convertible to `Integer`. The set of upper bounds is equivalent to a variable initializer of an array-creation expression with the given upper bounds. The number of dimensions of the array type is inferred from the array size initializer. So
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim x(5, 10) As Integer
@@ -2120,7 +2207,7 @@ End Module
 
 is equivalent to
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim x As Integer(,) = New Integer(5, 10) {}
@@ -2130,7 +2217,7 @@ End Module
 
 All upper bounds must be equal to or greater than -1, and all dimensions must have an upper bound specified. If the element type of the array being initialized is itself an array type, the array-type modifiers go to the right of the array-size initializer. For example
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim x(5,10)(,,) As Integer
@@ -2142,16 +2229,20 @@ declares a local variable `x` whose type is a two-dimensional array of three-dim
 
 A variable declaration with an array-size initializer cannot have an array type modifier on its type or a regular initializer.
 
-<pre>ArraySizeInitializationModifier  ::=
-    OpenParenthesis  BoundList  CloseParenthesis  [  ArrayTypeModifiers  ]</pre>
+```antlr
+ArraySizeInitializationModifier
+    : OpenParenthesis BoundList CloseParenthesis ArrayTypeModifiers?
+    ;
 
-<pre>BoundList::=
-    Bound |
-    BoundList  Comma  Bound</pre>
+BoundList
+    : Bound ( Comma Bound )*
+    ;
 
-<pre>Bound  ::=
-    Expression  |
-<b>0</b><b>To</b>  Expression</pre>
+Bound
+    : Expression
+    | '0' 'To' Expression
+    ;
+```
 
 ### System.MarshalByRefObject Classes
 
@@ -2167,7 +2258,7 @@ There is one exception to this rule: a member implicitly or explicitly qualified
 
 Properties are defined with property declarations. The first part of a property declaration resembles a field declaration. The second part includes a `Get` accessor and/or a `Set` accessor. In the example below, the `Button` class defines a `Caption` property.
 
-```VB.net
+```vb
 Public Class Button
     Private captionValue As String
 
@@ -2188,7 +2279,7 @@ End Class
 
 Based on the `Button` class above, the following is an example of use of the `Caption` property:
 
-```VB.net
+```vb
 Dim okButton As Button = New Button()
 
 okButton.Caption = "OK" ' Invokes Set accessor.
@@ -2211,7 +2302,7 @@ If the property specifies the `WriteOnly` modifier, the property must have a `Se
 
 The `Get` and `Set` accessors of a property are not distinct members, and it is not possible to declare the accessors of a property separately. The following example does not declare a single read-write property. Rather, it declares two properties with the same name, one read-only and one write-only:
 
-```VB.net
+```vb
 Class A
     Private nameValue As String
 
@@ -2245,7 +2336,7 @@ By default, the accessibility of a property's `Get` and `Set` accessors is the s
 
 When one of a property's accessors is accessible but the other one is not, the property is treated as if it was read-only or write-only. For example:
 
-```VB.net
+```vb
 Class A
     Public Property P() As Integer
         Get
@@ -2270,7 +2361,7 @@ End Module
 
 When a derived type shadows a property, the derived property hides the shadowed property with respect to both reading and writing. In the following example, the `P` property in `B` hides the `P` property in `A` with respect to both reading and writing:
 
-```VB.net
+```vb
 Class A
     Public WriteOnly Property P() As Integer
         Set (Value As Integer)
@@ -2302,7 +2393,7 @@ Except for differences in declaration and invocation syntax, `Overridable`, `Not
 
 In the following example `X` is an `Overridable` read-only property, `Y` is an `Overridable` read-write property, and `Z` is a `MustOverride` read-write property.
 
-```VB.net
+```vb
 MustInherit Class A
     Private _y As Integer
 
@@ -2329,7 +2420,7 @@ Because `Z` is `MustOverride`, the containing class `A` must be declared `MustIn
 
 By contrast, a class that derives from class `A` is shown below:
 
-```VB.net
+```vb
 Class B
     Inherits A
 
@@ -2369,7 +2460,7 @@ Here, the declarations of properties `X`,`Y`, and `Z` override the base properti
 
 Properties can be used to delay initialization of a resource until the moment it is first referenced. For example:
 
-```VB.net
+```vb
 Imports System.IO
 
 Public Class ConsoleStreams
@@ -2408,63 +2499,84 @@ End Class
 
 The `ConsoleStreams` class contains three properties, `In`, `Out`, and `Error`, that represent the standard input, output, and error devices, respectively. By exposing these members as properties, the `ConsoleStreams` class can delay their initialization until they are actually used. For example, upon first referencing the `Out` property, as in `ConsoleStreams.Out.WriteLine("hello, world")`, the underlying `TextWriter` for the output device is initialized. But if the application makes no reference to the `In` and `Error` properties, then no objects are created for those devices.
 
-<pre>PropertyMemberDeclaration  ::=
-    RegularPropertyMemberDeclaration  |
-    MustOverridePropertyMemberDeclaration  |
-    AutoPropertyMemberDeclaration</pre>
+```antlr
+PropertyMemberDeclaration
+    : RegularPropertyMemberDeclaration
+    | MustOverridePropertyMemberDeclaration
+    | AutoPropertyMemberDeclaration
+    ;
 
-<pre>PropertySignature  ::=
-<b>Property</b>  Identifier  [  OpenParenthesis  [  ParameterList  ]  CloseParenthesis  ]
-        [  <b>As</b>  [  Attributes  ]  TypeName  ]</pre>
+PropertySignature
+    : 'Property'
+      Identifier ( OpenParenthesis ParameterList? CloseParenthesis )?
+      ( 'As' Attributes? TypeName )?
+    ;
 
-<pre>RegularPropertyMemberDeclaration  ::=
-    [  Attributes  ]  [  PropertyModifier+  ]  PropertySignature  [  ImplementsClause  ]  LineTerminator
-    PropertyAccessorDeclaration+
-<b>End</b><b>Property</b>  StatementTerminator</pre>
+RegularPropertyMemberDeclaration
+    : Attributes? PropertyModifier* PropertySignature
+      ImplementsClause? LineTerminator
+      PropertyAccessorDeclaration+
+      'End' 'Property' StatementTerminator
+    ;
 
-<pre>MustOverridePropertyMemberDeclaration  ::=
-    [  Attributes  ]  MustOverridePropertyModifier+  PropertySignature  [  ImplementsClause  ]
-        StatementTerminator</pre>
+MustOverridePropertyMemberDeclaration
+    : Attributes? MustOverridePropertyModifier+ PropertySignature
+      ImplementsClause? StatementTerminator
+    ;
 
-<pre>AutoPropertyMemberDeclaration  ::=
-    [  Attributes  ]  [  AutoPropertyModifier+  ]  <b>Property</b>  Identifier
-        [  OpenParenthesis  [  ParameterList  ]  CloseParenthesis  ]
-        [  <b>As</b>  [  Attributes  ]  TypeName  ]  [  Equals  Expression  ]  [  ImplementsClause  ]  LineTerminator  |
-    [  Attributes  ]  [  AutoPropertyModifier+  ]  <b>Property</b>  Identifier
-        [  OpenParenthesis  [  ParameterList  ]  CloseParenthesis  ]
-<b>As</b>  [  Attributes  ]  <b>New</b>  [  NonArrayTypeName
-        [  OpenParenthesis  [  ArgumentList  ]  CloseParenthesis  ]  ]  [  ObjectCreationExpressionInitializer  ]
-        [  ImplementsClause  ]  LineTerminator</pre>
+AutoPropertyMemberDeclaration
+    : Attributes? AutoPropertyModifier* 'Property' Identifier
+      ( OpenParenthesis ParameterList? CloseParenthesis )?
+      ( 'As' Attributes? TypeName )? ( Equals Expression )?
+      ImplementsClause? LineTerminator
+    | Attributes? AutoPropertyModifier* 'Property' Identifier
+      ( OpenParenthesis ParameterList? CloseParenthesis )?
+      'As' Attributes? 'New'
+      ( NonArrayTypeName ( OpenParenthesis ArgumentList? CloseParenthesis )? )?
+      ObjectCreationExpressionInitializer?
+      ImplementsClause? LineTerminator
+    ;
 
-<pre>InterfacePropertyMemberDeclaration  ::=
-    [  Attributes  ]  [  InterfacePropertyModifier+  ]  PropertySignature  StatementTerminator</pre>
+InterfacePropertyMemberDeclaration
+    : Attributes? InterfacePropertyModifier* PropertySignature StatementTerminator
+    ;
 
-<pre>AutoPropertyModifier  ::=
-    AccessModifier  |
-<b>Shadows</b>  |
-<b>Shared</b>  |
-<b>Overridable</b>  |
-<b>NotOverridable</b>  |
-<b>Overrides</b>  |
-<b>Overloads</b></pre>
+AutoPropertyModifier
+    : AccessModifier
+    | 'Shadows'
+    | 'Shared'
+    | 'Overridable'
+    | 'NotOverridable'
+    | 'Overrides'
+    | 'Overloads'
+    ;
 
-<pre>PropertyModifier  ::=
-    AutoPropertyModifier  |
-<b>Default</b>  |
-<b>ReadOnly</b>  |
-<b>WriteOnly</b>  |
-<b>Iterator</b></pre>
+PropertyModifier
+    : AutoPropertyModifier
+    | 'Default'
+    | 'ReadOnly'
+    | 'WriteOnly'
+    | 'Iterator'
+    ;
 
-<pre>MustOverridePropertyModifier  ::=  PropertyModifier  |  <b>MustOverride</b></pre>
+MustOverridePropertyModifier
+    : PropertyModifier
+    | 'MustOverride'
+    ;
 
-<pre>InterfacePropertyModifier  ::=
-<b>Shadows</b>  |
-<b>Overloads</b>  |
-<b>Default</b>  |
-<b>ReadOnly</b>  |
-<b>WriteOnly</b></pre>
+InterfacePropertyModifier
+    : 'Shadows'
+    | 'Overloads'
+    | 'Default'
+    | 'ReadOnly'
+    | 'WriteOnly'
+    ;
 
-<pre>PropertyAccessorDeclaration  ::=  PropertyGetDeclaration  |  PropertySetDeclaration</pre>
+PropertyAccessorDeclaration
+    : PropertyGetDeclaration
+    | PropertySetDeclaration
+    ;
+```
 
 ### Get Accessor Declarations
 
@@ -2472,7 +2584,7 @@ A `Get` accessor (getter) is declared by using a property `Get` declaration. A p
 
 A special local variable, which is implicitly declared in the `Get` accessor body's declaration space with the same name as the property, represents the return value of the property. The local variable has special name resolution semantics when used in expressions. If the local variable is used in a context that expects an expression that is classified as a method group, such as an invocation expression, then the name resolves to the function rather than to the local variable. For example:
 
-```VB.net
+```vb
 ReadOnly Property F(i As Integer) As Integer
     Get
         If i = 0 Then
@@ -2486,13 +2598,13 @@ End Property
 
 The use of parentheses can cause ambiguous situations (such as `F(1)` where `F` is a property whose type is a one-dimensional array). In all ambiguous situations, the name resolves to the property rather than the local variable. For example:
 
-```VB.net
+```vb
 ReadOnly Property F(i As Integer) As Integer()
     Get
         If i = 0 Then
             F = new Integer(2) { 1, 2, 3 }
         Else
-            F = F(i – 1) ' Recursive call, not index.
+            F = F(i -- 1) ' Recursive call, not index.
         End If
     End Get
 End Property
@@ -2500,7 +2612,7 @@ End Property
 
 When control flow leaves the `Get` accessor body, the value of the local variable is passed back to the invocation expression. Because invoking a `Get` accessor is conceptually equivalent to reading the value of a variable, it is considered bad programming style for `Get` accessors to have observable side effects, as illustrated in the following example:
 
-```VB.net
+```vb
 Class Counter
     Private Value As Integer
 
@@ -2518,13 +2630,15 @@ The value of the `NextValue` property depends on the number of times the propert
 The "no side effects" convention for `Get` accessors does not mean that `Get` accessors should always be written to simply return values stored in variables. Indeed, `Get` accessors often compute the value of a property by accessing multiple variables or invoking methods. However, a properly designed `Get` accessor performs no actions that cause observable changes in the state of the object.
 
 > __Note__
-
 > `Get` accessors have the same restriction on line placement that subroutines have. The beginning statement, end statement and block must all appear at the beginning of a logical line.
 
-<pre>PropertyGetDeclaration  ::=
-    [  Attributes  ]  [  AccessModifier  ]  <b>Get</b>  LineTerminator
-    [  Block  ]
-<b>End</b><b>Get</b>  StatementTerminator</pre>
+```antlr
+PropertyGetDeclaration
+    : Attributes? AccessModifier? 'Get' LineTerminator
+      Block?
+      'End' 'Get' StatementTerminator
+    ;
+```
 
 ### Set Accessor Declarations
 
@@ -2533,19 +2647,22 @@ A `Set` accessor (setter) is declared by using a property set declaration. A pro
 If a parameter list is specified, it must have one member, that member must have no modifiers except `ByVal`, and its type must be the same as the type of the property. The parameter represents the property value being set. If the parameter is omitted, a parameter named `Value` is implicitly declared.
 
 > __Note__
-
 > `Set` accessors have the same restriction on line placement that subroutines have. The beginning statement, end statement and block must all appear at the beginning of a logical line.
 
-<pre>PropertySetDeclaration  ::=
-    [  Attributes  ]  [  AccessModifier  ]  <b>Set</b>  [  OpenParenthesis  [  ParameterList  ]  CloseParenthesis  ]  LineTerminator
-    [  Block  ]
-<b>End</b><b>Set</b>  StatementTerminator</pre>
+```antlr
+PropertySetDeclaration
+    : Attributes? AccessModifier? 'Set'
+      ( OpenParenthesis ParameterList? CloseParenthesis )? LineTerminator
+      Block?
+      'End' 'Set' StatementTerminator
+    ;
+```
 
 ### Default Properties
 
 A property that specifies the modifier `Default` is called a *default property*. Any type that allows properties may have a default property, including interfaces. The default property may be referenced without having to qualify the instance with the name of the property. Thus, given a class
 
-```VB.net
+```vb
 Class Test
     Public Default ReadOnly Property Item(i As Integer) As Integer
         Get
@@ -2557,7 +2674,7 @@ End Class
 
 the code
 
-```VB.net
+```vb
 Module TestModule
     Sub Main()
         Dim x As Test = New Test()
@@ -2570,7 +2687,7 @@ End Module
 
 is equivalent to
 
-```VB.net
+```vb
 Module TestModule
     Sub Main()
         Dim x As Test = New Test()
@@ -2583,7 +2700,7 @@ End Module
 
 Once a property is declared `Default`, all of the properties overloaded on that name in the inheritance hierarchy become the default property, whether they have been declared `Default` or not. Declaring a property `Default` in a derived class when the base class declared a default property by another name does not require any other modifiers such as `Shadows` or `Overrides`. This is because the default property has no identity or signature and so cannot be shadowed or overloaded. For example:
 
-```VB.net
+```vb
 Class Base
     Public ReadOnly Default Property Item(i As Integer) As Integer
         Get
@@ -2630,7 +2747,7 @@ End Module
 
 This program will produce the output:
 
-```VB.net
+```vb
 MoreDerived = 10
 Derived = 10
 Base = 10
@@ -2644,13 +2761,13 @@ If a property omits declaration of any accessors, an implementation of the prope
 
 An automatically implemented property `x`, even one overriding another property, introduces a private local variable `_x` with the same type as the property. If there is a collision between the local variable's name and another declaration, a compile-time error will be reported. The automatically implemented property's `Get` accessor returns the value of the local and the property's `Set` accessor that sets the value of the local. For example, the declaration:
 
-```VB.net
+```vb
 Public Property x() As Integer
 ```
 
 is roughly equivalent to:
 
-```VB.net
+```vb
 Private _x As Integer
 Public Property x() As Integer
     Get
@@ -2664,22 +2781,17 @@ End Property
 
 As with variable declarations, an automatically implemented property can include an initializer. For example:
 
-```VB.net
+```vb
 Public Property x() As Integer = 10
 Public Shared Property y() As New Customer() With { .Name = "Bob" }
 ```
 
 > __Annotation__
-
-> __Annotation__
-
-> __Annotation__
-
 > When an automatically implemented property is initialized, it is initialized through the property, not the underlying field. This is so overriding properties can intercept the initialization if they need to.
 
 Array initializers are allowed on automatically implemented properties, except that there is no way to specify the array bounds explicitly.  For example:
 
-```VB.net
+```vb
 ' Valid
 Property x As Integer() = {1, 2, 3}
 Property y As Integer(,) = {{1, 2, 3}, {12, 13, 14}, {11, 10, 9}}
@@ -2696,7 +2808,7 @@ An iterator property must have an explicit `Get` accessor, and its type must be 
 
 Here is an example of an iterator property:
 
-```VB.net
+```vb
 Class Family
     Property Daughters As New List(Of String) From {"Beth", "Diane"}
     Property Sons As New List(Of String) From {"Abe", "Carl"}
@@ -2723,7 +2835,7 @@ End Module
 
 *Operators* are methods that define the meaning of an existing Visual Basic operator for the containing class. When the operator is applied to the class in an expression, the operator is compiled into a call to the operator method defined in the class. Defining an operator for a class is also known as *overloading* the operator. It is not possible to overload an operator that already exists; in practice, this primarily applies to conversion operators. For example, it is not possible to overload the conversion from a derived class to a base class:
 
-```VB.net
+```vb
 Class Base
 End Class
 
@@ -2738,7 +2850,7 @@ End Class
 
 Operators can also be overloaded in the common sense of the word:
 
-```VB.net
+```vb
 Class Base
     Public Shared Widening Operator CType(b As Base) As Integer
         ...
@@ -2767,20 +2879,27 @@ The only exception to these restrictions applies to nullable value types. Since 
 The precedence and associativity of an operator cannot be modified by an operator declaration.
 
 > __Note__
-
 > Operators have the same restriction on line placement that subroutines have. The beginning statement, end statement and block must all appear at the beginning of a logical line.
 
-<pre>OperatorDeclaration  ::=
-    [  Attributes  ]  [  OperatorModifier+  ]  <b>Operator</b>  OverloadableOperator  OpenParenthesis  ParameterList  CloseParenthesis
-        [  <b>As</b>  [  Attributes  ]  TypeName  ]  LineTerminator
-    [  Block  ]
-<b>End</b><b>Operator</b>  StatementTerminator</pre>
+```antlr
+OperatorDeclaration
+    : Attributes? OperatorModifier* 'Operator' OverloadableOperator
+      OpenParenthesis ParameterList CloseParenthesis
+      ( 'As' Attributes? TypeName )? LineTerminator
+      Block?
+      'End' 'Operator' StatementTerminator
+    ;
 
-<pre>OperatorModifier  ::=  <b>Public</b>  |  <b>Shared</b>  |  <b>Overloads</b>  |  <b>Shadows</b>  |  <b>Widening</b>  |  <b>Narrowing</b></pre>
+OperatorModifier
+    : 'Public' | 'Shared' | 'Overloads' | 'Shadows' | 'Widening' | 'Narrowing'
+    ;
 
-<pre>OverloadableOperator  ::=
-<b>+</b>  |  <b>-</b>  |  <b>*</b>  |  <b>/</b>  |  <b>\</b>  |  <b>&</b>  |  <b>Like</b>  |  <b>Mod</b>  |  <b>And</b>  |  <b>Or</b>  |  <b>Xor</b>  |  <b>^</b>  |  <b><</b><b><</b>  |  <b>></b><b>></b>  |
-<b>=</b>  |  <b><</b><b>></b>  |  <b>></b>  |  <b><</b>  |  <b>></b><b>=</b>  |  <b><</b><b>=</b>  |  <b>Not</b>  |  <b>IsTrue</b>  |  <b>IsFalse</b>  |  <b>CType</b></pre>
+OverloadableOperator
+    : '+' | '-' | '*' | '/' | '\\' | '&' | 'Like' | 'Mod' | 'And' | 'Or' | 'Xor'
+    | '^' | '<' '<' | '>' '>' | '=' | '<' '>' | '>' | '<' | '>' '=' | '<' '='
+    | 'Not' | 'IsTrue' | 'IsFalse' | 'CType'
+    ;
+```
 
 ### Unary Operators
 
@@ -2796,7 +2915,7 @@ The `IsTrue` and `IsFalse` operators (corresponding methods: `op_True`, `op_Fals
 
 All overloaded unary operators must take a single parameter of the containing type and may return any type, except for `IsTrue` and `IsFalse`, which must return `Boolean`. If the containing type is a generic type, the type parameters must match the containing type's type parameters. For example,
 
-```VB.net
+```vb
 Structure Complex
     ...
 
@@ -2809,7 +2928,6 @@ End Structure
 If a type overloads one of `IsTrue` or `IsFalse`, then it must overload the other as well. If only one is overloaded, a compile-time error results.
 
 > __Note__
-
 > `IsTrue` and `IsFalse` are not reserved words.
 
 ### Binary Operators
@@ -2821,7 +2939,6 @@ The addition `+`, subtraction `-`, multiplication `*`, division `/`, integral di
 The relational operators `=`, `<>`, `<`, `>`, `<=`, `>=` (corresponding methods: `op_Equality`, `op_Inequality`, `op_LessThan`, `op_GreaterThan`, `op_LessThanOrEqual`, `op_GreaterThanOrEqual`)
 
 > __Note__
-
 > While the equality operator can be overloaded, the assignment operator (used only in assignment statements) cannot be overloaded.
 
 The `Like` operator (corresponding method: `op_Like`)
@@ -2845,18 +2962,16 @@ Operator `>=` and operator `<=`
 If one of the pair is declared, then the other must also be declared with matching parameter and return types, or a compile-time error will result.
 
 > __Annotation__
-
 > The purpose of requiring paired declarations of relational operators is to try and ensure at least a minimum level of logical consistency in overloaded operators.
 
 In contrast to the relational operators, overloading both the division and integral division operators is strongly discouraged, although not an error.
 
 > __Annotation__
-
 > In general, the two types of division should be entirely distinct: a type that supports division is either integral (in which case it should support `\`) or not (in which case it should support `/`). We considered making it an error to define both operators, but because their languages do not generally distinguish between two types of division the way Visual Basic does, we felt it was safest to allow the practice but strongly discourage it.
 
 Compound assignment operators cannot be overloaded directly. Instead, when the corresponding binary operator is overloaded, the compound assignment operator will use the overloaded operator. For example:
 
-```VB.net
+```vb
 Structure Complex
     ...
 
@@ -2881,7 +2996,7 @@ Conversion operators define new conversions between types. These new conversions
 
 In general, user-defined widening conversions should be designed to never throw exceptions and never lose information. If a user-defined conversion can cause exceptions (for example, because the source argument is out of range) or loss of information (such as discarding high-order bits), then that conversion should be defined as a narrowing conversion. In the example:
 
-```VB.net
+```vb
 Structure Digit
     Dim value As Byte
 
@@ -2904,7 +3019,7 @@ the conversion from `Digit` to `Byte` is a widening conversion because it never 
 
 Unlike all other type members that can be overloaded, the signature of a conversion operator includes the target type of the conversion. This is the only type member for which the return type participates in the signature. The widening or narrowing classification of a conversion operator, however, is not part of the operator's signature. Thus, a class or structure cannot declare both a widening conversion operator and a narrowing conversion operator with the same source and target types.
 
-A user-defined conversion operator must convert either to or from the containing type – for example, it is possible for a class `C` to define a conversion from `C` to `Integer` and from `Integer` to `C`, but not from `Integer` to `Boolean`. If the containing type is a generic type, the type parameters must match the containing type's type parameters. Also, it is not possible to redefine an intrinsic (i.e. non-user-defined) conversion. As a result, a type cannot declare a conversion where:
+A user-defined conversion operator must convert either to or from the containing type -- for example, it is possible for a class `C` to define a conversion from `C` to `Integer` and from `Integer` to `C`, but not from `Integer` to `Boolean`. If the containing type is a generic type, the type parameters must match the containing type's type parameters. Also, it is not possible to redefine an intrinsic (i.e. non-user-defined) conversion. As a result, a type cannot declare a conversion where:
 
 The source type and the destination type are the same.
 
@@ -2916,7 +3031,7 @@ The source type and destination types are related by inheritance (including `Obj
 
 The only exception to these rules applies to nullable value types. Since nullable value types do not have an actual type definition, a value type can declare user-defined conversions for the nullable version of the type. When determining whether a type can declare a particular user-defined conversion, the `?` modifiers are first dropped off of all of the types involved in the declaration for the purposes of validity checking. Thus, the following declaration is valid because `S` can define a conversion from `S` to `T`:
 
-```VB.net
+```vb
 Structure T
     ...
 End Structure
@@ -2930,7 +3045,7 @@ End Structure
 
 The following declaration is not valid, however, because structure `S` cannot define a conversion from `S` to `S`:
 
-```VB.net
+```vb
 Structure S
     Public Shared Widening Operator CType(ByVal v As S) As S?
         ...

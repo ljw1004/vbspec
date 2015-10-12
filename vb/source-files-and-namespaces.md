@@ -26,10 +26,18 @@ The two source files contribute to the global namespace, in this case declaring 
 Except where noted, statements within a Visual Basic program can be terminated either by a line terminator or by a colon.
 
 ```antlr
-Start:                OptionStatement* ImportsStatement* AttributesStatement*
-                      NamespaceMemberDeclaration*;
-StatementTerminator:  LineTerminator | ':';
-AttributesStatement:  Attributes StatementTerminator;
+Start
+    : OptionStatement* ImportsStatement* AttributesStatement* NamespaceMemberDeclaration*
+    ;
+
+StatementTerminator
+    : LineTerminator
+    | ':'
+    ;
+
+AttributesStatement
+    : Attributes StatementTerminator
+    ;
 ```
 
 ## Program Startup and Termination
@@ -63,8 +71,12 @@ Option Compare Text  ' Not allowed, Option Compare is already specified.
 There are four compilation options: strict type semantics, explicit declaration semantics, comparison semantics, and local variable type inference semantics. If a source file does not include a particular `Option` statement, then the compilation environment determines which particular set of semantics will be used. There is also a fifth compilation option, integer overflow checks, which can only be specified through the compilation environment.
 
 ```antlr
-OptionStatement:         OptionExplicitStatement | OptionStrictStatement
-                         | OptionCompareStatement | OptionInferStatement;
+OptionStatement
+    : OptionExplicitStatement
+    | OptionStrictStatement
+    | OptionCompareStatement
+    | OptionInferStatement
+    ;
 ```
 
 ### Option Explicit Statement
@@ -87,8 +99,13 @@ End Module
 In this example, the local variable `x` is implicitly declared by assigning to it. The type of `x` is `Object`.
 
 ```antlr
-OptionExplicitStatement: 'Option' 'Explicit' OnOff? StatementTerminator;
-OnOff:                   'On' | 'Off';
+OptionExplicitStatement
+    : 'Option' 'Explicit' OnOff? StatementTerminator
+    ;
+
+OnOff
+    : 'On' | 'Off'
+    ;
 ```
 
 ### Option Strict Statement
@@ -124,7 +141,9 @@ Operations on type `Object` other than `TypeOf`...`Is`, `Is`, and `IsNot`.
 Omitting the `As` clause in a declaration that does not have an inferred type.
 
 ```antlr
-OptionStrictStatement:   'Option' 'Strict' OnOff? StatementTerminator;
+OptionStrictStatement
+    : 'Option' 'Strict' OnOff? StatementTerminator
+    ;
 ```
 
 ### Option Compare Statement
@@ -147,8 +166,13 @@ End Module
 In this case, the string comparison is done using a text comparison that ignores case differences. If `Option Compare Binary` had been specified, then this would have printed `False`.
 
 ```antlr
-OptionCompareStatement:  'Option' 'Compare' CompareOption StatementTerminator;
-CompareOption:           'Binary' | 'Text';
+OptionCompareStatement
+    : 'Option' 'Compare' CompareOption StatementTerminator
+    ;
+
+CompareOption
+    : 'Binary' | 'Text'
+    ;
 ```
 
 ### Integer Overflow Checks
@@ -177,7 +201,9 @@ End Module
 ```
 
 ```antlr
-OptionInferStatement:    'Option' 'Infer' OnOff? StatementTerminator;
+OptionInferStatement
+    : 'Option' 'Infer' OnOff? StatementTerminator
+    ;
 ```
 
 ## Imports Statement
@@ -231,9 +257,19 @@ End Class
 ```
 
 ```antlr
-ImportsStatement:     'Imports' ImportsClauses StatementTerminator;
-ImportsClauses:       ImportsClause ( Comma ImportsClause )*;
-ImportsClause:        AliasImportsClause | MembersImportsClause | XMLNamespaceImportsClause;
+ImportsStatement
+    : 'Imports' ImportsClauses StatementTerminator
+    ;
+
+ImportsClauses
+    : ImportsClause ( Comma ImportsClause )*
+    ;
+
+ImportsClause
+    : AliasImportsClause
+    | MembersImportsClause
+    | XMLNamespaceImportsClause
+    ;
 ```
 
 ### Import Aliases
@@ -383,8 +419,10 @@ End Class
 
 In the above example, because the scope of the import alias that introduces `R` only extends to declarations in the source file in which it is contained, `R` is unknown in the second source file.
 
-```vb
-AliasImportsClause:   Identifier Equals TypeName;
+```antlr
+AliasImportsClause
+    : Identifier Equals TypeName
+    ;
 ```
 
 ### Namespace Imports
@@ -469,7 +507,9 @@ End Namespace
 Only namespaces, classes, structures, enumerated types, and standard modules may be imported.
 
 ```antlr
-MembersImportsClause: TypeName;
+MembersImportsClause
+    : TypeName
+    ;
 ```
 
 ### XML Namespace Imports
@@ -498,11 +538,15 @@ Imports <xmlns:db="http://example.org/database-two">
 ```
 
 ```antlr
-XMLNamespaceImportsClause:  '<' XMLNamespaceAttributeName
-                            XMLWhitespace? Equals XMLWhitespace?
-                            XMLNamespaceValue '>';
-XMLNamespaceValue:   DoubleQuoteCharacter XMLAttributeDoubleQuoteValueCharacter* DoubleQuoteCharacter
-                     | SingleQuoteCharacter XMLAttributeSingleQuoteValueCharacter* SingleQuoteCharacter;
+XMLNamespaceImportsClause
+    : '<' XMLNamespaceAttributeName XMLWhitespace? Equals XMLWhitespace?
+      XMLNamespaceValue '>'
+    ;
+
+XMLNamespaceValue
+    : DoubleQuoteCharacter XMLAttributeDoubleQuoteValueCharacter* DoubleQuoteCharacter
+    | SingleQuoteCharacter XMLAttributeSingleQuoteValueCharacter* SingleQuoteCharacter
+    ;
 ```
 
 ## Namespaces
@@ -595,12 +639,22 @@ When dealing with the members of a namespace, it is not important where a partic
 
 Namespaces are by definition `Public`, so a namespace declaration cannot include any access modifiers.
 
-```vb
-NamespaceDeclaration:  'Namespace' NamespaceName StatementTerminator
-                       NamespaceMemberDeclaration*
-                       'End' 'Namespace' StatementTerminator;
-NamespaceName:         RelativeNamespaceName | 'Global' | 'Global' '.' RelativeNamespaceName;
-RelativeNamespaceName: Identifier ( Period IdentifierOrKeyword )*;
+```antlr
+NamespaceDeclaration
+    : 'Namespace' NamespaceName StatementTerminator
+      NamespaceMemberDeclaration*
+      'End' 'Namespace' StatementTerminator
+    ;
+
+NamespaceName
+    : RelativeNamespaceName
+    | 'Global'
+    | 'Global' '.' RelativeNamespaceName
+    ;
+
+RelativeNamespaceName
+    : Identifier ( Period IdentifierOrKeyword )*
+    ;
 ```
 
 ### Namespace Members
@@ -608,8 +662,21 @@ RelativeNamespaceName: Identifier ( Period IdentifierOrKeyword )*;
 Namespace members can only be namespace declarations and type declarations. Type declarations may have `Public` or `Friend` access. The default access for types is `Friend` access.
 
 ```antlr
-NamespaceMemberDeclaration:  NamespaceDeclaration | TypeDeclaration;
-TypeDeclaration:             ModuleDeclaration | NonModuleDeclaration;
-NonModuleDeclaration:        EnumDeclaration | StructureDeclaration | InterfaceDeclaration
-                             | ClassDeclaration | DelegateDeclaration;
+NamespaceMemberDeclaration
+    : NamespaceDeclaration
+    | TypeDeclaration
+    ;
+
+TypeDeclaration
+    : ModuleDeclaration
+    | NonModuleDeclaration
+    ;
+
+NonModuleDeclaration
+    : EnumDeclaration
+    | StructureDeclaration
+    | InterfaceDeclaration
+    | ClassDeclaration
+    | DelegateDeclaration
+    ;
 ```

@@ -2,21 +2,24 @@
 
 An expression is a sequence of operators and operands that specifies a computation of a value, or that designates a variable or constant. This chapter defines the syntax, order of evaluation of operands and operators, and meaning of expressions.
 
-<pre>Expression  ::=
-    SimpleExpression  |
-    TypeExpression  |
-    MemberAccessExpression  |
-    DictionaryAccessExpression  |
-*InvocationExpression* |
-    IndexExpression  |
-    NewExpression  |
-    CastExpression  |
-    OperatorExpression  |
-    ConditionalExpression  |
-    LambdaExpression  |
-    QueryExpression  |
-    XMLLiteralExpression  |
-    XMLMemberAccessExpression</pre>
+```antlr
+Expression
+    : SimpleExpression
+    | TypeExpression
+    | MemberAccessExpression
+    | DictionaryAccessExpression
+    | InvocationExpression
+    | IndexExpression
+    | NewExpression
+    | CastExpression
+    | OperatorExpression
+    | ConditionalExpression
+    | LambdaExpression
+    | QueryExpression
+    | XMLLiteralExpression
+    | XMLMemberAccessExpression
+    ;
+```
 
 ## Expression Classifications
 
@@ -66,7 +69,7 @@ The following types of expressions can be reclassified:
 - A method group can be reclassified as a value. The method group expression is interpreted as an invocation expression with the associated target expression and type parameter list, and empty parentheses (that is, `f` is interpreted as `f()` and `f(Of Integer)` is interpreted as `f(Of Integer)()`). This reclassification may result in the expression being further reclassified as void.
 - A method pointer can be reclassified as a value. This reclassification can only occur in the context of a conversion where the target type is known. The method pointer expression is interpreted as the argument to a delegate instantiation expression of the appropriate type with the associated type argument list. For example:
 
-```VB.net
+```vb
 Delegate Sub D(i As Integer)
 
 Module Test
@@ -92,21 +95,20 @@ An async or iterator lambda method may only be interpreted as the argument to a 
 If conversion from any of the delegate's parameter types to the corresponding lambda parameter types is a narrowing conversion, then the reclassification is judged as narrowing; otherwise it is widening.
 
 > __Annotation__
-
 > The exact translation between lambda methods and expression trees may not be fixed between versions of the compiler and is beyond the scope of this specification. For Microsoft Visual Basic 11.0, all lambda expressions may be converted to expression trees subject to the following restrictions:
-
-> -  Only single-line lambda expressions without ByRef parameters may be converted to expression trees- Of the single-line `Sub` lambdas, only invocation statements may be converted to expression trees.
-> - Anonymous type expressions cannot be converted to expression trees if an earlier field initializer is used to initialize a subsequent field initializer, e.g- `New With {.a=1, .b=.a}`
-> - Object initializer expressions cannot be converted to expression trees if a member of the current object being initialized is used in one of the field initializers, e.g- `New C1 With {.a=1, .b=.Method1()}`
-> - Multi-dimensional array creation expressions can only be converted to expression trees if they declare their element type explicitly.
-> - Late-binding expressions cannot be converted to expression trees.
-> - When a variable or field is passed ByRef to an invocation expression but does not have exactly the same type as the ByRef parameter, or when a property is passed ByRef, normal VB semantics are that a copy of the argument is passed ByRef and its final value is then copied back into the variable or field or property- In expression trees, the copy-back does not happen.
-
+>
+> 1.  Only single-line lambda expressions without ByRef parameters may be converted to expression trees- Of the single-line `Sub` lambdas, only invocation statements may be converted to expression trees.
+> 2.  Anonymous type expressions cannot be converted to expression trees if an earlier field initializer is used to initialize a subsequent field initializer, e.g- `New With {.a=1, .b=.a}`
+> 3.  Object initializer expressions cannot be converted to expression trees if a member of the current object being initialized is used in one of the field initializers, e.g- `New C1 With {.a=1, .b=.Method1()}`
+> 4.  Multi-dimensional array creation expressions can only be converted to expression trees if they declare their element type explicitly.
+> 5.  Late-binding expressions cannot be converted to expression trees.
+> 6.  When a variable or field is passed ByRef to an invocation expression but does not have exactly the same type as the ByRef parameter, or when a property is passed ByRef, normal VB semantics are that a copy of the argument is passed ByRef and its final value is then copied back into the variable or field or property- In expression trees, the copy-back does not happen.
+>
 > All these restrictions apply to nested lambda expressions as well.
 
 If the target type is not known, then the lambda method is interpreted as the argument to a delegate instantiation expression of an anonymous delegate type with the same signature of the lambda method. If strict semantics are being used and the type of any of the parameters are omitted, a compile-time error occurs; otherwise, `Object` is substituted for any missing parameter type. For example:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         ' Type of x will be equivalent to Func(Of Object, Object, Object)
@@ -126,7 +128,7 @@ End Module
 - If the reclassification occurs in the context of a conversion where the target type is known and the target type is an array type, then the array literal is reclassified as a value of type T(). If the target type is `System.Collections.Generic.IList(Of T)`, `IReadOnlyList(Of T)`, `ICollection(Of T)`, `IReadOnlyCollection(Of T)`, or `IEnumerable(Of T)`, and the array literal has one level of nesting, then the array literal is reclassified as a value of type `T()`.
 - Otherwise, the array literal is reclassified to a value whose type is an array of rank equal to the level of nesting is used, with element type determined by the dominant type of the elements in the initializer; if no dominant type can be determined, `Object` is used. For example:
 
-```VB.net
+```vb
 ' x Is GetType(Double(,,))
 Dim x = { { { 1, 2.0 }, { 3, 4 } }, { { 5, 6 }, { 7, 8 } } }.GetType()
 
@@ -141,19 +143,18 @@ Dim a = { { 10 }, { 20, 30 } }.GetType()
 ```
 
 > __Annotation__
-
 > There is a slight change in behavior between version 9.0 and version 10.0 of the language. Prior to 10.0, array element initializers did not affect local variable type inference and now they do. So `Dim a() = { 1, 2, 3 }` would have inferred `Object()` as the type of `a` in version 9.0 of the language and `Integer()` in version 10.0.
 
 The reclassification then reinterprets the array literal as an array-creation expression. So the examples:
 
-```VB.net
+```vb
 Dim x As Double = { 1, 2, 3, 4 }
 Dim y = { "a", "b" }
 ```
 
 are equivalent to:
 
-```VB.net
+```vb
 Dim x As Double = New Double() { 1, 2, 3, 4 }
 Dim y = New String() { "a", "b" }
 ```
@@ -164,7 +165,7 @@ The reclassification is judged as narrowing if any conversion from an element ex
 
 A namespace expression, type expression, event access expression, or void expression cannot be reclassified. Multiple reclassifications can be done at the same time. For example:
 
-```VB.net
+```vb
 Module Test
     Sub F(i As Integer)
     End Sub
@@ -218,7 +219,11 @@ Implicit binding through a `With` context.
 
 Constant expressions of an integral type (`ULong`, `Long`, `UInteger`, `Integer`, `UShort`, `Short`, `SByte`, or `Byte`) can be implicitly converted to a narrower integral type, and constant expressions of type `Double` can be implicitly converted to `Single`, provided the value of the constant expression is within the range of the destination type. These narrowing conversions are allowed regardless of whether permissive or strict semantics are being used.
 
-<pre>ConstantExpression  ::=  Expression</pre>
+```antlr
+ConstantExpression
+    : Expression
+    ;
+```
 
 ## Late-Bound Expressions
 
@@ -228,7 +233,7 @@ In general, late-bound accesses are resolved at run time by looking up the ident
 
 The arguments to a late-bound member access are evaluated in the order they appear in the member access expression: not the order in which parameters are declared in the late-bound member. The following example illustrates this difference:
 
-```VB.net
+```vb
 Class C
 
     Public Sub f(ByVal x As Integer, ByVal y As Integer)
@@ -267,7 +272,7 @@ End Module
 
 This code displays:
 
-```VB.net
+```vb
 Early-bound: xy
 
 Late-bound: yx
@@ -275,7 +280,7 @@ Late-bound: yx
 
 Because late-bound overload resolution is done on the run-time type of the arguments, it is possible that an expression might produce different results based on whether it is evaluated at compile time or run time. The following example illustrates this difference:
 
-```VB.net
+```vb
 Class Base
 End Class
 
@@ -304,7 +309,7 @@ End Module
 
 This code displays:
 
-```VB.net
+```vb
 F(Base)
 F(Derived)
 ```
@@ -313,30 +318,45 @@ F(Derived)
 
 Simple expressions are literals, parenthesized expressions, instance expressions, or simple name expressions.
 
-<pre>SimpleExpression  ::=
-    LiteralExpression  |
-    ParenthesizedExpression  |
-    InstanceExpression  |
-    SimpleNameExpression  |
-    AddressOfExpression</pre>
+```antlr
+SimpleExpression
+    : LiteralExpression
+    | ParenthesizedExpression
+    | InstanceExpression
+    | SimpleNameExpression
+    | AddressOfExpression
+    ;
+```
 
 ### Literal Expressions
 
 Literal expressions evaluate to the value represented by the literal. A literal expression is classified as a value, except for the literal `Nothing`, which is classified as a default value.
 
-<pre>LiteralExpression  ::=  Literal</pre>
+```antlr
+LiteralExpression
+    : Literal
+    ;
+```
 
 ### Parenthesized Expressions
 
 A parenthesized expression consists of an expression enclosed in parentheses. A parenthesized expression is classified as a value, and the enclosed expression must be classified as a value. A parenthesized expression evaluates to the value of the expression within the parentheses.
 
-<pre>ParenthesizedExpression  ::=  OpenParenthesis  Expression  CloseParenthesis</pre>
+```antlr
+ParenthesizedExpression
+    : OpenParenthesis Expression CloseParenthesis
+    ;
+```
 
 ### Instance Expressions
 
 An *instance expression* is the keyword `Me`. It may only be used within the body of a non-shared method, constructor, or property accessor. It is classified as a value. . The keyword `Me` represents the instance of the type containing the method or property accessor being executed. If a constructor explicitly invokes another constructor (Section 9.3), `Me` cannot be used until after that constructor call, because the instance has not yet been constructed.
 
-<pre>InstanceExpression  ::=  <b>Me</b></pre>
+```antlr
+InstanceExpression
+    : 'Me'
+    ;
+```
 
 ### Simple Name Expressions
 
@@ -372,7 +392,11 @@ A simple name expression that is undefined is a compile-time error.
 
 Normally, a name can only occur once in a particular namespace. However, because namespaces can be declared across multiple .NET assemblies, it is possible to have a situation where two assemblies define a type with the same fully qualified name. In that case, a type declared in the current set of source files is preferred over a type declared in an external .NET assembly. Otherwise, the name is ambiguous and there is no way to disambiguate the name.
 
-<pre>SimpleNameExpression  ::=  Identifier  [  OpenParenthesis  <b>Of</b>  TypeArgumentList  CloseParenthesis  ]</pre>
+```antlr
+SimpleNameExpression
+    : Identifier ( OpenParenthesis 'Of' TypeArgumentList CloseParenthesis )?
+    ;
+```
 
 ### AddressOf Expressions
 
@@ -380,17 +404,24 @@ An `AddressOf` expression is used to produce a method pointer. The expression co
 
 The result is classified as a method pointer, with the same associated target expression and type argument list (if any) as the method group.
 
-<pre>AddressOfExpression  ::=  <b>AddressOf</b>  Expression</pre>
+```antlr
+AddressOfExpression
+    : 'AddressOf' Expression
+    ;
+```
 
 ## Type Expressions
 
 A *type expression* is a `GetType` expression, a `TypeOf...Is` expression, an `Is` expression, or a `GetXmlNamespace` expression.
 
-<pre>TypeExpression  ::=
-    GetTypeExpression  |
-    TypeOfIsExpression  |
-    IsExpression  |
-    GetXmlNamespaceExpression</pre>
+```antlr
+TypeExpression
+    : GetTypeExpression
+    | TypeOfIsExpression
+    | IsExpression
+    | GetXmlNamespaceExpression
+    ;
+```
 
 ### GetType Expressions
 
@@ -404,7 +435,7 @@ The type name may be a constructed generic type with the type arguments omitted.
 
 The following example demonstrates the `GetType` expression:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim t As Type() = { GetType(Integer), GetType(System.Int32), _
@@ -420,31 +451,47 @@ End Module
 
 The resulting output is:
 
-```VB.net
+```vb
 Int32
 Int32
 String
 Double[]
 ```
 
-<pre>GetTypeExpression  ::=  <b>GetType</b>  OpenParenthesis  GetTypeTypeName  CloseParenthesis
+```antlr
+GetTypeExpression
+    : 'GetType' OpenParenthesis GetTypeTypeName CloseParenthesis
+    ;
 
-GetTypeTypeName  ::=
-    TypeName  |
+GetTypeTypeName
+    : TypeName
+    | QualifiedOpenTypeName
+    ;
+
 QualifiedOpenTypeName
+    : Identifier TypeArityList? (Period IdentifierOrKeyword TypeArityList?)*
+    | 'Global' Period IdentifierOrKeyword TypeArityList?
+      (Period IdentifierOrKeyword TypeArityList?)*
+    ;
 
-QualifiedOpenTypeName  ::=
-    Identifier  [  TypeArityList  ]  |
-<b>Global</b>  Period  IdentifierOrKeyword    [  TypeArityList  ]  |
-    QualifiedOpenTypeName  Period  IdentifierOrKeyword  [  TypeArityList  ]
+TypeArityList
+    : OpenParenthesis 'Of' CommaList? CloseParenthesis
+    ;
 
-TypeArityList  ::=  (Of  [ CommaList ] )</pre>
+CommaList
+    : Comma Comma*
+    ;
+```
 
 ### TypeOf...Is Expressions
 
 A `TypeOf...Is` expression is used to check whether the run-time type of a value is compatible with a given type. The first operand must be classified as a value, cannot be a reclassified lambda method, and must be of a reference type or an unconstrained type parameter type. The second operand must be a type name. The result of the expression is classified as a value and is a `Boolean` value. The expression evaluates to `True` if the run-time type of the operand has an identity, default, reference, array, value type, or type parameter conversion to the type, `False` otherwise. A compile-time error occurs if no conversion exists between the type of the expression and the specific type.
 
-<pre>TypeOfIsExpression  ::=  <b>TypeOf</b>  Expression  <b>Is</b>  [  LineTerminator  ]  TypeName</pre>
+```antlr
+TypeOfIsExpression
+    : 'TypeOf' Expression 'Is' LineTerminator? TypeName
+    ;
+```
 
 ### Is Expressions
 
@@ -452,9 +499,12 @@ An `Is` or `IsNot` expression is used to do a reference equality comparison. Eac
 
 The result is classified as a value and is typed as `Boolean`. An `Is` operation evaluates to `True` if both values refer to the same instance or both values are `Nothing`, or `False` otherwise. An `IsNot` operation evaluates to `False` if both values refer to the same instance or both values are `Nothing`, or `True` otherwise.
 
-<pre>IsExpression  ::=
-    Expression  <b>Is</b>  [  LineTerminator  ]  Expression  |
-    Expression  <b>IsNot</b>  [  LineTerminator  ]  Expression</pre>
+```antlr
+IsExpression
+    : Expression 'Is' LineTerminator? Expression
+    | Expression 'IsNot' LineTerminator? Expression
+    ;
+```
 
 ### GetXmlNamespace Expressions
 
@@ -462,7 +512,7 @@ A `GetXmlNamespace` expression consists of the keyword `GetXmlNamespace` and the
 
 For example:
 
-```VB.net
+```vb
 Imports <xmlns:db="http://example.org/database">
 
 Module Test
@@ -479,7 +529,7 @@ End Module
 
 Everything between the parentheses is considered part of the namespace name, so XML rules around things such as whitespace apply. For example:
 
-```VB.net
+```vb
 Imports <xmlns:db-ns="http://example.org/database">
 
 Module Test
@@ -500,8 +550,11 @@ End Module
 
 The XML namespace expression can also be omitted, in which case the expression returns the object that represents the default XML namespace.
 
-<pre>GetXmlNamespaceExpression  ::=  <b>Get</b><b>XmlNamespace</b>  OpenParenthesis  [  XMLNamespaceName  ]
-        CloseParenthesis</pre>
+```antlr
+GetXmlNamespaceExpression
+    : 'GetXmlNamespace' OpenParenthesis XMLNamespaceName? CloseParenthesis
+    ;
+```
 
 ## Member Access Expressions
 
@@ -536,7 +589,7 @@ A member access of the form `MyBase.I(Of A)` is equivalent to `CType(Me, T).I(Of
 
 The following example demonstrates how `Me`, `MyBase` and `MyClass` relate:
 
-```VB.net
+```vb
 Class Base
     Public Overridable Sub F()
         Console.WriteLine("Base.F")
@@ -581,7 +634,7 @@ End Module
 
 This code prints out:
 
-```VB.net
+```vb
 MoreDerived.F
 Derived.F
 Derived.F
@@ -589,7 +642,7 @@ Derived.F
 
 When a member access expression begins with the keyword `Global`, the keyword represents the outermost unnamed namespace, which is useful in situations where a declaration shadows an enclosing namespace. The `Global` keyword allows "escaping" out to the outermost namespace in that situation. For example:
 
-```VB.net
+```vb
 Class System
 End Class
 
@@ -609,7 +662,7 @@ In the above example, the first method call is invalid because the identifier `S
 
 If the member being accessed is shared, any expression on the left side of the period is superfluous and is not evaluated unless the member access is done late-bound. For example, consider the following code:
 
-```VB.net
+```vb
 Class C
     Public Shared F As Integer = 10
 End Class
@@ -628,22 +681,26 @@ End Module
 
 It prints `The value of F is: 10` because the function `ReturnC` does not need to be called to provide an instance of `C` to access the shared member `F`.
 
-<pre>MemberAccessExpression  ::=
-    [ MemberAccessBase  ] Period  IdentifierOrKeyword
-        [  OpenParenthesis  <b>Of</b>  TypeArgumentList  CloseParenthesis  ]
+```antlr
+MemberAccessExpression
+    : MemberAccessBase? Period IdentifierOrKeyword
+      ( OpenParenthesis 'Of' TypeArgumentList CloseParenthesis )?
+    ;
 
-MemberAccessBase  ::=
-    Expression  |
-    NonArrayTypeName  |
-<b>Global</b>  |
-<b>MyClass</b>  |
-<b>MyBase</b></pre>
+MemberAccessBase
+    : Expression
+    | NonArrayTypeName
+    | 'Global'
+    | 'MyClass'
+    | 'MyBase'
+    ;
+```
 
 ### Identical Type and Member Names
 
 It is not uncommon to name members using the same name as their type. In that situation, however, inconvenient name hiding can occur:
 
-```VB.net
+```vb
 Enum Color
     Red
     Green
@@ -675,7 +732,7 @@ Default instances are always created for a *family* of types rather than for one
 
 The default instance of a class is represented by a compiler-generated property that returns the default instance of that class. The property generated as a member of a class called the *group class* that manages allocating and destroying default instances for all classes derived from the particular base class. For example, all of the default instance properties of classes derived from `Form` may be collected in the `MyForms` class. If an instance of the group class is returned by the expression `My.Forms`, then the following code accesses the default instances of derived classes `Form1` and `Form2`:
 
-```VB.net
+```vb
 Class Form1
     Inherits Form
     Public x As Integer
@@ -698,7 +755,7 @@ Default instances will not be created until the first reference to them; fetchin
 
 Default instances are intended to make it easy to refer to the default instance from outside of the class that has the default instance. Using a default instance from within a class that defines it might cause confusion as to which instance is being referred to, i.e. the default instance or the current instance. For example, the following code modifies only the value `x` in the default instance, even though it is being called from another instance. Thus the code would print the value `5` instead of `10`:
 
-```VB.net
+```vb
 Class Form1
     Inherits Form
 
@@ -724,7 +781,7 @@ To prevent this kind of confusion, it is not valid to refer to a default instanc
 
 A default instance may also be accessible directly through its type's name. In this case, in any expression context where the type name is not allowed the expression `E`, where `E` represents the fully qualified name of the class with a default instance, is changed to `E'`, where `E'` represents an expression that fetches the default instance property. For example, if default instances for classes derived from `Form` allow accessing the default instance through the type name, then the following code is equivalent to the code in the previous example:
 
-```VB.net
+```vb
 Module Main
     Sub Main()
         Form1.x = 10
@@ -735,7 +792,7 @@ End Module
 
 This also means that a default instance that is accessible through its type's name is also assignable through the type name. For example, the following code sets the default instance of `Form1` to `Nothing`:
 
-```VB.net
+```vb
 Module Main
     Sub Main()
         Form1 = Nothing
@@ -758,12 +815,11 @@ The parameter `DisposeInstanceMethodName` specifies the method to call in the gr
 The parameter `DefaultInstanceAlias` specifics the expression `E'` to substitute for the class name if the default instances are accessible directly through their type name. If this parameter is `Nothing` or an empty string, default instances on this group type are not accessible directly through their type's name.
 
 > __Annotation__
-
 > In all current implementations of the Visual Basic language, the `DefaultInstanceAlias` parameter is ignored, except in compiler-provided code.
 
 Multiple types can be collected into the same group by separating the names of the types and methods in the first three parameters using commas. There must be the same number of items in each parameter, and the list elements are matched in order. For example, the following attribute declaration collects types that derive from `C1`, `C2` or `C3` into a single group:
 
-```VB.net
+```vb
 <Microsoft.VisualBasic.MyGroupCollection("C1, C2, C3", _
     "CreateC1, CreateC2, CreateC3", _
     "DisposeC1, DisposeC2, DisposeC3", "My.Cs")>
@@ -774,7 +830,7 @@ End Class
 
 The signature of the create method must be of the form `Shared Function <Name>(Of T As {New, <Type>})(Instance Of T) As T`. The dispose method must be of the form `Shared Sub <Name>(Of T As <Type>)(ByRef Instance Of T)`. Thus, the group class for the example in the preceding section could be declared as follows:
 
-```VB.net
+```vb
 <Microsoft.VisualBasic.MyGroupCollection("Form", "Create", _
     "Dispose", "My.Forms")> _
 Public NotInheritable Class MyForms
@@ -796,7 +852,7 @@ End Class
 
 If a source file declared a derived class `Form1`, the generated group class would be equivalent to:
 
-```VB.net
+```vb
 <Microsoft.VisualBasic.MyGroupCollection("Form", "Create", _
     "Dispose", "My.Forms")> _
 Public NotInheritable Class MyForms
@@ -842,7 +898,7 @@ Extension methods for the member access expression `E.I` are collected by gather
 
 An extension method is collected only if there is a widening native conversion from the target expression type to the type of the first parameter of the extension method. And unlike regular simple name expression binding, the search collects *all* extension methods; the collection does not stop when an extension method is found. For example:
 
-```VB.net
+```vb
 Imports System.Runtime.CompilerServices
 
 Class C1
@@ -879,7 +935,7 @@ End Namespace
 
 In this example, even though `N2C1Extensions.M1` is found before `N1C1Extensions.M1`, they both are considered as extension methods. Once all of the extension methods have been collected, they are then *curried*. Currying takes the target of the extension method call and applies it to the extension method call, resulting in a new method signature with the first parameter removed (because it has been specified). For example:
 
-```VB.net
+```vb
 Imports System.Runtime.CompilerServices
 
 Module Ext1
@@ -910,7 +966,7 @@ In the above example, the curried result of applying `v` to `Ext1.M` is the meth
 
 In addition to removing the first parameter of the extension method, currying also removes any method type parameters that are a part of the type of the first parameter. When currying an extension method with method type parameter, type inference is applied to the first parameter and the result is fixed for any type parameters that are inferred. If type inference fails, the method is ignored. For example:
 
-```VB.net
+```vb
 Imports System.Runtime.CompilerServices
 
 Module Ext1
@@ -939,7 +995,7 @@ End Module
 
 In the above example, the curried result of applying `v` to `Ext1.M` is the method signature `Sub M(Of U)(y As U)`, because the type parameter `T` is inferred as a result of the currying and is now fixed. Because the type parameter `U` was not inferred as a part of the currying, it remains an open parameter. Similarly, because the type parameter `T` is inferred as a result of applying `v` to `Ext2.M`, the type of parameter `y` becomes fixed as `Integer`. It will not be inferred to be any other type. When currying the signature, all constraints except for `New` constraints are also applied. If the constraints are not satisfied, or depend on a type that was not inferred as a part of currying, the extension method is ignored. For example:
 
-```VB.net
+```vb
 Imports System.Runtime.CompilerServices
 
 Module Ext1
@@ -966,12 +1022,11 @@ End Module
 ```
 
 > __Annotation__
-
 > One of the main reasons for doing currying of extension methods is that it allows query expressions to infer the type of the iteration before evaluating the arguments to a query pattern method. Since most query pattern methods take lambda expressions, which require type inference themselves, this greatly simplifies the process of evaluating a query expression.
 
 Unlike normal interface inheritance, extension methods that extend two interfaces that do not relate to one another are available, as long as they do not have the same curried signature:
 
-```VB.net
+```vb
 Imports System.Runtime.CompilerServices
 
 Interface I1
@@ -1019,7 +1074,7 @@ End Module
 
 Finally, it is important to remember that extension methods are not considered when doing late binding:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim o As Object = ...
@@ -1034,7 +1089,7 @@ End Module
 
 A *dictionary member access expression* is used to look up a member of a collection. A dictionary member access takes the form of `E!I`, where `E` is an expression that is classified as a value and `I` is an identifier. The type of the expression must have a default property indexed by a single `String` parameter. The dictionary member access expression `E!I` is transformed into the expression `E.D("I")`, where `D` is the default property of `E`. For example:
 
-```VB.net
+```vb
 Class Keys
     Public ReadOnly Default Property Item(s As String) As Integer
         Get
@@ -1056,7 +1111,11 @@ End Module
 
 If an exclamation point is specified with no expression, the expression from the immediately containing `With` statement is assumed. If there is no containing `With` statement, a compile-time error occurs.
 
-<pre>DictionaryAccessExpression  ::=  [  Expression  ]  <b>!</b>  IdentifierOrKeyword</pre>
+```antlr
+DictionaryAccessExpression
+    : Expression? '!' IdentifierOrKeyword
+    ;
+```
 
 ## Invocation Expressions
 
@@ -1066,7 +1125,7 @@ An argument list has two sections: positional arguments and named arguments. *Po
 
 If the method group only contains one accessible method, including both instance and extension methods, and that method takes no arguments and is a function, then the method group is interpreted as an invocation expression with an empty argument list and the result is used as the target of an invocation expression with the provided argument list(s). For example:
 
-```VB.net
+```vb
 Class C1
     Function M1() As Integer()
         Return New Integer() { 1, 2, 3 }
@@ -1087,419 +1146,425 @@ Otherwise, overload resolution is applied to the methods to pick the most applic
 
 For an early-bound invocation expression, the arguments are evaluated in the order in which the corresponding parameters are declared in the target method. For a late-bound member access expression, they are evaluated in the order in which they appear in the member access expression: see Section 11.3, Late-Bound Expressions.
 
-<pre>InvocationExpression  ::=  Expression  [  OpenParenthesis  [  ArgumentList  ]  CloseParenthesis  ]</pre>
+```antlr
+InvocationExpression
+    : Expression ( OpenParenthesis ArgumentList? CloseParenthesis )?
+    ;
 
-<pre>ArgumentList  ::=
-    PositionalArgumentList  |
-    PositionalArgumentList  Comma  NamedArgumentList  |    NamedArgumentList</pre>
+ArgumentList
+    : PositionalArgumentList
+    | PositionalArgumentList Comma NamedArgumentList
+    | NamedArgumentList
+    ;
 
-<pre>PositionalArgumentList  ::=
-    [ Expression ]  |
-    PositionalArgumentList  Comma  [  Expression  ]</pre>
+PositionalArgumentList
+    : Expression? ( Comma Expression? )*
+    ;
 
-<pre>NamedArgumentList  ::=
-    IdentifierOrKeyword  ColonEquals  Expression  |
-    NamedArgumentList  Comma  IdentifierOrKeyword  ColonEquals  Expression</pre>
+NamedArgumentList
+    : IdentifierOrKeyword ColonEquals Expression
+      ( Comma IdentifierOrKeyword ColonEquals Expression )*
+    ;
+```
 
 ### Overloaded Method Resolution
 
 In practice, the rules for determining overload resolution are intended to find the overload that is "closest" to the actual arguments supplied. If there is a method whose parameter types match the argument types, then that method is obviously the closest. Barring that, one method is closer than another if all of its parameter types are narrower than (or the same as) the parameter types of the other method. If neither method's parameters are narrower than the other, then there is no way for to determine which method is closer to the arguments.
 
 > __Note__
-
 > Overload resolution does not take into account the expected return type of the method. 
 
 Also note that because of the named parameter syntax, the ordering of the actual and formal parameters may not be the same.
 
 Given a method group, the most applicable method in the group for an argument list is determined using the following steps. If, after applying a particular step, no members remain in the set, then a compile-time error occurs. If only one member remains in the set, then that member is the most applicable member. The steps are:
 
-- First, if no type arguments have been supplied, apply type inference to any methods which have type parameters. If type inference succeeds for a method, then the inferred type arguments are used for that particular method. If type inference fails for a method, then that method is eliminated from the set.
-- Next, eliminate all members from the set that are inaccessible or not applicable (11.8.2) to the argument list
-- Next, if one or more arguments are `AddressOf` or lambda expressions, then calculate the *delegate relaxation levels* for each such argument as below. If the worst (lowest) delegate relaxation level in `N` is worse than the lowest delegate relaxation level in `M`, then eliminate `N` from the set.
+1.  First, if no type arguments have been supplied, apply type inference to any methods which have type parameters. If type inference succeeds for a method, then the inferred type arguments are used for that particular method. If type inference fails for a method, then that method is eliminated from the set.
 
-The delegate relaxation levels are as follows:
+2.  Next, eliminate all members from the set that are inaccessible or not applicable (11.8.2) to the argument list
 
-- *(1) Error delegate relaxation level* - if the `AddressOf` or lambda cannot be converted to the delegate type.
+3.  Next, if one or more arguments are `AddressOf` or lambda expressions, then calculate the *delegate relaxation levels* for each such argument as below. If the worst (lowest) delegate relaxation level in `N` is worse than the lowest delegate relaxation level in `M`, then eliminate `N` from the set.
+
+4.  The delegate relaxation levels are as follows:
+
+    41. Error delegate relaxation level* - if the `AddressOf` or lambda cannot be converted to the delegate type.
   
-  *(2) Narrowing delegate relaxation of return type or parameters* - if the argument is `AddressOf` or a lambda with a declared type and the conversion from its return type to the delegate return type is narrowing; or if the argument is a regular lambda and the conversion from any of its return expressions to the delegate return type is narrowing, or if the argument is an async lambda and the delegate return type is `Task(Of T)` and the conversion from any of its return expressions to `T` is narrowing; or if the argument is an iterator lambda and the delegate return type `IEnumerator(Of T)` or `IEnumerable(Of T)` and the conversion from any of its yield operands to `T` is narrowing.
+    42. Narrowing delegate relaxation of return type or parameters* - if the argument is `AddressOf` or a lambda with a declared type and the conversion from its return type to the delegate return type is narrowing; or if the argument is a regular lambda and the conversion from any of its return expressions to the delegate return type is narrowing, or if the argument is an async lambda and the delegate return type is `Task(Of T)` and the conversion from any of its return expressions to `T` is narrowing; or if the argument is an iterator lambda and the delegate return type `IEnumerator(Of T)` or `IEnumerable(Of T)` and the conversion from any of its yield operands to `T` is narrowing.
 
-  *(3) Widening delegate relaxation to delegate without signature* - if delegate type is `System.Delegate` or `System.MultiCastDelegate` or `System.Object`.
+    43. Widening delegate relaxation to delegate without signature* - if delegate type is `System.Delegate` or `System.MultiCastDelegate` or `System.Object`.
 
-  *(4) Drop return or arguments delegate relaxation* - if the argument is `AddressOf` or a lambda with a declared return type and the delegate type lacks a return type; or if the argument is a lambda with one or more return expressions and the delegate type lacks a return type; or if the argument is `AddressOf` or lambda with no parameters and the delegate type has parameters.
+    44. Drop return or arguments delegate relaxation* - if the argument is `AddressOf` or a lambda with a declared return type and the delegate type lacks a return type; or if the argument is a lambda with one or more return expressions and the delegate type lacks a return type; or if the argument is `AddressOf` or lambda with no parameters and the delegate type has parameters.
 
-  *(5) Widening delegate relaxation of return type* - if the argument is `AddressOf` or a lambda with a declared return type, and there is a widening conversion from its return type to that of the delegate; or if the argument is a regular lambda where the conversion from all return expressions to the delegate return type is widening or identity with at least one widening; or if the argument is an async lambda and the delegate is `Task(Of T)` or `Task` and the conversion from all return expressions to `T`/`Object` respectively is widening or identity with at least one widening; or if the argument is an iterator lambda and the delegate is `IEnumerator(Of T)` or `IEnumerable(Of T)` or `IEnumerator` or `IEnumerable` and the conversion from all return expressions to `T`/`Object` is widening or identity with at least one widening.
+    45. Widening delegate relaxation of return type* - if the argument is `AddressOf` or a lambda with a declared return type, and there is a widening conversion from its return type to that of the delegate; or if the argument is a regular lambda where the conversion from all return expressions to the delegate return type is widening or identity with at least one widening; or if the argument is an async lambda and the delegate is `Task(Of T)` or `Task` and the conversion from all return expressions to `T`/`Object` respectively is widening or identity with at least one widening; or if the argument is an iterator lambda and the delegate is `IEnumerator(Of T)` or `IEnumerable(Of T)` or `IEnumerator` or `IEnumerable` and the conversion from all return expressions to `T`/`Object` is widening or identity with at least one widening.
 
-  *(6) Identity delegate relaxation* - if the argument is an `AddressOf` or a lambda which matches the delegate exactly, with no widening or narrowing or dropping of parameters or returns or yields.Next, if some members of the set do not requiring narrowing conversions to be applicable to any of the arguments, then eliminate all members that do. For example:
+    46. Identity delegate relaxation* - if the argument is an `AddressOf` or a lambda which matches the delegate exactly, with no widening or narrowing or dropping of parameters or returns or yields.Next, if some members of the set do not requiring narrowing conversions to be applicable to any of the arguments, then eliminate all members that do. For example:
 
-```VB.net
-Sub f(x As Object)
-End Sub
-
-Sub f(x As Short)
-End Sub
-
-Sub f(x As Short())
-End Sub
-
-f("5") ' picks the Object overload, since String->Short is narrowing
-f(5)   ' picks the Object overload, since Integer->Short is narrowing
-f({5}) ' picks the Object overload, since Integer->Short is narrowing
-f({})  ' a tie-breaker rule subsequent to [3] picks the Short() overload
-
-```
-
-- Next, elimination is done based on narrowing as follows. (Note that, if Option Strict is On, then all members that require narrowing have already been judged inapplicable (11.8.2) and removed by Step 2.)
-   1. If some instance members of the set only require narrowing conversions where the argument expression type is `Object`, then eliminate all other members.
-   2. If the set contains more than one member which requires narrowing only from `Object`, then the invocation target expression is reclassified as a late-bound method access (and an error is given if the type containing the method group is an interface, or if any of the applicable members were extension members).
-   3. If there are any candidates that only require narrowing from numeric literals, then chose the most specific among all remaining candidates by the steps below. If the winner requires only narrowing from numeric literals, then it is picked as the result of overload resolution; otherwise it is an error.
-
-> __Annotation__
-
-> The justification for this rule is that if a program is loosely-typed (that is, most or all variables are declared as `Object`), overload resolution can be difficult when many conversions from `Object` are narrowing. Rather than have the overload resolution fail in many situations (requiring strong typing of the arguments to the method call), resolution the appropriate overloaded method to call is deferred until run time. This allows the loosely-typed call to succeed without additional casts.
-
-> An unfortunate side-effect of this, however, is that performing the late-bound call requires casting the call target to `Object`. In the case of a structure value, this means that the value must be boxed to a temporary. If the method eventually called tries to change a field of the structure, this change will be lost once the method returns.
-
-> Interfaces are excluded from this special rule because late binding always resolves against the members of the runtime class or structure type, which may have different names than the members of the interfaces they implement.
-
-- Next, if any instance methods remain in the set which do not require narrowing, then eliminate all extension methods from the set. For example:
-
-```VB.net
-Imports System.Runtime.CompilerServices
-
-Class C3
-    Sub M1(d As Integer)
-    End Sub
-End Class
-
-Module C3Extensions
-    <Extension> _
-    Sub M1(c3 As C3, c As Long)
+    ```vb
+    Sub f(x As Object)
     End Sub
 
-    <Extension> _
-    Sub M1(c3 As C3, c As Short)
-    End Sub
-End Module
-
-Module Test
-    Sub Main()
-        Dim c As New C3()
-        Dim sVal As Short = 10
-        Dim lVal As Long = 20
-
-        ' Calls C3.M1, since C3.M1 is applicable.
-        c.M1(sVal)
-
-        ' Calls C3Extensions.M1 since C3.M1 requires a narrowing conversion
-        c.M1(lVal)
-    End Sub
-End Module
-```
-
-> __Annotation__
-
-> Extension methods are ignored if there are applicable instance methods to guarantee that adding an import (that might bring new extension methods into scope) will not cause a call on an existing instance method to rebind to an extension method. Given the broad scope of some extension methods (i.e. those defined on interfaces and/or type parameters), this is a safer approach to binding to extension methods.
-
-- Next, if, given any two members of the set, `M` and `N`, `M` is more *specific* (Section 11.8.1.1) than `N` given the argument list, eliminate `N` from the set. If more than one member remains in the set and the remaining members are not equally specific given the argument list, a compile-time error results.
-- Otherwise, given any two members of the set, `M` and `N`, apply the following tie-breaking rules, in order:
-
-If `M` does not have a ParamArray parameter but `N` does, or if both do but `M` passes fewer arguments into the ParamArray parameter than `N` does, then eliminate `N` from the set. For example:
-
-```VB.net
-Module Test
-    Sub F(a As Object, ParamArray b As Object())
-        Console.WriteLine("F(Object, Object())")
+    Sub f(x As Short)
     End Sub
 
-    Sub F(a As Object, b As Object, ParamArray c As Object())
-        Console.WriteLine("F(Object, Object, Object())")
+    Sub f(x As Short())
     End Sub
 
-   Sub G(Optional a As Object = Nothing)
-      Console.WriteLine("G(Object)")
-   End Sub
+    f("5") ' picks the Object overload, since String->Short is narrowing
+    f(5)   ' picks the Object overload, since Integer->Short is narrowing
+    f({5}) ' picks the Object overload, since Integer->Short is narrowing
+    f({})  ' a tie-breaker rule subsequent to [3] picks the Short() overload
 
-   Sub G(ParamArray a As Object())
-      Console.WriteLine("G(Object())")
-   End Sub    Sub Main()
-        F(1)
-        F(1, 2)
-        F(1, 2, 3)
-      G()
-    End Sub
-End Module
-```
+    ```
 
-The above example produces the following output:
+5.  Next, elimination is done based on narrowing as follows. (Note that, if Option Strict is On, then all members that require narrowing have already been judged inapplicable (11.8.2) and removed by Step 2.)
 
-```VB.net
-F(Object, Object())
-F(Object, Object, Object())
-F(Object, Object, Object())
-G(Object)
-```
+    51. If some instance members of the set only require narrowing conversions where the argument expression type is `Object`, then eliminate all other members.
+    52. If the set contains more than one member which requires narrowing only from `Object`, then the invocation target expression is reclassified as a late-bound method access (and an error is given if the type containing the method group is an interface, or if any of the applicable members were extension members).
+    53. If there are any candidates that only require narrowing from numeric literals, then chose the most specific among all remaining candidates by the steps below. If the winner requires only narrowing from numeric literals, then it is picked as the result of overload resolution; otherwise it is an error.
 
-> __Annotation__
+    > __Annotation__
+    > The justification for this rule is that if a program is loosely-typed (that is, most or all variables are declared as `Object`), overload resolution can be difficult when many conversions from `Object` are narrowing. Rather than have the overload resolution fail in many situations (requiring strong typing of the arguments to the method call), resolution the appropriate overloaded method to call is deferred until run time. This allows the loosely-typed call to succeed without additional casts.
+    >
+    > An unfortunate side-effect of this, however, is that performing the late-bound call requires casting the call target to `Object`. In the case of a structure value, this means that the value must be boxed to a temporary. If the method eventually called tries to change a field of the structure, this change will be lost once the method returns.
+    >
+    > Interfaces are excluded from this special rule because late binding always resolves against the members of the runtime class or structure type, which may have different names than the members of the interfaces they implement.
 
-> When a class declares a method with a paramarray parameter, it is not uncommon to also include some of the expanded forms as regular methods. By doing so it is possible to avoid the allocation of an array instance that occurs when an expanded form of a method with a paramarray parameter is invoked.
+6.  Next, if any instance methods remain in the set which do not require narrowing, then eliminate all extension methods from the set. For example:
 
-- If `M` is defined in a more derived type than `N`, eliminate `N` from the set. For example:
+    ```vb
+    Imports System.Runtime.CompilerServices
 
-```VB.net
-Class Base
-    Sub F(Of T, U)(x As T, y As U)
-    End Sub
-End Class
+    Class C3
+        Sub M1(d As Integer)
+        End Sub
+    End Class
 
-Class Derived
-    Inherits Base
-
-    Overloads Sub F(Of T, U)(x As U, y As T)
-    End Sub
-End Class
-
-Module Test
-    Sub Main()
-        Dim d As New Derived()
-
-        ' Calls Derived.F
-        d.F(10, 10)
-    End Sub
-End Module
-```
-
-This rule also applies to the types that extension methods are defined on. For example:
-
-```VB.net
-Imports System.Runtime.CompilerServices
-
-Class Base
-End Class
-
-Class Derived
-    Inherits Base
-End Class
-
-Module BaseExt
-    <Extension> _
-    Sub M(b As Base, x As Integer)
-    End Sub
-End Module
-
-Module DerivedExt
-    <Extension> _
-    Sub M(d As Derived, x As Integer)
-    End Sub
-End Module
-
-Module Test
-    Sub Main()
-        Dim b As New Base()
-        Dim d As New Derived()
-
-        ' Calls BaseExt.M
-        b.M(10)
-
-        ' Calls DerivedExt.M 
-        d.M(10)
-    End Sub
-End Module
-```
-
-- If `M` and `N` are extension methods and the target type of `M` is a class or structure and the target type of `N` is an interface, eliminate `N` from the set. For example:
-
-```VB.net
-Imports System.Runtime.CompilerServices
-
-Interface I1
-End Interface
-
-Class C1
-    Implements I1
-End Class
-
-Module Ext1
-    <Extension> _
-    Sub M(i As I1, x As Integer)
-    End Sub
-End Module
-
-Module Ext2
-    <Extension> _
-    Sub M(c As C1, y As Integer)
-    End Sub
-End Module
-
-Module Test
-    Sub Main()
-        Dim c As New C1()
-
-        ' Calls Ext2.M, because Ext1.M is hidden since it extends
-        ' an interface.
-        c.M(10)
-
-        ' Calls Ext1.M
-        CType(c, I1).M(10)
-    End Sub
-End Module
-```
-
-- If `M` and `N` are extension methods, and the target type of `M` and `N` are identical after type parameter substitution, and the target type of `M` before type parameter substitution does not contain type parameters but the target type of `N` does, then has fewer type parameters than the target type of `N`, eliminate `N` from the set. For example:
-
-```VB.net
-Imports System.Runtime.CompilerServices
-
-Module Module1
-    Sub Main()
-        Dim x As Integer = 1
-        x.f(1) ' Calls first "f" extension method
-
-        Dim y As New Dictionary(Of Integer, Integer)
-        y.g(1) ' Ambiguity error
-    End Sub
-
-    <Extension()> Sub f(x As Integer, z As Integer)
-    End Sub
-
-    <Extension()> Sub f(Of T)(x As T, z As T)
-    End Sub
-
-    <Extension()> Sub g(Of T)(y As Dictionary(Of T, Integer), z As T)
-    End Sub
-
-    <Extension()> Sub g(Of T)(y As Dictionary(Of T, T), z As T)
-    End Sub
-End Module
-```
-
-- Before type arguments have been substituted, if `M` is *less generic* (Section 11.8.1.2) than `N`, eliminate `N` from the set.
-- If `M` is not an extension method and `N` is, eliminate `N` from the set.
-- If `M` and `N` are extension methods and `M` was found before `N` (Section 11.6.3), eliminate `N` from the set. For example:
-
-```VB.net
-Imports System.Runtime.CompilerServices
-
-Class C1
-End Class
-
-Namespace N1
-    Module N1C1Extensions
+    Module C3Extensions
         <Extension> _
-        Sub M1(c As C1, x As Integer)
+        Sub M1(c3 As C3, c As Long)
+        End Sub
+
+        <Extension> _
+        Sub M1(c3 As C3, c As Short)
         End Sub
     End Module
-End Namespace
 
-Namespace N1.N2
-    Module N2C1Extensions
-        <Extension> _
-        Sub M1(c As C1, y As Integer)
-        End Sub
-    End Module
-End Namespace
-
-Namespace N1.N2.N3
     Module Test
         Sub Main()
-            Dim x As New C1()
+            Dim c As New C3()
+            Dim sVal As Short = 10
+            Dim lVal As Long = 20
 
-            ' Calls N2C1Extensions.M1
-            x.M1(10)
+            ' Calls C3.M1, since C3.M1 is applicable.
+            c.M1(sVal)
+
+            ' Calls C3Extensions.M1 since C3.M1 requires a narrowing conversion
+            c.M1(lVal)
         End Sub
     End Module
-End Namespace
-```
+    ```
 
-If the extension methods were found in the same step, then those extension methods are ambiguous. The call may always be disambiguated using the name of the standard module containing the extension method and calling the extension method as if it was a regular member. For example:
+    > __Annotation__
+    > Extension methods are ignored if there are applicable instance methods to guarantee that adding an import (that might bring new extension methods into scope) will not cause a call on an existing instance method to rebind to an extension method. Given the broad scope of some extension methods (i.e. those defined on interfaces and/or type parameters), this is a safer approach to binding to extension methods.
 
-```VB.net
-Imports System.Runtime.CompilerServices
+7.  Next, if, given any two members of the set, `M` and `N`, `M` is more *specific* (Section 11.8.1.1) than `N` given the argument list, eliminate `N` from the set. If more than one member remains in the set and the remaining members are not equally specific given the argument list, a compile-time error results.
 
-Class C1
-End Class
+8.  Otherwise, given any two members of the set, `M` and `N`, apply the following tie-breaking rules, in order:
 
-Module C1ExtA
-    <Extension> _
-    Sub M(c As C1)
-    End Sub
-End Module
+    81. If `M` does not have a ParamArray parameter but `N` does, or if both do but `M` passes fewer arguments into the ParamArray parameter than `N` does, then eliminate `N` from the set. For example:
 
-Module C1ExtB
-    <Extension> _
-    Sub M(c As C1)
-    End Sub
-End Module
+        ```vb
+        Module Test
+            Sub F(a As Object, ParamArray b As Object())
+                Console.WriteLine("F(Object, Object())")
+            End Sub
 
-Module Main
-    Sub Test()
-        Dim c As New C1()
+            Sub F(a As Object, b As Object, ParamArray c As Object())
+                Console.WriteLine("F(Object, Object, Object())")
+            End Sub
 
-        C1.M()               ' Ambiguous between C1ExtA.M and BExtB.M
-        C1ExtA.M(c)          ' Calls C1ExtA.M
-        C1ExtB.M(c)          ' Calls C1ExtB.M
-    End Sub
-End Module
-```
+           Sub G(Optional a As Object = Nothing)
+              Console.WriteLine("G(Object)")
+           End Sub
 
-- If `M` and `N` both required type inference to produce type arguments, and `M` did not require determining the dominant type for any of its type arguments (i.e. each the type arguments inferred to a single type), but `N` did, eliminate `N` from the set.
+           Sub G(ParamArray a As Object())
+              Console.WriteLine("G(Object())")
+           End Sub    Sub Main()
+                F(1)
+                F(1, 2)
+                F(1, 2, 3)
+              G()
+            End Sub
+        End Module
+        ```
 
-> __Annotation__
+        The above example produces the following output:
 
-> This rule ensures that overload resolution that succeeded in previous versions (where inferring multiple types for a type argument would cause an error), continue to produce the same results.
+        ```vb
+        F(Object, Object())
+        F(Object, Object, Object())
+        F(Object, Object, Object())
+        G(Object)
+        ```
 
--  overload resolution is being done to resolve the target of a delegate-creation expression from an `AddressOf` expression, and both the delegate and `M` are functions while `N` is a subroutine, eliminate `N` from the set. Likewise, if both the delegate and `M` are subroutines, while `N` is a function, eliminate `N` from the set.
-- If `M` did not use any optional parameter defaults in place of explicit arguments, but `N` did, then eliminate `N` from the set.
--   Before type arguments have been substituted, if `M` has *greater depth of genericity* (Section 11.8.1.3) than `N`, then eliminate `N` from the set.
-- Otherwise, the call is ambiguous and a compile-time error occurs.
+        > __Annotation__
+        > When a class declares a method with a paramarray parameter, it is not uncommon to also include some of the expanded forms as regular methods. By doing so it is possible to avoid the allocation of an array instance that occurs when an expanded form of a method with a paramarray parameter is invoked.
+
+    82. If `M` is defined in a more derived type than `N`, eliminate `N` from the set. For example:
+
+        ```vb
+        Class Base
+            Sub F(Of T, U)(x As T, y As U)
+            End Sub
+        End Class
+
+        Class Derived
+            Inherits Base
+
+            Overloads Sub F(Of T, U)(x As U, y As T)
+            End Sub
+        End Class
+
+        Module Test
+            Sub Main()
+                Dim d As New Derived()
+
+                ' Calls Derived.F
+                d.F(10, 10)
+            End Sub
+        End Module
+        ```
+
+        This rule also applies to the types that extension methods are defined on. For example:
+
+        ```vb
+        Imports System.Runtime.CompilerServices
+
+        Class Base
+        End Class
+
+        Class Derived
+            Inherits Base
+        End Class
+
+        Module BaseExt
+            <Extension> _
+            Sub M(b As Base, x As Integer)
+            End Sub
+        End Module
+
+        Module DerivedExt
+            <Extension> _
+            Sub M(d As Derived, x As Integer)
+            End Sub
+        End Module
+
+        Module Test
+            Sub Main()
+                Dim b As New Base()
+                Dim d As New Derived()
+
+                ' Calls BaseExt.M
+                b.M(10)
+
+                ' Calls DerivedExt.M 
+                d.M(10)
+            End Sub
+        End Module
+        ```
+
+    83. If `M` and `N` are extension methods and the target type of `M` is a class or structure and the target type of `N` is an interface, eliminate `N` from the set. For example:
+
+        ```vb
+        Imports System.Runtime.CompilerServices
+
+        Interface I1
+        End Interface
+
+        Class C1
+            Implements I1
+        End Class
+
+        Module Ext1
+            <Extension> _
+            Sub M(i As I1, x As Integer)
+            End Sub
+        End Module
+
+        Module Ext2
+            <Extension> _
+            Sub M(c As C1, y As Integer)
+            End Sub
+        End Module
+
+        Module Test
+            Sub Main()
+                Dim c As New C1()
+
+                ' Calls Ext2.M, because Ext1.M is hidden since it extends
+                ' an interface.
+                c.M(10)
+
+                ' Calls Ext1.M
+                CType(c, I1).M(10)
+            End Sub
+        End Module
+        ```
+
+    84. If `M` and `N` are extension methods, and the target type of `M` and `N` are identical after type parameter substitution, and the target type of `M` before type parameter substitution does not contain type parameters but the target type of `N` does, then has fewer type parameters than the target type of `N`, eliminate `N` from the set. For example:
+
+        ```vb
+        Imports System.Runtime.CompilerServices
+
+        Module Module1
+            Sub Main()
+                Dim x As Integer = 1
+                x.f(1) ' Calls first "f" extension method
+
+                Dim y As New Dictionary(Of Integer, Integer)
+                y.g(1) ' Ambiguity error
+            End Sub
+
+            <Extension()> Sub f(x As Integer, z As Integer)
+            End Sub
+
+            <Extension()> Sub f(Of T)(x As T, z As T)
+            End Sub
+
+            <Extension()> Sub g(Of T)(y As Dictionary(Of T, Integer), z As T)
+            End Sub
+
+            <Extension()> Sub g(Of T)(y As Dictionary(Of T, T), z As T)
+            End Sub
+        End Module
+        ```
+
+    85. Before type arguments have been substituted, if `M` is *less generic* (Section 11.8.1.2) than `N`, eliminate `N` from the set.
+
+    86. If `M` is not an extension method and `N` is, eliminate `N` from the set.
+
+    87. If `M` and `N` are extension methods and `M` was found before `N` (Section 11.6.3), eliminate `N` from the set. For example:
+
+        ```vb
+        Imports System.Runtime.CompilerServices
+
+        Class C1
+        End Class
+
+        Namespace N1
+            Module N1C1Extensions
+                <Extension> _
+                Sub M1(c As C1, x As Integer)
+                End Sub
+            End Module
+        End Namespace
+
+        Namespace N1.N2
+            Module N2C1Extensions
+                <Extension> _
+                Sub M1(c As C1, y As Integer)
+                End Sub
+            End Module
+        End Namespace
+
+        Namespace N1.N2.N3
+            Module Test
+                Sub Main()
+                    Dim x As New C1()
+
+                    ' Calls N2C1Extensions.M1
+                    x.M1(10)
+                End Sub
+            End Module
+        End Namespace
+        ```
+
+        If the extension methods were found in the same step, then those extension methods are ambiguous. The call may always be disambiguated using the name of the standard module containing the extension method and calling the extension method as if it was a regular member. For example:
+
+        ```vb
+        Imports System.Runtime.CompilerServices
+
+        Class C1
+        End Class
+
+        Module C1ExtA
+            <Extension> _
+            Sub M(c As C1)
+            End Sub
+        End Module
+
+        Module C1ExtB
+            <Extension> _
+            Sub M(c As C1)
+            End Sub
+        End Module
+
+        Module Main
+            Sub Test()
+                Dim c As New C1()
+
+                C1.M()               ' Ambiguous between C1ExtA.M and BExtB.M
+                C1ExtA.M(c)          ' Calls C1ExtA.M
+                C1ExtB.M(c)          ' Calls C1ExtB.M
+            End Sub
+        End Module
+        ```
+
+    88. If `M` and `N` both required type inference to produce type arguments, and `M` did not require determining the dominant type for any of its type arguments (i.e. each the type arguments inferred to a single type), but `N` did, eliminate `N` from the set.
+
+        > __Annotation__
+        > This rule ensures that overload resolution that succeeded in previous versions (where inferring multiple types for a type argument would cause an error), continue to produce the same results.
+
+    89. If overload resolution is being done to resolve the target of a delegate-creation expression from an `AddressOf` expression, and both the delegate and `M` are functions while `N` is a subroutine, eliminate `N` from the set. Likewise, if both the delegate and `M` are subroutines, while `N` is a function, eliminate `N` from the set.
+
+    810. If `M` did not use any optional parameter defaults in place of explicit arguments, but `N` did, then eliminate `N` from the set.
+
+    811. Before type arguments have been substituted, if `M` has *greater depth of genericity* (Section 11.8.1.3) than `N`, then eliminate `N` from the set.
+
+9. Otherwise, the call is ambiguous and a compile-time error occurs.
 
 #### Specificity of members/types given an argument list
 
 A member `M` is considered *equally specific* as `N`, given an argument-list `A`, if their signatures are the same or if each parameter type in `M` is the same as the corresponding parameter type in `N`.
 
 > __Annotation__
-
 > Two members can end up in a method group with the same signature due to extension methods. Two members can also be equally specific but not have the same signature due to type parameters or paramarray expansion.
 
-A member `M` is considered *more specific* than `N` if their signatures are different and at least one parameter type in `M` is more specific than a parameter type in `N`, and no parameter type in `N` is more specific than a parameter type in `M`. Given a pair of parameters `M`<sub>j</sub> and `N`<sub>j</sub> that matches an argument `A`<sub>j</sub>, the type of `M`<sub>j</sub> is considered *more specific* than the type of `N`<sub>j</sub> if one of the following conditions is true:
+A member `M` is considered *more specific* than `N` if their signatures are different and at least one parameter type in `M` is more specific than a parameter type in `N`, and no parameter type in `N` is more specific than a parameter type in `M`. Given a pair of parameters `Mj` and `Nj` that matches an argument `Aj`, the type of `Mj` is considered *more specific* than the type of `Nj` if one of the following conditions is true:
 
-- There exists a widening conversion from the type of `M`<sub>j</sub> to the type `N`<sub>j</sub>, or
+- There exists a widening conversion from the type of `Mj` to the type `Nj`, or
 
 > __Annotation__
-
 > that because parameters types are being compared without regard to the actual argument in this case, the widening conversion from constant expressions to a numeric type the value fits into is not considered in this case.
 
-- `A`<sub>j</sub> is the literal `0`, `M`<sub>j</sub> is a numeric type and `N`<sub>j</sub> is an enumerated type, or
+- `Aj` is the literal `0`, `Mj` is a numeric type and `Nj` is an enumerated type, or
 
 > __Annotation__
-
 > This rule is necessary because the literal `0` widens to any enumerated type. Since an enumerated type widens to its underlying type, this means that overload resolution on `0` will, by default, prefer enumerated types over numeric types. We received a lot of feedback that this behavior was counterintuitive.
 
-- `M`<sub>j</sub> and `N`<sub>j</sub> are both numeric types, and `M`<sub>j</sub> comes earlier than `N`<sub>j</sub> in the list
+- `Mj` and `Nj` are both numeric types, and `Mj` comes earlier than `Nj` in the list
 `Byte`, `SByte`, `Short`, `UShort`, `Integer`, `UInteger`, `Long`, `ULong`, `Decimal`, `Single`, `Double`
 
 > __Annotation__
-
 > The rule about the numeric types is useful because the signed and unsigned numeric types of a particular size only have narrowing conversions between them. The above rule breaks the tie between the two types in favor of the more "natural" numeric type. This is particularly important when doing overload resolution on a type that widens to both the signed and unsigned numeric types of a particular size (for example, a numeric literal that fits into both).
 
-- `M`<sub>j</sub> and `N`<sub>j</sub> are delegate function types and the return type of `M`<sub>j</sub> is more specific than the return type of `N`<sub>j</sub> If `A`<sub>j</sub> is classified as a lambda method, and `M`<sub>j</sub> or `N`<sub>j</sub> is `System.Linq.Expressions.Expression(Of T)`, then the type argument of the type (assuming it is a delegate type) is substituted for the type being compared.
-- `M`<sub>j</sub> is identical to the type of `A`<sub>j</sub>, and `N`<sub>j</sub> is not.
+- `Mj` and `Nj` are delegate function types and the return type of `Mj` is more specific than the return type of `Nj` If `Aj` is classified as a lambda method, and `Mj` or `Nj` is `System.Linq.Expressions.Expression(Of T)`, then the type argument of the type (assuming it is a delegate type) is substituted for the type being compared.
+- `Mj` is identical to the type of `Aj`, and `Nj` is not.
 
 > __Annotation__
-
 > It is interesting to note that the previous rule differs slightly from C#, in that C# requires that the delegate function types have identical parameter lists before comparing return types, while Visual Basic does not.
 
 #### Genericity
 
 A member `M` is determined to be *less generic* than a member `N` as follows:
 
-- If, for each pair of matching parameters `M`<sub>j</sub> and `N`<sub>j</sub>, `M`<sub>j</sub> is less or equally generic than `N`<sub>j</sub> with respect to type parameters on the method, and at least one `M`<sub>j</sub> is less generic with respect to type parameters on the method.
-- Otherwise, if for each pair of matching parameters `M`<sub>j</sub> and `N`<sub>j</sub>, `M`<sub>j</sub> is less or equally generic than `N`<sub>j</sub> with respect to type parameters on the type, and at least one `M`<sub>j</sub> is less generic with respect to type parameters on the type, then `M` is less generic than `N`.
+- If, for each pair of matching parameters `Mj` and `Nj`, `Mj` is less or equally generic than `Nj` with respect to type parameters on the method, and at least one `Mj` is less generic with respect to type parameters on the method.
+- Otherwise, if for each pair of matching parameters `Mj` and `Nj`, `Mj` is less or equally generic than `Nj` with respect to type parameters on the type, and at least one `Mj` is less generic with respect to type parameters on the type, then `M` is less generic than `N`.
 
-A parameter `M` is considered to be equally generic to a parameter `N` if their types `M`<sub>t</sub> and `N`<sub>t</sub> both refer to type parameters or both don't refer to type parameters. `M` is considered to be less generic than `N` if `M`<sub>t</sub> does not refer to a type parameter and `N`<sub>t</sub> does.
+A parameter `M` is considered to be equally generic to a parameter `N` if their types `Mt` and `Nt` both refer to type parameters or both don't refer to type parameters. `M` is considered to be less generic than `N` if `Mt` does not refer to a type parameter and `Nt` does.
 
 For example:
 
-```VB.net
+```vb
 Class C1(Of T)
     Sub S1(Of U)(x As U, y As T)
     End Sub
@@ -1526,7 +1591,7 @@ End Module
 
 Extension method type parameters that were fixed during currying are considered type parameters on the type, not type parameters on the method. For example:
 
-```VB.net
+```vb
 Imports System.Runtime.CompilerServices
 
 Module Ext1
@@ -1552,7 +1617,7 @@ End Module
 
 #### Depth of genericity
 
-A member `M` is determined to have *greater depth of genericity* than a member `N` if, for each pair of matching parameters  `M`<sub>j</sub> and `N`<sub>j</sub>, `M`<sub>j</sub> has greater or equal *depth of genericity* than `N`<sub>j</sub>, and at least one `M`<sub>j</sub> is has greater depth of genericity. Depth of genericity is defined as follows:
+A member `M` is determined to have *greater depth of genericity* than a member `N` if, for each pair of matching parameters  `Mj` and `Nj`, `Mj` has greater or equal *depth of genericity* than `Nj`, and at least one `Mj` is has greater depth of genericity. Depth of genericity is defined as follows:
 
 - Anything other than a type parameter has greater depth of genericity than a type parameter;
 - Recursively, a constructed type has greater depth of genericity than another constructed type (with the same number of type arguments) if at least one type argument has greater depth of genericity and no type argument has less depth than the corresponding type argument in the other.
@@ -1560,7 +1625,7 @@ A member `M` is determined to have *greater depth of genericity* than a member `
 
 For example:
 
-```VB.net
+```vb
 Module Test
 
     Sub f(Of T)(x As Task(Of T))
@@ -1587,7 +1652,7 @@ A method is *applicable* to a set of type arguments, positional arguments, and n
 - If a parameter is ByRef, and there is not an implicit conversion from the type of the parameter to the type of the argument, then the method is not applicable.
 - If type arguments violate the method's constraints (including the inferred type arguments from Step 3), the method is not applicable. For example:
 
-```VB.net
+```vb
 Module Module1
     Sub Main()
         f(Of Integer)(New Exception)
@@ -1605,7 +1670,7 @@ End Module
 
 If a single argument expression matches a paramarray parameter and the type of the argument expression is convertible to both the type of the paramarray parameter and the paramarray element type, the method is applicable in both its expanded and unexpanded forms, with two exceptions. If the conversion from the type of the argument expression to the paramarray type is narrowing, then the method is only applicable in its expanded form. If the argument expression is the literal `Nothing`, then the method is only applicable in its unexpanded form. For example:
 
-```VB.net
+```vb
 Module Test
     Sub F(ParamArray a As Object())
         Dim o As Object
@@ -1631,7 +1696,7 @@ End Module
 
 The above example produces the following output:
 
-```VB.net
+```vb
 System.Int32 System.String System.Double
 System.Object[]
 System.Object[]
@@ -1655,10 +1720,9 @@ For optional parameters where an argument has not been provided, the compiler pi
 If none of the above apply, then the optional parameter's default value is used (or `Nothing` if no default value is supplied). And if more than one of the above apply, then the choice of which to use is implementation-dependent.
 
 > __Annotation__
-
 > The `CallerLineNumber` and `CallerFilePath` attributes are useful for logging. The `CallerMemberName` is useful for implementing `INotifyPropertyChanged`. Here are examples.
-
-> ````VB.net
+>
+> ````vb
 > Sub Log(msg As String,
 >         <CallerFilePath> Optional file As String = Nothing,
 >         <CallerLineNumber> Optional line As Integer? = Nothing)
@@ -1681,15 +1745,15 @@ If none of the above apply, then the optional parameter's default value is used 
 >     RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(prop))
 > End Sub
 > ```
-
+>
 > In addition to the optional parameters above, Microsoft Visual Basic also recognizes some additional optional parameters if they are imported from metadata (i.e. from a DLL reference). Upon importing from metadata, Visual Basic also treats the parameter `<Optional>` as indicative that the parameter is optional: in this way it is possible to import a declaration which has an optional parameter but no default value, even though this can't be expressed using the `Optional` keyword.
-
+>
 > If the optional parameter has the attribute `Microsoft.VisualBasic.CompilerServices.OptionCompareAttribute`, and the numeric literal 1 or 0 has a conversion to the parameter type, then the compiler uses as argument either the literal 1 if `Option Compare Text` is in effect, or the literal 0 if `Optional Compare Binary`is in effect.
-
+>
 > If the optional parameter has the attribute `System.Runtime.CompilerServices.IDispatchConstantAttribute`, and it has type `Object`, and it does not specify a default value, then the compiler uses the argument New System.Runtime.InteropServices.DispatchWrapper(Nothing).
-
+>
 > If the optional parameter has the attribute `System.Runtime.CompilerServices.IUnknownConstantAttribute`, and it has type `Object`, and it does not specify a default value, then the compiler uses the argument `New System.Runtime.InteropServices.UnknownWrapper(Nothing)`.
-
+>
 > If the optional parameter has type `Object`, and it does not specify a default value, then the compiler uses the argument `System.Reflection.Missing.Value`.
 
 ### Conditional Methods
@@ -1699,14 +1763,13 @@ If the target method to which an invocation expression refers is a subroutine th
 When looking for the attribute, the most derived declaration of an overridable method is checked.
 
 > __Note__
-
 > The attribute is not valid on functions or interface methods and is ignored if specified on either kind of method. Thus, conditional methods will only appear in invocation statements.
 
 ### Type Argument Inference
 
 When a method with type parameters is called without specifying type arguments, *type argument inference* is used to try and infer type arguments for the call. This allows a more natural syntax to be used for calling a method with type parameters when the type arguments can be trivially inferred. For example, given the following method declaration:
 
-```VB.net
+```vb
 Module Util
     Function Choose(Of T)(b As Boolean, first As T, second As T) As T
         If b Then
@@ -1720,7 +1783,7 @@ End Class
 
 it is possible to invoke the `Choose` method without explicitly specifying a type argument:
 
-```VB.net
+```vb
 ' calls Choose(Of Integer)
 Dim i As Integer = Util.Choose(True, 5, 213)
 ' calls Choose(Of String)
@@ -1729,23 +1792,23 @@ Dim s As String = Util.Choose(False, "a", "b")
 
 Through type argument inference, the type arguments `Integer` and `String` are determined from the arguments to the method.
 
-Type argument inference occurs *before* expression reclassification is performed on lambda methods or method pointers in the argument list, since reclassification of those two kinds of expressions may require the type of the parameter to be known.  Given a set of arguments `A`<sub>1</sub>, `A`<sub>2</sub>, â?¦, `A`<sub>N</sub>, a set of matching parameters `P`<sub>1</sub>, `P`<sub>2</sub>, â?¦, `P`<sub>N</sub> and a set of method type parameters `T`<sub>1</sub>, `T`<sub>2</sub>, â?¦, `T`<sub>N</sub>, the dependencies between the arguments and method type parameters are first collected as follows:
+Type argument inference occurs *before* expression reclassification is performed on lambda methods or method pointers in the argument list, since reclassification of those two kinds of expressions may require the type of the parameter to be known.  Given a set of arguments `A1,...,An`, a set of matching parameters `P1,...,Pn` and a set of method type parameters `T1,...,Tn`, the dependencies between the arguments and method type parameters are first collected as follows:
 
-If `A`<sub>N</sub> is the `Nothing` literal, no dependencies are generated.
+If `An` is the `Nothing` literal, no dependencies are generated.
 
-If `A`<sub>N</sub> is a lambda method and the type of `P`<sub>N</sub> is a constructed delegate type or `System.Linq.Expressions.Expression(Of T)`, where `T` is a constructed delegate type,
+If `An` is a lambda method and the type of `Pn` is a constructed delegate type or `System.Linq.Expressions.Expression(Of T)`, where `T` is a constructed delegate type,
 
-If the type of a lambda method parameter will be inferred from the type of the corresponding parameter `P`<sub>N</sub>, and the type of the parameter depends on a method type parameter `T`<sub>N</sub>, then `A`<sub>N</sub> has a dependency on `T`<sub>N</sub>.
+If the type of a lambda method parameter will be inferred from the type of the corresponding parameter `Pn`, and the type of the parameter depends on a method type parameter `Tn`, then `An` has a dependency on `Tn`.
 
-If the type of a lambda method parameter is specified and the type of the corresponding parameter `P`<sub>N</sub> depends on a method type parameter `T`<sub>N</sub>, then `T`<sub>N</sub> has a dependency on `A`<sub>N</sub>.
+If the type of a lambda method parameter is specified and the type of the corresponding parameter `Pn` depends on a method type parameter `Tn`, then `Tn` has a dependency on `An`.
 
-If the return type of `P`<sub>N</sub> depends on a method type parameter `T`<sub>N</sub>, then `T`<sub>N</sub> has a dependency on `A`<sub>N</sub>.
+If the return type of `Pn` depends on a method type parameter `Tn`, then `Tn` has a dependency on `An`.
 
-If `A`<sub>N</sub> is a method pointer and the type of `P`<sub>N</sub> is a constructed delegate type,
+If `An` is a method pointer and the type of `Pn` is a constructed delegate type,
 
-If the return type of `P`<sub>N</sub> depends on a method type parameter `T`<sub>N</sub>, then `T`<sub>N</sub> has a dependency on `A`<sub>N</sub>.
+If the return type of `Pn` depends on a method type parameter `Tn`, then `Tn` has a dependency on `An`.
 
-If `P`<sub>N</sub> is a constructed type and the type of `P`<sub>N</sub> depends on a method type parameter `T`<sub>N</sub>, then `T`<sub>N</sub> has a dependency on `A`<sub>N</sub>.
+If `Pn` is a constructed type and the type of `Pn` depends on a method type parameter `Tn`, then `Tn` has a dependency on `An`.
 
 Otherwise, no dependency is generated.
 
@@ -1769,29 +1832,29 @@ Restart the inference process at the point at which the strongly typed component
 
 If type inference succeeds for all of the method type parameters, then any dependencies that were changed into assertions are checked. An assertion succeeds if the type of the argument is implicitly convertible to the inferred type of the method type parameter. If an assertion fails, then type argument inference fails.
 
-Given an argument type `T`<sub>A</sub> for an argument `A` and a parameter type `T`<sub>P</sub> for a parameter `P`, type hints are generated as follows:
+Given an argument type `Ta` for an argument `A` and a parameter type `Tp` for a parameter `P`, type hints are generated as follows:
 
-If `T`<sub>P</sub> does not involve any method type parameters then no hints are generated.
+If `Tp` does not involve any method type parameters then no hints are generated.
 
-If `T`<sub>P</sub> and `T`<sub>A</sub> are array types of the same rank, then replace `T`<sub>A</sub> and `T`<sub>P</sub> with the element types of `T`<sub>A</sub> and `T`<sub>P</sub> and restart this process with an array element restriction.
+If `Tp` and `Ta` are array types of the same rank, then replace `Ta` and `Tp` with the element types of `Ta` and `Tp` and restart this process with an array element restriction.
 
-If `T`<sub>P</sub> is a method type parameter, then `T`<sub>A</sub> is added as a type hint with the current restriction, if any.
+If `Tp` is a method type parameter, then `Ta` is added as a type hint with the current restriction, if any.
 
-If `A` is a lambda method and `T`<sub>P</sub> is a constructed delegate type or `System.Linq.Expressions.Expression(Of T)`, where `T` is a constructed delegate type, for each lambda method parameter type `T`<sub>L</sub> and corresponding delegate parameter type `T`<sub>D</sub>, replace `T`<sub>A</sub> with `T`<sub>L</sub> and `T`<sub>P</sub> with `T`<sub>D</sub> and restart the process with no restriction. Then, replace `T`<sub>A</sub> with the return type of the lambda method and:
+If `A` is a lambda method and `Tp` is a constructed delegate type or `System.Linq.Expressions.Expression(Of T)`, where `T` is a constructed delegate type, for each lambda method parameter type `TL` and corresponding delegate parameter type `TD`, replace `Ta` with `TL` and `Tp` with `TD` and restart the process with no restriction. Then, replace `Ta` with the return type of the lambda method and:
 
-if `A` is a regular lambda method, replace `T`<sub>P</sub> with the return type of the delegate type;
+if `A` is a regular lambda method, replace `Tp` with the return type of the delegate type;
 
-if `A` is an async lambda method and the return type of the delegate type has form `Task(Of T)` for some `T`, replace `T`<sub>P</sub> with that `T`;
+if `A` is an async lambda method and the return type of the delegate type has form `Task(Of T)` for some `T`, replace `Tp` with that `T`;
 
-if `A` is an iterator lambda method and the return type of the delegate type has form `IEnumerator(Of T)` or `IEnumerable(Of T)` for some `T`, replace `T`<sub>P</sub> with that `T`.
+if `A` is an iterator lambda method and the return type of the delegate type has form `IEnumerator(Of T)` or `IEnumerable(Of T)` for some `T`, replace `Tp` with that `T`.
 
 Next, restart the process with no restriction.
 
-If `A` is a method pointer and `T`<sub>P</sub> is a constructed delegate type, use the parameter types of `T`<sub>P</sub> to determine which method pointed is most applicable to `T`<sub>P</sub>. If there is a method that is most applicable, replace `T`<sub>A</sub> with the return type of the method and `T`<sub>P</sub> with the return type of the delegate type and restart the process with no restriction.
+If `A` is a method pointer and `Tp` is a constructed delegate type, use the parameter types of `Tp` to determine which method pointed is most applicable to `Tp`. If there is a method that is most applicable, replace `Ta` with the return type of the method and `Tp` with the return type of the delegate type and restart the process with no restriction.
 
-Otherwise, `T`<sub>P</sub> must be a constructed type. Given `T`<sub>G</sub>, the generic type of `T`<sub>P</sub>,
+Otherwise, `Tp` must be a constructed type. Given `TG`, the generic type of `Tp`,
 
-If `T`<sub>A</sub> is `T`<sub>G</sub>, inherits from `T`<sub>G</sub>, or implements the type `T`<sub>G</sub> exactly once, then for each matching type argument `T`<sub>A</sub><sub>X</sub> from `T`<sub>A</sub> and `T`<sub>P</sub><sub>X</sub> from `T`<sub>P</sub>, replace `T`<sub>A</sub> with `T`<sub>A</sub><sub>X</sub> and `T`<sub>P</sub> with `T`<sub>P</sub><sub>X</sub> and restart the process with a generic argument restriction.
+If `Ta` is `TG`, inherits from `TG`, or implements the type `TG` exactly once, then for each matching type argument `Tax` from `Ta` and `Tpx` from `Tp`, replace `Ta` with `Tax` and `Tp` with `Tpx` and restart the process with a generic argument restriction.
 
 Otherwise, type inference fails for the generic method.
 
@@ -1815,7 +1878,11 @@ If the run-time type of the target expression is an array type or `System.Array`
 
 Otherwise, the run-time type of the expression must have a default property and the index is performed on the property group that represents all of the default properties on the type. If the type has no default property, then a `System.MissingMemberException` exception is thrown.
 
-<pre>IndexExpression  ::=  Expression  OpenParenthesis  [  ArgumentList  ]  CloseParenthesis</pre>
+```antlr
+IndexExpression
+    : Expression OpenParenthesis ArgumentList? CloseParenthesis
+    ;
+```
 
 ## New Expressions
 
@@ -1831,10 +1898,13 @@ Anonymous object-creation expressions are used to create new instances of anonym
 
 A `New` expression is classified as a value and the result is the new instance of the type.
 
-<pre>NewExpression  ::=
-    ObjectCreationExpression  |
-    ArrayExpression  |
-    AnonymousObjectCreationExpression </pre>
+```antlr
+NewExpression
+    : ObjectCreationExpression
+    | ArrayExpression
+    | AnonymousObjectCreationExpression
+    ;
+```
 
 ### Object-Creation Expressions
 
@@ -1844,7 +1914,7 @@ Where an instance is allocated depends on whether the instance is a class type o
 
 An object-creation expression can optionally specify a list of member initializers after the constructor arguments. These member initializers are prefixed with the keyword `With`, and the initializer list is interpreted as if it was in the context of a `With` statement. For example, given the class:
 
-```VB.net
+```vb
 Class Customer
     Dim Name As String
     Dim Address As String
@@ -1853,7 +1923,7 @@ End Class
 
 The code:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim x As New Customer() With { .Name = "Bob Smith", _
@@ -1864,7 +1934,7 @@ End Module
 
 Is roughly equivalent to:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim x, _t1 As Customer
@@ -1882,7 +1952,7 @@ End Module
 
 Each initializer must specify a name to assign, and the name must be a non-`ReadOnly` instance variable or property of the type being constructed; the member access will not be late bound if the type being constructed is `Object`. Initializers may not use the `Key` keyword. Each member in a type can only be initialized once. The initializer expressions, however, may refer to each other. For example:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim x As New Customer() With { .Name = "Bob Smith", _
@@ -1893,7 +1963,7 @@ End Module
 
 The initializers are assigned left-to-right, so if an initializer refers to a member that has not been initialized yet, it will see whatever value the instance variable after the constructor ran:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         ' The value of Address will be " St." since Name has not been
@@ -1905,7 +1975,7 @@ End Module
 
 Initializers can be nested:
 
-```VB.net
+```vb
 Class Customer
     Dim Name As String
     Dim Address As Address
@@ -1935,13 +2005,13 @@ End Module
 
 If the type being created is a collection type and has an instance method named `Add` (including extension methods and shared methods), then the object-creation expression can specify a collection initializer prefixed by the keyword `From`. An object-creation expression cannot specify both a member initializer and a collection initializer. Each element in the collection initializer is passed as an argument to an invocation of the `Add` function. For example:
 
-```VB.net
+```vb
 Dim list = New List(Of Integer)() From { 1, 2, 3, 4 }
 ```
 
 is equivalent to:
 
-```VB.net
+```vb
 Dim list = New List(Of Integer)()
 list.Add(1)
 list.Add(2)
@@ -1950,13 +2020,13 @@ list.Add(3)
 
 If an element is a collection initializer itself, each element of the sub-collection initializer will be passed as an individual argument to the `Add` function. For example, the following:
 
-```VB.net
+```vb
 Dim dict = Dictionary(Of Integer, String) From { { 1, "One" },{ 2, "Two" } }
 ```
 
 is equivalent to:
 
-```VB.net
+```vb
 Dim dict = New Dictionary(Of Integer, String)
 dict.Add(1, "One")
 dict.Add(2, "Two")
@@ -1964,7 +2034,7 @@ dict.Add(2, "Two")
 
 This expansion is always done and is only ever done one level deep; after that, sub-initializers are considered array literals. For example:
 
-```VB.net
+```vb
 ' Error: List(Of T) does not have an Add method that takes two parameters.
 Dim list = New List(Of Integer())() From { { 1, 2 }, { 3, 4 } }
 
@@ -1973,32 +2043,46 @@ Dim dict = New Dictionary(Of Integer, Integer())() From _
         { {  1, { 2, 3 } }, { 3, { 4, 5 } } }
 ```
 
-<pre>ObjectCreationExpression  ::=
-<b>New</b>  NonArrayTypeName  [  OpenParenthesis  [  ArgumentList  ]  CloseParenthesis  ] 
-        [  ObjectCreationExpressionInitializer  ]</pre>
+```antlr
+ObjectCreationExpression
+    : 'New' NonArrayTypeName ( OpenParenthesis ArgumentList? CloseParenthesis )?
+      ObjectCreationExpressionInitializer?
+    ;
 
-<pre>ObjectCreationExpressionInitializer  ::=  ObjectMemberInitializer  |  ObjectCollectionInitializer</pre>
+ObjectCreationExpressionInitializer
+    : ObjectMemberInitializer
+    | ObjectCollectionInitializer
+    ;
 
-<pre>ObjectMemberInitializer  ::=
-<b>With</b>  OpenCurlyBrace  FieldInitializerList  CloseCurlyBrace</pre>
+ObjectMemberInitializer
+    : 'With' OpenCurlyBrace FieldInitializerList CloseCurlyBrace
+    ;
 
-<pre>FieldInitializerList  ::=
-    FieldInitializer  |
-    FieldInitializerList  Comma  FieldInitializer</pre>
+FieldInitializerList
+    : FieldInitializer ( Comma FieldInitializer )*
+    ;
 
-<pre>FieldInitializer ::=  [  [  `Key`  ]  <b>.</b>  IdentifierOrKeyword  Equals  *]*  Expression</pre>
+FieldInitializer
+    : 'Key'? ('.' IdentifierOrKeyword Equals )? Expression
+    ;
 
-<pre>ObjectCollectionInitializer  ::=  <b>From</b>  CollectionInitializer</pre>
+ObjectCollectionInitializer
+    : 'From' CollectionInitializer
+    ;
 
-<pre>CollectionInitializer  ::=  OpenCurlyBrace  [  CollectionElementList  ]  CloseCurlyBrace</pre>
+CollectionInitializer
+    : OpenCurlyBrace CollectionElementList? CloseCurlyBrace
+    ;
 
-<pre>CollectionElementList  ::=
-    CollectionElement  |
-    CollectionElementList  Comma  CollectionElement</pre>
+CollectionElementList
+    : CollectionElement ( Comma CollectionElement )*
+    ;
 
-<pre>CollectionElement * ::=*
-*Expression*  |
-*CollectionInitializer*</pre>
+CollectionElement
+    : Expression
+    | CollectionInitializer
+    ;
+```
 
 ### Array Expressions
 
@@ -2008,7 +2092,7 @@ An array expression is used to create a new instance of an array type. There are
 
 If an array size initialization modifier is supplied, the resulting array type is derived by deleting each of the individual arguments from the array size initialization argument list. The value of each argument determines the upper bound of the corresponding dimension in the newly allocated array instance. If the expression has a non-empty collection initializer, each argument in the argument list must be a constant, and the rank and dimension lengths specified by the expression list must match those of the collection initializer.
 
-```VB.net
+```vb
 Dim a() As Integer = New Integer(2) {}
 Dim b() As Integer = New Integer(2) { 1, 2, 3 }
 Dim c(,) As Integer = New Integer(1, 2) { { 1, 2, 3 } , { 4, 5, 6 } }
@@ -2019,7 +2103,7 @@ Dim d() As Integer = New Integer(2) { 0, 1, 2, 3 }
 
 If an array size initialization modifier is not supplied, then the type name must be an array type and the collection initializer must be empty or have the same number of levels of nesting as the rank of the specified array type. All of the elements in the innermost nesting level must be implicitly convertible to the element type of the array and must be classified as a value. The number of elements in each nested collection initializer must always be consistent with the size of the other collections at the same level. The individual dimension lengths are inferred from the number of elements in each of the corresponding nesting levels of the collection initializer. If the collection initializer is empty, the length of each dimension is zero.
 
-```VB.net
+```vb
 Dim e() As Integer = New Integer() { 1, 2, 3 }
 Dim f(,) As Integer = New Integer(,) { { 1, 2, 3 } , { 4, 5, 6 } }
 
@@ -2032,14 +2116,14 @@ Dim h(,) As Integer = New Integer(,) { 1, 2, { 3, 4 } }
 
 The outermost nesting level of a collection initializer corresponds to the leftmost dimension of an array, and the innermost nesting level corresponds to the rightmost dimension. The example:
 
-```VB.net
+```vb
 Dim array As Integer(,) = _
     { { 0, 1 }, { 2, 3 }, { 4, 5 }, { 6, 7 }, { 8, 9 } }
 ```
 
 Is equivalent to the following:
 
-```VB.net
+```vb
 Dim array(4, 1) As Integer
 
 array(0, 0) = 0: array(0, 1) = 1
@@ -2057,7 +2141,7 @@ An array instance's rank and length of each dimension are constant for the entir
 
 An array literal denotes an array whose element type, rank, and bounds are inferred from a combination of the expression context and a collection initializer. This is explained in Section 11.1.1, Expression Reclassification. For example:
 
-```VB.net
+```vb
 ' array of integers
 Dim a = {1, 2, 3}
 
@@ -2083,16 +2167,22 @@ Dim g = {1, {2}}
 The format and requirements for the collection initializer in an array literal is exactly the same as that for the collection initializer in an array creation expression.
 
 > __Annotation__
-
 > An array literal does not create the array in and of itself; instead, it is the reclassification of the expression into a value that causes the array to be created. For instance, the conversion `CType(new Integer() {1,2,3}, Short())` is not possible because there is no conversion from `Integer()` to `Short()`; but the expression `CType({1,2,3},Short())` is possible because it first reclassifies the array literal into the array creation expression `New Short() {1,2,3}`.
 
-<pre>ArrayExpression  ::=  *ArrayCreationExpression*  |  *ArrayLiteralExpression*</pre>
+```antlr
+ArrayExpression
+    : ArrayCreationExpression
+    | ArrayLiteralExpression
+    ;
 
-<pre>*ArrayCreationExpression*  ::=
-<b>New</b>  NonArrayTypeName  ArrayNameModifier  CollectionInitializer</pre>
+ArrayCreationExpression
+    : 'New' NonArrayTypeName ArrayNameModifier CollectionInitializer
+    ;
 
-<pre>ArrayLiteralExpression  *::=*
-    CollectionInitializer</pre>
+ArrayLiteralExpression
+    : CollectionInitializer
+    ;
+```
 
 ### Delegate-Creation Expressions
 
@@ -2114,7 +2204,7 @@ If the method pointer references a late-bound access, then the late-bound access
 
 If strict semantics are not being used and there is only one method referenced by the method pointer, but it is not applicable due to the fact that it has no parameters and the delegate type does, then the method is considered applicable and the parameters or return value are simply ignored. For example:
 
-```VB.net
+```vb
 Delegate Sub F(x As Integer)
 
 Module Test
@@ -2129,12 +2219,11 @@ End Module
 ```
 
 > __Annotation__
-
 > This relaxation is only allowed when strict semantics are not being used because of extension methods. Because extension methods are only considered if a regular method was not applicable, it is possible for an instance method with no parameters to hide an extension method with parameters for the purpose of delegate construction.
 
 If more than one method referenced by the method pointer is applicable to the delegate type, then overload resolution is used to pick between the candidate methods. The types of the parameters to the delegate are used as the types of the arguments for the purposes of overload resolution. If no one method candidate is most applicable, a compile-time error occurs. In the following example, the local variable is initialized with a delegate that refers to the second `Square` method because that method is more applicable to the signature and return type of `DoubleFunc`.
 
-```VB.net
+```vb
 Delegate Function DoubleFunc(x As Double) As Double
 
 Module Test
@@ -2160,7 +2249,7 @@ Or, the return type, if any, of `M` has a narrowing conversion to the return typ
 
 If type arguments are associated with the method pointer, only methods with the same number of type arguments are considered. If no type arguments are associated with the method pointer, type inference is used when matching signatures against a generic method. Unlike other normal type inference, the return type of the delegate is used when inferring type arguments, but return types are still not considered when determining the least generic overload. The following example shows both ways of supplying a type argument to a delegate-creation expression:
 
-```VB.net
+```vb
 Delegate Function D(s As String, i As Integer) As Integer
 Delegate Function E() As Integer
 
@@ -2183,7 +2272,7 @@ End Module
 
 In the above example, a non-generic delegate type was instantiated using a generic method. It is also possible to create an instance of a constructed delegate type using a generic method. For example:
 
-```VB.net
+```vb
 Delegate Function Predicate(Of U)(u1 As U, u2 As U) As Boolean
 
 Module Test
@@ -2208,7 +2297,7 @@ If `D` is a function, the return type of `L` has a conversion to the return type
 
 If the parameter type of a parameter of `L` is omitted, then the type of the corresponding parameter in `D` is inferred; if the parameter of `L` has array or nullable name modifiers, a compile-time error results. Once all of the parameter types of `L` are available, then the type of the expression in the lambda method is inferred. For example:
 
-```VB.net
+```vb
 Delegate Function F(x As Integer, y As Long) As Long
 
 Module Test
@@ -2224,7 +2313,7 @@ End Module
 
 In some situations where delegate signature does not exactly match the lambda method or method signature, the .NET Framework may not support the delegate creation natively. In that situation, a lambda method expression is used to match the two methods. For example:
 
-```VB.net
+```vb
 Delegate Function IntFunc(x As Integer) As Integer
 
 Module Test
@@ -2247,7 +2336,7 @@ The result of a delegate-creation expression is a delegate instance that refers 
 
 An object-creation expression with member initializers can also omit the type name entirely. In that case, an anonymous type is constructed based on the types and names of the members initialized as a part of the expression. For example:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim Customer = New With { .Name = "John Smith", .Age = 34 }
@@ -2267,13 +2356,13 @@ By default, the properties generated by the anonymous type are read-write. It is
 
 For example, the type created in the statement:
 
-```VB.net
+```vb
 Dim zipState = New With { Key .ZipCode = 98112, .State = "WA" }
 ```
 
 creates a class that looks approximately like this (although exact implementation may vary):
 
-```VB.net
+```vb
 Friend NotInheritable Class $Anonymous1
     Implements IEquatable(Of $Anonymous1)
 
@@ -2353,7 +2442,7 @@ An XML member access expression that is the target of an invocation or index exp
 
 The initializer is interpreted as an assignment of the expression to the inferred name. For example, the following initializers are equivalent:
 
-```VB.net
+```vb
 Class Address
     Public Street As String
     Public City As String
@@ -2371,7 +2460,7 @@ End Class
 
 If a member name is inferred that conflicts with an existing member of the type, such as `GetHashCode`, then a compile time error occurs. Unlike regular member initializers, anonymous object-creation expressions do not allow member initializers to have circular references, or to refer to a member before it has been initialized. For example:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         ' Error: Circular references
@@ -2386,14 +2475,16 @@ Module Test
 End Module
 ```
 
-If two anonymous class creation expressions occur within the same method and yield the same resulting shape&mdash;if the property order, property names, and property types all match&mdash;they will both refer to the same anonymous class. The method scope of an instance or shared member variable with an initializer is the constructor in which the variable is initialized.
+If two anonymous class creation expressions occur within the same method and yield the same resulting shape -- if the property order, property names, and property types all match -- they will both refer to the same anonymous class. The method scope of an instance or shared member variable with an initializer is the constructor in which the variable is initialized.
 
 > __Annotation__
-
 > It is possible that a compiler may choose to unify anonymous types further, such as at the assembly level, but this cannot be relied upon at this time.
 
-<pre>AnonymousObjectCreationExpression  ::=
-<b>New</b>  ObjectMemberInitializer</pre>
+```antlr
+AnonymousObjectCreationExpression
+    : 'New' ObjectMemberInitializer
+    ;
+```
 
 ## Cast Expressions
 
@@ -2402,18 +2493,16 @@ A cast expression coerces an expression to a given type. Specific cast keywords 
 `DirectCast` and `TryCast` have special behaviors. Because of this, they only support native conversions. Additionally, the target type in a `TryCast` expression cannot be a value type. User-defined conversion operators are not considered when `DirectCast` or `TryCast` is used.
 
 > __Annotation__
-
 > The conversion set that `DirectCast` and `TryCast` support are restricted because they implement "native CLR" conversions. The purpose of `DirectCast` is to provide the functionality of the "unbox" instruction, while the purpose of `TryCast` is to provide the functionality of the "isinst" instruction. Since they map onto CLR instructions, supporting conversions not directly supported by the CLR would defeat the intended purpose.
 
 `DirectCast` converts expressions that are typed as `Object` differently than `CType`. When converting an expression of type `Object` whose run-time type is a primitive value type, `DirectCast` throws a `System.InvalidCastException` exception if the specified type is not the same as the run-time type of the expression or a `System.NullReferenceException` if the expression evaluates to `Nothing`.
 
 > __Annotation__
-
 > As noted above, `DirectCast` maps directly onto the CLR instruction "unbox" when the type of the expression is `Object`. In contrast, `CType` turns into a call to a runtime helper to do the conversion so that conversions between primitive types can be supported. In the case when an `Object` expression is being converted to a primitive value type and the type of the actual instance match the target type, `DirectCast` will be significantly faster than `CType`.
 
 `TryCast` converts expressions but does not throw an exception if the expression cannot be converted to the target type. Instead, `TryCast` will result in `Nothing` if the expression cannot be converted at runtime. For example:
 
-```VB.net
+```vb
 Interface ITest
     Sub Test()
 End Interface
@@ -2430,57 +2519,64 @@ End Module
 ```
 
 > __Annotation__
-
 > As noted above, `TryCast` maps directly onto the CLR instruction "isinst". By combining the type check and the conversion into a single operation, `TryCast` can be cheaper than doing a `TypeOf`...`Is` and then a `CType`.
 
 If no conversion exists from the type of the expression to the specified type, a compile-time error occurs. Otherwise, the expression is classified as a value and the result is the value produced by the conversion.
 
-<pre>CastExpression  ::=
-<b>DirectCast</b>  OpenParenthesis  Expression  Comma  TypeName  CloseParenthesis  |
-<b>TryCast</b>  OpenParenthesis  Expression  Comma  TypeName  CloseParenthesis  |
-<b>CType</b>  OpenParenthesis  Expression  Comma  TypeName  CloseParenthesis  |
-    CastTarget  OpenParenthesis  Expression  CloseParenthesis</pre>
+```antlr
+CastExpression
+    : 'DirectCast' OpenParenthesis Expression Comma TypeName CloseParenthesis
+    | 'TryCast' OpenParenthesis Expression Comma TypeName CloseParenthesis
+    | 'CType' OpenParenthesis Expression Comma TypeName CloseParenthesis
+    | CastTarget OpenParenthesis Expression CloseParenthesis
+    ;
 
-<pre>CastTarget  ::=
-<b>CBool</b>  |  <b>CByte</b>  |  <b>CChar</b>  |  <b>CDate</b>  |  <b>CDec</b>  |  <b>CDbl</b>  |  <b>CInt</b>  |  <b>CLng</b>  |  <b>CObj</b>  |  <b>CSByte</b>  |  <b>CShort</b>  |
-<b>CSng</b>  |    <b>CStr</b>  |  <b>CUInt</b>  |  <b>CULng</b>  |  <b>CUShort</b></pre>
+CastTarget
+    : 'CBool' | 'CByte' | 'CChar' | 'CDate' | 'CDec' | 'CDbl' | 'CInt'
+    | 'CLng' | 'CObj' | 'CSByte' | 'CShort' | 'CSng' | 'CStr' | 'CUInt'
+    | 'CULng' | 'CUShort'
+    ;
+```
 
 ## Operator Expressions
 
 There are two kinds of operators. *Unary operators* take one operand and use prefix notation (for example, `-x`). *Binary operators* take two operands and use infix notation (for example, `x + y`). With the exception of the relational operators, which always result in `Boolean`, an operator defined for a particular type results in that type. The operands to an operator must always be classified as a value; the result of an operator expression is classified as a value.
 
-<pre>OperatorExpression  ::=
-    ArithmeticOperatorExpression  |
-    RelationalOperatorExpression  |
-    LikeOperatorExpression  |
-    ConcatenationOperatorExpression  |
-    ShortCircuitLogicalOperatorExpression  |
-    LogicalOperatorExpression  |
-    ShiftOperatorExpression  |
-    AwaitOperatorExpression</pre>
+```antlr
+OperatorExpression
+    : ArithmeticOperatorExpression
+    | RelationalOperatorExpression
+    | LikeOperatorExpression
+    | ConcatenationOperatorExpression
+    | ShortCircuitLogicalOperatorExpression
+    | LogicalOperatorExpression
+    | ShiftOperatorExpression
+    | AwaitOperatorExpression
+    ;
+```
 
 ### Operator Precedence and Associativity
 
 When an expression contains multiple binary operators, the *precedence* of the operators controls the order in which the individual binary operators are evaluated. For example, the expression `x + y * z` is evaluated as `x + (y * z)` because the `*` operator has higher precedence than the `+` operator. The following table lists the binary operators in descending order of precedence:
 
 
-| __Category__ | __Operators__ | 
-|--------------|---------------|
-| Primary | All non-operator expressions | 
-| Await | `Await` | 
-| Exponentiation | `^` | 
-| Unary negation | `+`, `-` | 
-| Multiplicative | `*`, `/` | 
-| Integer division | `\` | 
-| Modulus | `Mod` | 
-| Additive | `+`, `-` | 
-| Concatenation | `&` | 
-| Shift | `<<`, `>>` | 
-| Relational | `=`, `<>`, `<`, `>`, `<=`, `>=`, `Like`, `Is`, `IsNot` | 
-| Logical NOT | `Not` | 
-| Logical AND | `And`, `AndAlso` | 
-| Logical OR | `Or`, `OrElse` | 
-| Logical XOR | `Xor` | 
+| __Category__     | __Operators__                                          | 
+|------------------|--------------------------------------------------------|
+| Primary          | All non-operator expressions                           |
+| Await            | `Await`                                                |
+| Exponentiation   | `^`                                                    |
+| Unary negation   | `+`, `-`                                               |
+| Multiplicative   | `*`, `/`                                               |
+| Integer division | `\`                                                    |
+| Modulus          | `Mod`                                                  |
+| Additive         | `+`, `-`                                               |
+| Concatenation    | `&`                                                    |
+| Shift            | `<<`, `>>`                                             |
+| Relational       | `=`, `<>`, `<`, `>`, `<=`, `>=`, `Like`, `Is`, `IsNot` |
+| Logical NOT      | `Not`                                                  |
+| Logical AND      | `And`, `AndAlso`                                       |
+| Logical OR       | `Or`, `OrElse`                                         |
+| Logical XOR      | `Xor`                                                  |
 
 When an expression contains two operators with the same precedence, the *associativity* of the operators controls the order in which the operations are performed. All binary operators are left-associative, meaning that operations are performed from left to right. Precedence and associativity can be controlled using parenthetical expressions.
 
@@ -2492,7 +2588,7 @@ When operator resolution determines that an operation should be performed late-b
 
 If the result of a numeric binary operation would produce an overflow exception (regardless of whether integer overflow checking is on or off), then the result type is promoted to the next wider numeric type, if possible. For example, consider the following code:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim o As Object = CObj(CByte(2)) * CObj(CByte(255))
@@ -2504,7 +2600,7 @@ End Module
 
 It prints the following result:
 
-```VB.net
+```vb
 System.Int16 = 512
 ```
 
@@ -2520,7 +2616,7 @@ Then, overload resolution is applied to the operators and operands to select the
 
 When collecting the candidate operators for a type `T?`, the operators of type `T` are used instead. Any of `T`'s user-defined operators that involve only non-nullable value types are also lifted. A lifted operator uses the nullable version of any value types, with the exception the return types of `IsTrue` and `IsFalse` (which must be `Boolean`). Lifted operators are evaluated by converting the operands to their non-nullable version, then evaluating the user-defined operator and then converting the result type to its nullable version. If ether operand is `Nothing`, the result of the expression is a value of `Nothing` typed as the nullable version of the result type. For example:
 
-```VB.net
+```vb
 Structure T
     ...
 End Structure
@@ -2544,7 +2640,7 @@ End Module
 
 If the operator is a binary operator and one of the operands is reference type, the operator is also lifted, but any binding to the operator produces an error. For example:
 
-```VB.net
+```vb
 Structure S1
     Public F1 As Integer
 
@@ -2565,7 +2661,6 @@ End Module
 ```
 
 > __Annotation__
-
 > This rule exists because there has been consideration whether we wish to add null-propagating reference types in a future version, in which case the behavior in the case of binary operators between the two types would change.
 
 As with conversions, user-defined operators are always preferred over lifted operators.
@@ -2579,10 +2674,9 @@ In other languages, `>>` and `<<` may be overloaded both as signed operators and
 If no user-defined operator is most specific to the operands, then intrinsic operators will be considered. If no intrinsic operator is defined for the operands and either operand has type Object then the operator will be resolved late-bound; otherwise,  a compile-time error results.
 
 > __Annotation__
-
 > In prior versions of Visual Basic, if there was exactly one operand of type Object, and no applicable user-defined operators, and no applicable intrinsic operators, then it was an error. As of Visual Basic 11, it is now resolved late-bound. For example:
-
-> ```VB.net
+>
+> ```vb
 > Module Module1
 >   Sub Main()
 >       Dim p As Object = Nothing
@@ -2594,7 +2688,7 @@ If no user-defined operator is most specific to the operands, then intrinsic ope
 
 A type `T` that has an intrinsic operator also defines that same operator for `T?`. The result of the operator on `T?` will be the same as for `T`, except that if either operand is `Nothing`, the result of the operator will be `Nothing` (i.e. the null value is propagated). For the purposes of resolving the type of an operation, the `?` is removed from any operands that have them, the type of the operation is determined, and a `?` is added to the type of the operation if any of the operands were nullable value types. For example:
 
-```VB.net
+```vb
 Dim v1? As Integer = 10
 Dim v2 As Long = 20
 
@@ -2619,7 +2713,6 @@ Otherwise, the operands are converted to the wider of the operand types and the 
 Despite these general rules, however, there are a number of special cases called out in the operator results tables.
 
 > __Note__
-
 > For formatting reasons, the operator type tables abbreviate the predefined names to their first two characters. So "By" is `Byte`, "UI" is `UInteger`, "St" is `String`, etc. "Err" means that there is no operation defined for the given operand types.
 
 ## Arithmetic Operators
@@ -2628,15 +2721,18 @@ The `*`, `/`, `\`, `^`, `Mod`, `+`, and `?` operators are the *arithmetic operat
 
 Floating-point arithmetic operations may be performed with higher precision than the result type of the operation. For example, some hardware architectures support an "extended" or "long double" floating-point type with greater range and precision than the `Double` type, and implicitly perform all floating-point operations using this higher-precision type. Hardware architectures can be made to perform floating-point operations with less precision only at excessive cost in performance; rather than require an implementation to forfeit both performance and precision, Visual Basic allows the higher-precision type to be used for all floating-point operations. Other than delivering more precise results, this rarely has any measurable effects. However, in expressions of the form `x * y / z`, where the multiplication produces a result that is outside the `Double` range, but the subsequent division brings the temporary result back into the `Double` range, the fact that the expression is evaluated in a higher-range format may cause a finite result to be produced instead of infinity.
 
-<pre>ArithmeticOperatorExpression  ::=
-    UnaryPlusExpression  |
-    UnaryMinusExpression  |
-    AdditionOperatorExpression  |
-    SubtractionOperatorExpression  |
-    MultiplicationOperatorExpression  |
-    DivisionOperatorExpression  |
-    ModuloOperatorExpression  |
-    ExponentOperatorExpression</pre>
+```antlr
+ArithmeticOperatorExpression
+    : UnaryPlusExpression
+    | UnaryMinusExpression
+    | AdditionOperatorExpression
+    | SubtractionOperatorExpression
+    | MultiplicationOperatorExpression
+    | DivisionOperatorExpression
+    | ModuloOperatorExpression
+    | ExponentOperatorExpression
+    ;
+```
 
 ### Unary Plus Operator
 
@@ -2645,11 +2741,15 @@ The unary plus operator is defined for the `Byte`, `SByte`, `UShort`, `Short`, `
 __Operation Type:__
 
 
-| Bo | SB | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Da | Ch | St | Ob | 
-|---|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|---|
+| __Bo__ | __SB__ | __By__ | __Sh__ | __US__ | __In__ | __UI__ | __Lo__ | __UL__ | __De__ | __Si__ | __Do__ | __Da__  | __Ch__  | __St__ | __Ob__ | 
+|----|----|----|----|----|----|----|----|----|----|----|----|-----|-----|----|----|
 | Sh | SB | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
 
-<pre>UnaryPlusExpression  ::=  <b>+</b>  Expression</pre>
+```antlr
+UnaryPlusExpression
+    : '+' Expression
+    ;
+```
 
 ### Unary Minus Operator
 
@@ -2663,12 +2763,15 @@ The unary minus operator is defined for the following types:
 
 __Operation Type:__
 
-
-| Bo | SB | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Da | Ch | St | Ob | 
-|---|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|---|
+| __Bo__ | __SB__ | __By__ | __Sh__ | __US__ | __In__ | __UI__ | __Lo__ | __UL__ | __De__ | __Si__ | __Do__ | __Da__  | __Ch__  | __St__ | __Ob__ | 
+|----|----|----|----|----|----|----|----|----|----|----|----|-----|-----|----|----|
 | Sh | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
 
-<pre>UnaryMinusExpression  ::=  <b>-</b>  Expression</pre>
+```antlr
+UnaryMinusExpression
+    : '-' Expression
+    ;
+```
 
 ### Addition Operator
 
@@ -2683,32 +2786,35 @@ The addition operator computes the sum of the two operands. The addition operato
 `String`. The two `String` operands are concatenated together.
 
 > __Note__
-
 > The `System.DateTime` type defines overloaded addition operators. Because `System.DateTime` is equivalent to the intrinsic `Date` type, these operators is also available on the `Date` type.
 
 __Operation Type:__
 
 
-|  | Bo | SB | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Da | Ch | St | Ob | 
-|---|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|---|
+|        | __Bo__ | __SB__ | __By__ | __Sh__ | __US__ | __In__ | __UI__ | __Lo__ | __UL__ | __De__ | __Si__ | __Do__ | __Da__  | __Ch__  | __St__ | __Ob__ | 
+|--------|----|----|----|----|----|----|----|----|----|----|----|----|-----|-----|----|----|
 | __Bo__ | Sh | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __SB__ |  | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __By__ |  |  | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
-| __Sh__ |  |  |  | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __US__ |  |  |  |  | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
-| __In__ |  |  |  |  |  | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __UI__ |  |  |  |  |  |  | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
-| __Lo__ |  |  |  |  |  |  |  | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __UL__ |  |  |  |  |  |  |  |  | UL | De | Si | Do | Err | Err | Do | Ob | 
-| __De__ |  |  |  |  |  |  |  |  |  | De | Si | Do | Err | Err | Do | Ob | 
-| __Si__ |  |  |  |  |  |  |  |  |  |  | Si | Do | Err | Err | Do | Ob | 
-| __Do__ |  |  |  |  |  |  |  |  |  |  |  | Do | Err | Err | Do | Ob | 
-| __Da__ |  |  |  |  |  |  |  |  |  |  |  |  | St | Err | St | Ob | 
-| __Ch__ |  |  |  |  |  |  |  |  |  |  |  |  |  | St | St | Ob | 
-| __St__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  | St | Ob | 
-| __Ob__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | Ob | 
+| __SB__ |    | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
+| __By__ |    |    | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
+| __Sh__ |    |    |    | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
+| __US__ |    |    |    |    | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
+| __In__ |    |    |    |    |    | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
+| __UI__ |    |    |    |    |    |    | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
+| __Lo__ |    |    |    |    |    |    |    | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
+| __UL__ |    |    |    |    |    |    |    |    | UL | De | Si | Do | Err | Err | Do | Ob | 
+| __De__ |    |    |    |    |    |    |    |    |    | De | Si | Do | Err | Err | Do | Ob | 
+| __Si__ |    |    |    |    |    |    |    |    |    |    | Si | Do | Err | Err | Do | Ob | 
+| __Do__ |    |    |    |    |    |    |    |    |    |    |    | Do | Err | Err | Do | Ob | 
+| __Da__ |    |    |    |    |    |    |    |    |    |    |    |    | St  | Err | St | Ob | 
+| __Ch__ |    |    |    |    |    |    |    |    |    |    |    |    |     | St  | St | Ob | 
+| __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | St | Ob | 
+| __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     |    | Ob | 
 
-<pre>AdditionOperatorExpression  ::=  Expression  <b>+</b>  [  LineTerminator  ]  Expression</pre>
+```antlr
+AdditionOperatorExpression
+    : Expression '+' LineTerminator? Expression
+    ;
+```
 
 ### Subtraction Operator
 
@@ -2721,32 +2827,34 @@ The subtraction operator subtracts the second operand from the first operand. Th
 `Decimal`. If the resulting value is too large to represent in the decimal format, a `System.OverflowException` exception is thrown. If the result value is too small to represent in the decimal format, the result is 0.
 
 > __Note__
-
 > The `System.DateTime` type defines overloaded subtraction operators. Because `System.DateTime` is equivalent to the intrinsic `Date` type, these operators is also available on the `Date` type.
 
 __Operation Type:__
 
+|        | __Bo__ | __SB__ | __By__ | __Sh__ | __US__ | __In__ | __UI__ | __Lo__ | __UL__ | __De__ | __Si__ | __Do__ | __Da__  | __Ch__  | __St__ | __Ob__ |
+|--------|----|----|----|----|----|----|----|----|----|----|----|----|-----|-----|-----|-----|
+| __Bo__ | Sh | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
+| __SB__ |    | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
+| __By__ |    |    | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do  | Ob  | 
+| __Sh__ |    |    |    | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
+| __US__ |    |    |    |    | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do  | Ob  | 
+| __In__ |    |    |    |    |    | In | Lo | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
+| __UI__ |    |    |    |    |    |    | UI | Lo | UL | De | Si | Do | Err | Err | Do  | Ob  | 
+| __Lo__ |    |    |    |    |    |    |    | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
+| __UL__ |    |    |    |    |    |    |    |    | UL | De | Si | Do | Err | Err | Do  | Ob  | 
+| __De__ |    |    |    |    |    |    |    |    |    | De | Si | Do | Err | Err | Do  | Ob  | 
+| __Si__ |    |    |    |    |    |    |    |    |    |    | Si | Do | Err | Err | Do  | Ob  | 
+| __Do__ |    |    |    |    |    |    |    |    |    |    |    | Do | Err | Err | Do  | Ob  | 
+| __Da__ |    |    |    |    |    |    |    |    |    |    |    |    | Err | Err | Err | Err | 
+| __Ch__ |    |    |    |    |    |    |    |    |    |    |    |    |     | Err | Err | Err | 
+| __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | Do  | Ob  | 
+| __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     |     | Ob  | 
 
-|  | Bo | SB | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Da | Ch | St | Ob | 
-|---|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|---|
-| __Bo__ | Sh | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __SB__ |  | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __By__ |  |  | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
-| __Sh__ |  |  |  | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __US__ |  |  |  |  | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
-| __In__ |  |  |  |  |  | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __UI__ |  |  |  |  |  |  | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
-| __Lo__ |  |  |  |  |  |  |  | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __UL__ |  |  |  |  |  |  |  |  | UL | De | Si | Do | Err | Err | Do | Ob | 
-| __De__ |  |  |  |  |  |  |  |  |  | De | Si | Do | Err | Err | Do | Ob | 
-| __Si__ |  |  |  |  |  |  |  |  |  |  | Si | Do | Err | Err | Do | Ob | 
-| __Do__ |  |  |  |  |  |  |  |  |  |  |  | Do | Err | Err | Do | Ob | 
-| __Da__ |  |  |  |  |  |  |  |  |  |  |  |  | Err | Err | Err | Err | 
-| __Ch__ |  |  |  |  |  |  |  |  |  |  |  |  |  | Err | Err | Err | 
-| __St__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  | Do | Ob | 
-| __Ob__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | Ob | 
-
-<pre>SubtractionOperatorExpression  ::=  Expression  <b>-</b>  [  LineTerminator  ]  Expression</pre>
+```antlr
+SubtractionOperatorExpression
+    : Expression '-' LineTerminator? Expression
+    ;
+```
 
 ### Multiplication Operator
 
@@ -2760,27 +2868,30 @@ The multiplication operator computes the product of two operands. The multiplica
 
 __Operation Type:__
 
+|        | __Bo__ | __SB__ | __By__ | __Sh__ | __US__ | __In__ | __UI__ | __Lo__ | __UL__ | __De__ | __Si__ | __Do__ | __Da__  | __Ch__  | __St__ | __Ob__ |
+|--------|----|----|----|----|----|----|----|----|----|----|----|----|-----|-----|-----|-----|
+| __Bo__ | Sh | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
+| __SB__ |    | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
+| __By__ |    |    | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do  | Ob  | 
+| __Sh__ |    |    |    | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
+| __US__ |    |    |    |    | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do  | Ob  | 
+| __In__ |    |    |    |    |    | In | Lo | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
+| __UI__ |    |    |    |    |    |    | UI | Lo | UL | De | Si | Do | Err | Err | Do  | Ob  | 
+| __Lo__ |    |    |    |    |    |    |    | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
+| __UL__ |    |    |    |    |    |    |    |    | UL | De | Si | Do | Err | Err | Do  | Ob  | 
+| __De__ |    |    |    |    |    |    |    |    |    | De | Si | Do | Err | Err | Do  | Ob  | 
+| __Si__ |    |    |    |    |    |    |    |    |    |    | Si | Do | Err | Err | Do  | Ob  | 
+| __Do__ |    |    |    |    |    |    |    |    |    |    |    | Do | Err | Err | Do  | Ob  | 
+| __Da__ |    |    |    |    |    |    |    |    |    |    |    |    | Err | Err | Err | Err | 
+| __Ch__ |    |    |    |    |    |    |    |    |    |    |    |    |     | Err | Err | Err | 
+| __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | Do  | Ob  | 
+| __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     |     | Ob  | 
 
-|  | Bo | SB | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Da | Ch | St | Ob | 
-|---|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|---|
-| __Bo__ | Sh | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __SB__ |  | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __By__ |  |  | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
-| __Sh__ |  |  |  | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __US__ |  |  |  |  | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
-| __In__ |  |  |  |  |  | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __UI__ |  |  |  |  |  |  | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
-| __Lo__ |  |  |  |  |  |  |  | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __UL__ |  |  |  |  |  |  |  |  | UL | De | Si | Do | Err | Err | Do | Ob | 
-| __De__ |  |  |  |  |  |  |  |  |  | De | Si | Do | Err | Err | Do | Ob | 
-| __Si__ |  |  |  |  |  |  |  |  |  |  | Si | Do | Err | Err | Do | Ob | 
-| __Do__ |  |  |  |  |  |  |  |  |  |  |  | Do | Err | Err | Do | Ob | 
-| __Da__ |  |  |  |  |  |  |  |  |  |  |  |  | Err | Err | Err | Err | 
-| __Ch__ |  |  |  |  |  |  |  |  |  |  |  |  |  | Err | Err | Err | 
-| __St__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  | Do | Ob | 
-| __Ob__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | Ob | 
-
-<pre>MultiplicationOperatorExpression  ::=  Expression  <b>*</b>  [  LineTerminator  ]  Expression</pre>
+```antlr
+MultiplicationOperatorExpression
+    : Expression '*' LineTerminator? Expression
+    ;
+```
 
 ### Division Operators
 
@@ -2796,61 +2907,66 @@ According to normal operator resolution rules, regular division purely between o
 
 __Operation Type:__
 
-
-|  | Bo | SB | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Da | Ch | St | Ob | 
-|---|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|---|
-| __Bo__ | Do | Do | Do | Do | Do | Do | Do | Do | Do | De | Si | Do | Err | Err | Do | Ob | 
-| __SB__ |  | Do | Do | Do | Do | Do | Do | Do | Do | De | Si | Do | Err | Err | Do | Ob | 
-| __By__ |  |  | Do | Do | Do | Do | Do | Do | Do | De | Si | Do | Err | Err | Do | Ob | 
-| __Sh__ |  |  |  | Do | Do | Do | Do | Do | Do | De | Si | Do | Err | Err | Do | Ob | 
-| __US__ |  |  |  |  | Do | Do | Do | Do | Do | De | Si | Do | Err | Err | Do | Ob | 
-| __In__ |  |  |  |  |  | Do | Do | Do | Do | De | Si | Do | Err | Err | Do | Ob | 
-| __UI__ |  |  |  |  |  |  | Do | Do | Do | De | Si | Do | Err | Err | Do | Ob | 
-| __Lo__ |  |  |  |  |  |  |  | Do | Do | De | Si | Do | Err | Err | Do | Ob | 
-| __UL__ |  |  |  |  |  |  |  |  | Do | De | Si | Do | Err | Err | Do | Ob | 
-| __De__ |  |  |  |  |  |  |  |  |  | De | Si | Do | Err | Err | Do | Ob | 
-| __Si__ |  |  |  |  |  |  |  |  |  |  | Si | Do | Err | Err | Do | Ob | 
-| __Do__ |  |  |  |  |  |  |  |  |  |  |  | Do | Err | Err | Do | Ob | 
-| __Da__ |  |  |  |  |  |  |  |  |  |  |  |  | Err | Err | Err | Err | 
-| __Ch__ |  |  |  |  |  |  |  |  |  |  |  |  |  | Err | Err | Err | 
-| __St__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  | Do | Ob | 
-| __Ob__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | Ob | 
+|        | __Bo__ | __SB__ | __By__ | __Sh__ | __US__ | __In__ | __UI__ | __Lo__ | __UL__ | __De__ | __Si__ | __Do__ | __Da__  | __Ch__  | __St__ | __Ob__ |
+|--------|----|----|----|----|----|----|----|----|----|----|----|----|-----|-----|-----|-----|
+| __Bo__ | Do | Do | Do | Do | Do | Do | Do | Do | Do | De | Si | Do | Err | Err | Do  | Ob  | 
+| __SB__ |    | Do | Do | Do | Do | Do | Do | Do | Do | De | Si | Do | Err | Err | Do  | Ob  | 
+| __By__ |    |    | Do | Do | Do | Do | Do | Do | Do | De | Si | Do | Err | Err | Do  | Ob  | 
+| __Sh__ |    |    |    | Do | Do | Do | Do | Do | Do | De | Si | Do | Err | Err | Do  | Ob  | 
+| __US__ |    |    |    |    | Do | Do | Do | Do | Do | De | Si | Do | Err | Err | Do  | Ob  | 
+| __In__ |    |    |    |    |    | Do | Do | Do | Do | De | Si | Do | Err | Err | Do  | Ob  | 
+| __UI__ |    |    |    |    |    |    | Do | Do | Do | De | Si | Do | Err | Err | Do  | Ob  | 
+| __Lo__ |    |    |    |    |    |    |    | Do | Do | De | Si | Do | Err | Err | Do  | Ob  | 
+| __UL__ |    |    |    |    |    |    |    |    | Do | De | Si | Do | Err | Err | Do  | Ob  | 
+| __De__ |    |    |    |    |    |    |    |    |    | De | Si | Do | Err | Err | Do  | Ob  | 
+| __Si__ |    |    |    |    |    |    |    |    |    |    | Si | Do | Err | Err | Do  | Ob  | 
+| __Do__ |    |    |    |    |    |    |    |    |    |    |    | Do | Err | Err | Do  | Ob  | 
+| __Da__ |    |    |    |    |    |    |    |    |    |    |    |    | Err | Err | Err | Err | 
+| __Ch__ |    |    |    |    |    |    |    |    |    |    |    |    |     | Err | Err | Err | 
+| __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | Do  | Ob  | 
+| __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     |     | Ob  | 
 
 The integer division operator is defined for `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, and `Long`. If the value of the right operand is zero, a `System.DivideByZeroException` exception is thrown. The division rounds the result towards zero, and the absolute value of the result is the largest possible integer that is less than the absolute value of the quotient of the two operands. The result is zero or positive when the two operands have the same sign, and zero or negative when the two operands have opposite signs. If the left operand is the maximum negative `SByte`, `Short`, `Integer`, or `Long`, and the right operand is ?1`,` an overflow occurs; if integer overflow checking is on, a `System.OverflowException` exception is thrown. Otherwise, the overflow is not reported and the result is instead the value of the left operand.
 
 > __Annotation__
-
 > As the two operands for unsigned types will always be zero or positive, the result is always zero or positive.  As the result of the expression will always be less than or equal to the largest of the two operands, it is not possible for an overflow to occur.  As such integer overflow checking is not performed for integer divide with two unsigned integers. The result is the type as that of the left operand.
+
 
 __Operation Type:__
 
+|        | __Bo__ | __SB__ | __By__ | __Sh__ | __US__ | __In__ | __UI__ | __Lo__ | __UL__ | __De__ | __Si__ | __Do__ | __Da__  | __Ch__  | __St__ | __Ob__ |
+|--------|----|----|----|----|----|----|----|----|----|----|----|----|-----|-----|-----|-----|
+| __Bo__ | Sh | SB | Sh | Sh | In | In | Lo | Lo | Lo | Lo | Lo | Lo | Err | Err | Lo  | Ob  | 
+| __SB__ |    | SB | Sh | Sh | In | In | Lo | Lo | Lo | Lo | Lo | Lo | Err | Err | Lo  | Ob  | 
+| __By__ |    |    | By | Sh | US | In | UI | Lo | UL | Lo | Lo | Lo | Err | Err | Lo  | Ob  | 
+| __Sh__ |    |    |    | Sh | In | In | Lo | Lo | Lo | Lo | Lo | Lo | Err | Err | Lo  | Ob  | 
+| __US__ |    |    |    |    | US | In | UI | Lo | UL | Lo | Lo | Lo | Err | Err | Lo  | Ob  | 
+| __In__ |    |    |    |    |    | In | Lo | Lo | Lo | Lo | Lo | Lo | Err | Err | Lo  | Ob  | 
+| __UI__ |    |    |    |    |    |    | UI | Lo | UL | Lo | Lo | Lo | Err | Err | Lo  | Ob  | 
+| __Lo__ |    |    |    |    |    |    |    | Lo | Lo | Lo | Lo | Lo | Err | Err | Lo  | Ob  | 
+| __UL__ |    |    |    |    |    |    |    |    | UL | Lo | Lo | Lo | Err | Err | Lo  | Ob  | 
+| __De__ |    |    |    |    |    |    |    |    |    | Lo | Lo | Lo | Err | Err | Lo  | Ob  | 
+| __Si__ |    |    |    |    |    |    |    |    |    |    | Lo | Lo | Err | Err | Lo  | Ob  | 
+| __Do__ |    |    |    |    |    |    |    |    |    |    |    | Lo | Err | Err | Lo  | Ob  | 
+| __Da__ |    |    |    |    |    |    |    |    |    |    |    |    | Err | Err | Err | Err | 
+| __Ch__ |    |    |    |    |    |    |    |    |    |    |    |    |     | Err | Err | Err | 
+| __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | Lo  | Ob  | 
+| __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     |     | Ob  | 
 
-|  | Bo | SB | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Da | Ch | St | Ob | 
-|---|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|---|
-| __Bo__ | Sh | SB | Sh | Sh | In | In | Lo | Lo | Lo | Lo | Lo | Lo | Err | Err | Lo | Ob | 
-| __SB__ |  | SB | Sh | Sh | In | In | Lo | Lo | Lo | Lo | Lo | Lo | Err | Err | Lo | Ob | 
-| __By__ |  |  | By | Sh | US | In | UI | Lo | UL | Lo | Lo | Lo | Err | Err | Lo | Ob | 
-| __Sh__ |  |  |  | Sh | In | In | Lo | Lo | Lo | Lo | Lo | Lo | Err | Err | Lo | Ob | 
-| __US__ |  |  |  |  | US | In | UI | Lo | UL | Lo | Lo | Lo | Err | Err | Lo | Ob | 
-| __In__ |  |  |  |  |  | In | Lo | Lo | Lo | Lo | Lo | Lo | Err | Err | Lo | Ob | 
-| __UI__ |  |  |  |  |  |  | UI | Lo | UL | Lo | Lo | Lo | Err | Err | Lo | Ob | 
-| __Lo__ |  |  |  |  |  |  |  | Lo | Lo | Lo | Lo | Lo | Err | Err | Lo | Ob | 
-| __UL__ |  |  |  |  |  |  |  |  | UL | Lo | Lo | Lo | Err | Err | Lo | Ob | 
-| __De__ |  |  |  |  |  |  |  |  |  | Lo | Lo | Lo | Err | Err | Lo | Ob | 
-| __Si__ |  |  |  |  |  |  |  |  |  |  | Lo | Lo | Err | Err | Lo | Ob | 
-| __Do__ |  |  |  |  |  |  |  |  |  |  |  | Lo | Err | Err | Lo | Ob | 
-| __Da__ |  |  |  |  |  |  |  |  |  |  |  |  | Err | Err | Err | Err | 
-| __Ch__ |  |  |  |  |  |  |  |  |  |  |  |  |  | Err | Err | Err | 
-| __St__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  | Lo | Ob | 
-| __Ob__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | Ob | 
+```antlr
+DivisionOperatorExpression
+    : FPDivisionOperatorExpression
+    | IntegerDivisionOperatorExpression
+    ;
 
-<pre>DivisionOperatorExpression  ::=
-    FPDivisionOperatorExpression  |
-    IntegerDivisionOperatorExpression</pre>
+FPDivisionOperatorExpression
+    : Expression '/' LineTerminator? Expression
+    ;
 
-<pre>FPDivisionOperatorExpression  ::=  Expression  <b>/</b>  [  LineTerminator  ]  Expression</pre>
-
-<pre>IntegerDivisionOperatorExpression  ::=  Expression  <b>\</b>  [  LineTerminator  ]  Expression</pre>
+IntegerDivisionOperatorExpression
+    : Expression '\\' LineTerminator? Expression
+    ;
+```
 
 ### Mod Operator
 
@@ -2864,27 +2980,30 @@ The `Mod` (modulo) operator computes the remainder of the division between two o
 
 __Operation Type:__
 
+|        | __Bo__ | __SB__ | __By__ | __Sh__ | __US__ | __In__ | __UI__ | __Lo__ | __UL__ | __De__ | __Si__ | __Do__ | __Da__  | __Ch__  | __St__ | __Ob__ |
+|--------|----|----|----|----|----|----|----|----|----|----|----|----|-----|-----|-----|-----|
+| __Bo__ | Sh | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
+| __SB__ |    | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
+| __By__ |    |    | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do  | Ob  | 
+| __Sh__ |    |    |    | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
+| __US__ |    |    |    |    | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do  | Ob  | 
+| __In__ |    |    |    |    |    | In | Lo | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
+| __UI__ |    |    |    |    |    |    | UI | Lo | UL | De | Si | Do | Err | Err | Do  | Ob  | 
+| __Lo__ |    |    |    |    |    |    |    | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
+| __UL__ |    |    |    |    |    |    |    |    | UL | De | Si | Do | Err | Err | Do  | Ob  | 
+| __De__ |    |    |    |    |    |    |    |    |    | De | Si | Do | Err | Err | Do  | Ob  | 
+| __Si__ |    |    |    |    |    |    |    |    |    |    | Si | Do | Err | Err | Do  | Ob  | 
+| __Do__ |    |    |    |    |    |    |    |    |    |    |    | Do | Err | Err | Do  | Ob  | 
+| __Da__ |    |    |    |    |    |    |    |    |    |    |    |    | Err | Err | Err | Err | 
+| __Ch__ |    |    |    |    |    |    |    |    |    |    |    |    |     | Err | Err | Err | 
+| __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | Do  | Ob  | 
+| __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     |     | Ob  | 
 
-|  | Bo | SB | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Da | Ch | St | Ob | 
-|---|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|---|
-| __Bo__ | Sh | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __SB__ |  | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __By__ |  |  | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
-| __Sh__ |  |  |  | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __US__ |  |  |  |  | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
-| __In__ |  |  |  |  |  | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __UI__ |  |  |  |  |  |  | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
-| __Lo__ |  |  |  |  |  |  |  | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __UL__ |  |  |  |  |  |  |  |  | UL | De | Si | Do | Err | Err | Do | Ob | 
-| __De__ |  |  |  |  |  |  |  |  |  | De | Si | Do | Err | Err | Do | Ob | 
-| __Si__ |  |  |  |  |  |  |  |  |  |  | Si | Do | Err | Err | Do | Ob | 
-| __Do__ |  |  |  |  |  |  |  |  |  |  |  | Do | Err | Err | Do | Ob | 
-| __Da__ |  |  |  |  |  |  |  |  |  |  |  |  | Err | Err | Err | Err | 
-| __Ch__ |  |  |  |  |  |  |  |  |  |  |  |  |  | Err | Err | Err | 
-| __St__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  | Do | Ob | 
-| __Ob__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | Ob | 
-
-<pre>ModuloOperatorExpression  ::=  Expression  <b>Mod</b>  [  LineTerminator  ]  Expression</pre>
+```antlr
+ModuloOperatorExpression
+    : Expression 'Mod' LineTerminator? Expression
+    ;
+```
 
 ### Exponentiation Operator
 
@@ -2892,27 +3011,30 @@ The exponentiation operator computes the first operand raised to the power of th
 
 __Operation Type:__
 
+|        | __Bo__ | __SB__ | __By__ | __Sh__ | __US__ | __In__ | __UI__ | __Lo__ | __UL__ | __De__ | __Si__ | __Do__ | __Da__  | __Ch__  | __St__ | __Ob__ |
+|--------|----|----|----|----|----|----|----|----|----|----|----|----|-----|-----|-----|-----|
+| __Bo__ | Do | Do | Do | Do | Do | Do | Do | Do | Do | Do | Do | Do | Err | Err | Do  | Ob  | 
+| __SB__ |    | Do | Do | Do | Do | Do | Do | Do | Do | Do | Do | Do | Err | Err | Do  | Ob  | 
+| __By__ |    |    | Do | Do | Do | Do | Do | Do | Do | Do | Do | Do | Err | Err | Do  | Ob  | 
+| __Sh__ |    |    |    | Do | Do | Do | Do | Do | Do | Do | Do | Do | Err | Err | Do  | Ob  | 
+| __US__ |    |    |    |    | Do | Do | Do | Do | Do | Do | Do | Do | Err | Err | Do  | Ob  | 
+| __In__ |    |    |    |    |    | Do | Do | Do | Do | Do | Do | Do | Err | Err | Do  | Ob  | 
+| __UI__ |    |    |    |    |    |    | Do | Do | Do | Do | Do | Do | Err | Err | Do  | Ob  | 
+| __Lo__ |    |    |    |    |    |    |    | Do | Do | Do | Do | Do | Err | Err | Do  | Ob  | 
+| __UL__ |    |    |    |    |    |    |    |    | Do | Do | Do | Do | Err | Err | Do  | Ob  | 
+| __De__ |    |    |    |    |    |    |    |    |    | Do | Do | Do | Err | Err | Do  | Ob  | 
+| __Si__ |    |    |    |    |    |    |    |    |    |    | Do | Do | Err | Err | Do  | Ob  | 
+| __Do__ |    |    |    |    |    |    |    |    |    |    |    | Do | Err | Err | Do  | Ob  | 
+| __Da__ |    |    |    |    |    |    |    |    |    |    |    |    | Err | Err | Err | Err | 
+| __Ch__ |    |    |    |    |    |    |    |    |    |    |    |    |     | Err | Err | Err | 
+| __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | Do  | Ob  | 
+| __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     |     | Ob  | 
 
-|  | Bo | SB | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Da | Ch | St | Ob | 
-|---|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|---|
-| __Bo__ | Do | Do | Do | Do | Do | Do | Do | Do | Do | Do | Do | Do | Err | Err | Do | Ob | 
-| __SB__ |  | Do | Do | Do | Do | Do | Do | Do | Do | Do | Do | Do | Err | Err | Do | Ob | 
-| __By__ |  |  | Do | Do | Do | Do | Do | Do | Do | Do | Do | Do | Err | Err | Do | Ob | 
-| __Sh__ |  |  |  | Do | Do | Do | Do | Do | Do | Do | Do | Do | Err | Err | Do | Ob | 
-| __US__ |  |  |  |  | Do | Do | Do | Do | Do | Do | Do | Do | Err | Err | Do | Ob | 
-| __In__ |  |  |  |  |  | Do | Do | Do | Do | Do | Do | Do | Err | Err | Do | Ob | 
-| __UI__ |  |  |  |  |  |  | Do | Do | Do | Do | Do | Do | Err | Err | Do | Ob | 
-| __Lo__ |  |  |  |  |  |  |  | Do | Do | Do | Do | Do | Err | Err | Do | Ob | 
-| __UL__ |  |  |  |  |  |  |  |  | Do | Do | Do | Do | Err | Err | Do | Ob | 
-| __De__ |  |  |  |  |  |  |  |  |  | Do | Do | Do | Err | Err | Do | Ob | 
-| __Si__ |  |  |  |  |  |  |  |  |  |  | Do | Do | Err | Err | Do | Ob | 
-| __Do__ |  |  |  |  |  |  |  |  |  |  |  | Do | Err | Err | Do | Ob | 
-| __Da__ |  |  |  |  |  |  |  |  |  |  |  |  | Err | Err | Err | Err | 
-| __Ch__ |  |  |  |  |  |  |  |  |  |  |  |  |  | Err | Err | Err | 
-| __St__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  | Do | Ob | 
-| __Ob__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | Ob | 
-
-<pre>ExponentOperatorExpression  ::=  Expression  <b>^</b>  [  LineTerminator  ]  Expression</pre>
+```antlr
+ExponentOperatorExpression
+    : Expression '^' LineTerminator? Expression
+    ;
+```
 
 ## Relational Operators
 
@@ -2949,34 +3071,36 @@ The relational operators are defined for the following types:
 `String`. The operators return the result of comparing the two values using either a binary comparison or a text comparison. The comparison used is determined by the compilation environment and the `Option Compare` statement. A binary comparison determines whether the numeric Unicode value of each character in each string is the same. A text comparison does a Unicode text comparison based on the current culture in use on the .NET Framework. When doing a string comparison, a null value is equivalent to the string literal `""`.
 
 __Operation Type:__
-
-
-|  | Bo | SB | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Da | Ch | St | Ob | 
-|---|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|---|
+        
+|        | __Bo__ | __SB__ | __By__ | __Sh__ | __US__ | __In__ | __UI__ | __Lo__ | __UL__ | __De__ | __Si__ | __Do__ | __Da__  | __Ch__  | __St__ | __Ob__ | 
+|--------|----|----|----|----|----|----|----|----|----|----|----|----|-----|-----|----|----|
 | __Bo__ | Bo | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Bo | Ob | 
-| __SB__ |  | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __By__ |  |  | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do |  | 
-| __Sh__ |  |  |  | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do |  | 
-| __US__ |  |  |  |  | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do |  | 
-| __In__ |  |  |  |  |  | In | Lo | Lo | De | De | Si | Do | Err | Err | Do |  | 
-| __UI__ |  |  |  |  |  |  | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
-| __Lo__ |  |  |  |  |  |  |  | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __UL__ |  |  |  |  |  |  |  |  | UL | De | Si | Do | Err | Err | Do | Ob | 
-| __De__ |  |  |  |  |  |  |  |  |  | De | Si | Do | Err | Err | Do | Ob | 
-| __Si__ |  |  |  |  |  |  |  |  |  |  | Si | Do | Err | Err | Do | Ob | 
-| __Do__ |  |  |  |  |  |  |  |  |  |  |  | Do | Err | Err | Do |  | 
-| __Da__ |  |  |  |  |  |  |  |  |  |  |  |  | Da | Err | Da | Ob | 
-| __Ch__ |  |  |  |  |  |  |  |  |  |  |  |  |  | Ch | St | Ob | 
-| __St__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  | St | Ob | 
-| __Ob__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | Ob | 
+| __SB__ |    | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
+| __By__ |    |    | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do |    | 
+| __Sh__ |    |    |    | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do |    | 
+| __US__ |    |    |    |    | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do |    | 
+| __In__ |    |    |    |    |    | In | Lo | Lo | De | De | Si | Do | Err | Err | Do |    | 
+| __UI__ |    |    |    |    |    |    | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
+| __Lo__ |    |    |    |    |    |    |    | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
+| __UL__ |    |    |    |    |    |    |    |    | UL | De | Si | Do | Err | Err | Do | Ob | 
+| __De__ |    |    |    |    |    |    |    |    |    | De | Si | Do | Err | Err | Do | Ob | 
+| __Si__ |    |    |    |    |    |    |    |    |    |    | Si | Do | Err | Err | Do | Ob | 
+| __Do__ |    |    |    |    |    |    |    |    |    |    |    | Do | Err | Err | Do |    | 
+| __Da__ |    |    |    |    |    |    |    |    |    |    |    |    | Da  | Err | Da | Ob | 
+| __Ch__ |    |    |    |    |    |    |    |    |    |    |    |    |     | Ch  | St | Ob | 
+| __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | St | Ob | 
+| __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     |    | Ob | 
 
-<pre>RelationalOperatorExpression  ::=
-    Expression  <b>=</b>  [  LineTerminator  ]  Expression  |
-    Expression  <b><</b><b>></b>  [  LineTerminator  ]  Expression  |
-    Expression  <b><</b>  [  LineTerminator  ]  Expression  |
-    Expression  <b>></b>  [  LineTerminator  ]  Expression  |
-    Expression  <b><</b><b>=</b>  [  LineTerminator  ]  Expression  |
-    Expression  <b>></b><b>=</b>  [  LineTerminator  ]  Expression</pre>
+```antlr
+RelationalOperatorExpression
+    : Expression '=' LineTerminator? Expression
+    | Expression '<' '>' LineTerminator? Expression
+    | Expression '<' LineTerminator? Expression
+    | Expression '>' LineTerminator? Expression
+    | Expression '<' '=' LineTerminator? Expression
+    | Expression '>' '=' LineTerminator? Expression
+    ;
+```
 
 ## Like Operator
 
@@ -2995,7 +3119,6 @@ A list of characters surrounded by brackets and prefixed by an exclamation point
 Two characters in a character list separated by a hyphen (`-`) specify a range of Unicode characters starting with the first character and ending with the second character. If the second character is not later in the sort order than the first character, a run-time exception occurs. A hyphen that appears at the beginning or end of a character list specifies itself.
 
 > __Note__
-
 > To match the special characters left bracket (`[`), question mark (`?`), number sign (`#`), and asterisk (`*`), brackets must enclose them. The right bracket (`]`) cannot be used within a group to match itself, but it can be used outside a group as an individual character. The character sequence `[]` is considered to be the string literal `""`. 
 
 Also note that character comparisons and ordering for character lists are dependent on the type of comparisons being used. If binary comparisons are being used, character comparisons and ordering are based on the numeric Unicode values. If text comparisons are being used, character comparisons and ordering are based on the current locale being used on the .NET Framework.
@@ -3006,27 +3129,30 @@ In a `Like` expression where both operands are `Nothing` or one operand has an i
 
 __Operation Type:__
 
-
-|  | Bo | SB | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Da | Ch | St | Ob | 
-|---|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|---|
+|        | __Bo__ | __SB__ | __By__ | __Sh__ | __US__ | __In__ | __UI__ | __Lo__ | __UL__ | __De__ | __Si__ | __Do__ | __Da__  | __Ch__  | __St__ | __Ob__ | 
+|--------|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|
 | __Bo__ | St | St | St | St | St | St | St | St | St | St | St | St | St | St | St | Ob | 
-| __SB__ |  | St | St | St | St | St | St | St | St | St | St | St | St | St | St | Ob | 
-| __By__ |  |  | St | St | St | St | St | St | St | St | St | St | St | St | St | Ob | 
-| __Sh__ |  |  |  | St | St | St | St | St | St | St | St | St | St | St | St | Ob | 
-| __US__ |  |  |  |  | St | St | St | St | St | St | St | St | St | St | St | Ob | 
-| __In__ |  |  |  |  |  | St | St | St | St | St | St | St | St | St | St | Ob | 
-| __UI__ |  |  |  |  |  |  | St | St | St | St | St | St | St | St | St | Ob | 
-| __Lo__ |  |  |  |  |  |  |  | St | St | St | St | St | St | St | St | Ob | 
-| __UL__ |  |  |  |  |  |  |  |  | St | St | St | St | St | St | St | Ob | 
-| __De__ |  |  |  |  |  |  |  |  |  | St | St | St | St | St | St | Ob | 
-| __Si__ |  |  |  |  |  |  |  |  |  |  | St | St | St | St | St | Ob | 
-| __Do__ |  |  |  |  |  |  |  |  |  |  |  | St | St | St | St | Ob | 
-| __Da__ |  |  |  |  |  |  |  |  |  |  |  |  | St | St | St | Ob | 
-| __Ch__ |  |  |  |  |  |  |  |  |  |  |  |  |  | St | St | Ob | 
-| __St__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  | St | Ob | 
-| __Ob__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | Ob | 
+| __SB__ |    | St | St | St | St | St | St | St | St | St | St | St | St | St | St | Ob | 
+| __By__ |    |    | St | St | St | St | St | St | St | St | St | St | St | St | St | Ob | 
+| __Sh__ |    |    |    | St | St | St | St | St | St | St | St | St | St | St | St | Ob | 
+| __US__ |    |    |    |    | St | St | St | St | St | St | St | St | St | St | St | Ob | 
+| __In__ |    |    |    |    |    | St | St | St | St | St | St | St | St | St | St | Ob | 
+| __UI__ |    |    |    |    |    |    | St | St | St | St | St | St | St | St | St | Ob | 
+| __Lo__ |    |    |    |    |    |    |    | St | St | St | St | St | St | St | St | Ob | 
+| __UL__ |    |    |    |    |    |    |    |    | St | St | St | St | St | St | St | Ob | 
+| __De__ |    |    |    |    |    |    |    |    |    | St | St | St | St | St | St | Ob | 
+| __Si__ |    |    |    |    |    |    |    |    |    |    | St | St | St | St | St | Ob | 
+| __Do__ |    |    |    |    |    |    |    |    |    |    |    | St | St | St | St | Ob | 
+| __Da__ |    |    |    |    |    |    |    |    |    |    |    |    | St | St | St | Ob | 
+| __Ch__ |    |    |    |    |    |    |    |    |    |    |    |    |    | St | St | Ob | 
+| __St__ |    |    |    |    |    |    |    |    |    |    |    |    |    |    | St | Ob | 
+| __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    | Ob | 
 
-<pre>LikeOperatorExpression  ::=  Expression  <b>Like</b>  [  LineTerminator  ]  Expression</pre>
+```antlr
+LikeOperatorExpression
+    : Expression 'Like' LineTerminator? Expression
+    ;
+```
 
 ## Concatenation Operator
 
@@ -3036,27 +3162,30 @@ A concatenation operation results in a string that is the concatenation of the t
 
 __Operation Type:__
 
-
-|  | Bo | SB | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Da | Ch | St | Ob | 
-|---|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|---|
+|        | __Bo__ | __SB__ | __By__ | __Sh__ | __US__ | __In__ | __UI__ | __Lo__ | __UL__ | __De__ | __Si__ | __Do__ | __Da__  | __Ch__  | __St__ | __Ob__ | 
+|--------|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|
 | __Bo__ | St | St | St | St | St | St | St | St | St | St | St | St | St | St | St | Ob | 
-| __SB__ |  | St | St | St | St | St | St | St | St | St | St | St | St | St | St | Ob | 
-| __By__ |  |  | St | St | St | St | St | St | St | St | St | St | St | St | St | Ob | 
-| __Sh__ |  |  |  | St | St | St | St | St | St | St | St | St | St | St | St | Ob | 
-| __US__ |  |  |  |  | St | St | St | St | St | St | St | St | St | St | St | Ob | 
-| __In__ |  |  |  |  |  | St | St | St | St | St | St | St | St | St | St | Ob | 
-| __UI__ |  |  |  |  |  |  | St | St | St | St | St | St | St | St | St | Ob | 
-| __Lo__ |  |  |  |  |  |  |  | St | St | St | St | St | St | St | St | Ob | 
-| __UL__ |  |  |  |  |  |  |  |  | St | St | St | St | St | St | St | Ob | 
-| __De__ |  |  |  |  |  |  |  |  |  | St | St | St | St | St | St | Ob | 
-| __Si__ |  |  |  |  |  |  |  |  |  |  | St | St | St | St | St | Ob | 
-| __Do__ |  |  |  |  |  |  |  |  |  |  |  | St | St | St | St | Ob | 
-| __Da__ |  |  |  |  |  |  |  |  |  |  |  |  | St | St | St | Ob | 
-| __Ch__ |  |  |  |  |  |  |  |  |  |  |  |  |  | St | St | Ob | 
-| __St__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  | St | Ob | 
-| __Ob__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | Ob | 
+| __SB__ |    | St | St | St | St | St | St | St | St | St | St | St | St | St | St | Ob | 
+| __By__ |    |    | St | St | St | St | St | St | St | St | St | St | St | St | St | Ob | 
+| __Sh__ |    |    |    | St | St | St | St | St | St | St | St | St | St | St | St | Ob | 
+| __US__ |    |    |    |    | St | St | St | St | St | St | St | St | St | St | St | Ob | 
+| __In__ |    |    |    |    |    | St | St | St | St | St | St | St | St | St | St | Ob | 
+| __UI__ |    |    |    |    |    |    | St | St | St | St | St | St | St | St | St | Ob | 
+| __Lo__ |    |    |    |    |    |    |    | St | St | St | St | St | St | St | St | Ob | 
+| __UL__ |    |    |    |    |    |    |    |    | St | St | St | St | St | St | St | Ob | 
+| __De__ |    |    |    |    |    |    |    |    |    | St | St | St | St | St | St | Ob | 
+| __Si__ |    |    |    |    |    |    |    |    |    |    | St | St | St | St | St | Ob | 
+| __Do__ |    |    |    |    |    |    |    |    |    |    |    | St | St | St | St | Ob | 
+| __Da__ |    |    |    |    |    |    |    |    |    |    |    |    | St | St | St | Ob | 
+| __Ch__ |    |    |    |    |    |    |    |    |    |    |    |    |    | St | St | Ob | 
+| __St__ |    |    |    |    |    |    |    |    |    |    |    |    |    |    | St | Ob | 
+| __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    | Ob | 
 
-<pre>ConcatenationOperatorExpression  ::=  Expression  <b>&</b>  [  LineTerminator  ]  Expression</pre>
+```antlr
+ConcatenationOperatorExpression
+    : Expression '&' LineTerminator? Expression
+    ;
+```
 
 ## Logical Operators
 
@@ -3090,7 +3219,7 @@ When the logical operators `And` and `Or` are lifted for the type `Boolean?`, th
 
 For example:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim x?, y? As Boolean
@@ -3106,45 +3235,45 @@ End Module
 ```
 
 > __Annotation__
-
 > Ideally, the logical operators `And` and `Or` would be lifted using three-valued logic for any type that can be used in a Boolean expression (i.e. a type that implements `IsTrue` and `IsFalse`), in the same way that `AndAlso` and `OrElse` short circuit across any type that can be used in a Boolean expression. Unfortunately, three-valued lifting is only applied to `Boolean?`, so user-defined types that desire three-valued logic must do so manually by defining `And` and `Or` operators for their nullable version.
 
 No overflows are possible from these operations. The enumerated type operators do the bitwise operation on the underlying type of the enumerated type, but the return value is the enumerated type.
 
 __Not Operation Type:__
 
-
-| Bo | SB | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Da | Ch | St | Ob | 
-|---|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|---|
+| __Bo__ | __SB__ | __By__ | __Sh__ | __US__ | __In__ | __UI__ | __Lo__ | __UL__ | __De__ | __Si__ | __Do__ | __Da__  | __Ch__  | __St__ | __Ob__ | 
+|----|----|----|----|----|----|----|----|----|----|----|----|-----|-----|----|----|
 | Bo | SB | By | Sh | US | In | UI | Lo | UL | Lo | Lo | Lo | Err | Err | Lo | Ob | 
 
 __And, Or, Xor Operation Type:__
 
+|        | __Bo__ | __SB__ | __By__ | __Sh__ | __US__ | __In__ | __UI__ | __Lo__ | __UL__ | __De__ | __Si__ | __Do__ | __Da__  | __Ch__  | __St__ | __Ob__ |
+|--------|----|----|----|----|----|----|----|----|----|----|----|----|-----|-----|-----|-----|
+| __Bo__ | Bo | SB | Sh | Sh | In | In | Lo | Lo | Lo | Lo | Lo | Lo | Err | Err | Bo  | Ob  | 
+| __SB__ |    | SB | Sh | Sh | In | In | Lo | Lo | Lo | Lo | Lo | Lo | Err | Err | Lo  | Ob  | 
+| __By__ |    |    | By | Sh | US | In | UI | Lo | UL | Lo | Lo | Lo | Err | Err | Lo  | Ob  | 
+| __Sh__ |    |    |    | Sh | In | In | Lo | Lo | Lo | Lo | Lo | Lo | Err | Err | Lo  | Ob  | 
+| __US__ |    |    |    |    | US | In | UI | Lo | UL | Lo | Lo | Lo | Err | Err | Lo  | Ob  | 
+| __In__ |    |    |    |    |    | In | Lo | Lo | Lo | Lo | Lo | Lo | Err | Err | Lo  | Ob  | 
+| __UI__ |    |    |    |    |    |    | UI | Lo | UL | Lo | Lo | Lo | Err | Err | Lo  | Ob  | 
+| __Lo__ |    |    |    |    |    |    |    | Lo | Lo | Lo | Lo | Lo | Err | Err | Lo  | Ob  | 
+| __UL__ |    |    |    |    |    |    |    |    | UL | Lo | Lo | Lo | Err | Err | Lo  | Ob  | 
+| __De__ |    |    |    |    |    |    |    |    |    | Lo | Lo | Lo | Err | Err | Lo  | Ob  | 
+| __Si__ |    |    |    |    |    |    |    |    |    |    | Lo | Lo | Err | Err | Lo  | Ob  | 
+| __Do__ |    |    |    |    |    |    |    |    |    |    |    | Lo | Err | Err | Lo  | Ob  | 
+| __Da__ |    |    |    |    |    |    |    |    |    |    |    |    | Err | Err | Err | Err | 
+| __Ch__ |    |    |    |    |    |    |    |    |    |    |    |    |     | Err | Err | Err | 
+| __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | Lo  | Ob  | 
+| __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     |     | Ob  | 
 
-|  | Bo | SB | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Da | Ch | St | Ob | 
-|---|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|---|
-| __Bo__ | Bo | SB | Sh | Sh | In | In | Lo | Lo | Lo | Lo | Lo | Lo | Err | Err | Bo | Ob | 
-| __SB__ |  | SB | Sh | Sh | In | In | Lo | Lo | Lo | Lo | Lo | Lo | Err | Err | Lo | Ob | 
-| __By__ |  |  | By | Sh | US | In | UI | Lo | UL | Lo | Lo | Lo | Err | Err | Lo | Ob | 
-| __Sh__ |  |  |  | Sh | In | In | Lo | Lo | Lo | Lo | Lo | Lo | Err | Err | Lo | Ob | 
-| __US__ |  |  |  |  | US | In | UI | Lo | UL | Lo | Lo | Lo | Err | Err | Lo | Ob | 
-| __In__ |  |  |  |  |  | In | Lo | Lo | Lo | Lo | Lo | Lo | Err | Err | Lo | Ob | 
-| __UI__ |  |  |  |  |  |  | UI | Lo | UL | Lo | Lo | Lo | Err | Err | Lo | Ob | 
-| __Lo__ |  |  |  |  |  |  |  | Lo | Lo | Lo | Lo | Lo | Err | Err | Lo | Ob | 
-| __UL__ |  |  |  |  |  |  |  |  | UL | Lo | Lo | Lo | Err | Err | Lo | Ob | 
-| __De__ |  |  |  |  |  |  |  |  |  | Lo | Lo | Lo | Err | Err | Lo | Ob | 
-| __Si__ |  |  |  |  |  |  |  |  |  |  | Lo | Lo | Err | Err | Lo | Ob | 
-| __Do__ |  |  |  |  |  |  |  |  |  |  |  | Lo | Err | Err | Lo | Ob | 
-| __Da__ |  |  |  |  |  |  |  |  |  |  |  |  | Err | Err | Err | Err | 
-| __Ch__ |  |  |  |  |  |  |  |  |  |  |  |  |  | Err | Err | Err | 
-| __St__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  | Lo | Ob | 
-| __Ob__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | Ob | 
-
-<pre>LogicalOperatorExpression  ::=
-<b>Not</b>  Expression  |
-    Expression  <b>And</b>  [  LineTerminator  ]  Expression  |
-    Expression  <b>Or</b>  [  LineTerminator  ]  Expression  |
-    Expression  <b>Xor</b>  [  LineTerminator  ]  Expression</pre>
+```antlr
+LogicalOperatorExpression
+    : 'Not' Expression
+    | Expression 'And' LineTerminator? Expression
+    | Expression 'Or' LineTerminator? Expression
+    | Expression 'Xor' LineTerminator? Expression
+    ;
+```
 
 ### Short-circuiting Logical Operators
 
@@ -3158,21 +3287,21 @@ If the first operand in an `OrElse` operation evaluates to `True` or returns Tru
 
 The `AndAlso` and `OrElse` operators are defined for the type `Boolean`, or for any type `T` that overloads the following operators:
 
-```VB.net
+```vb
 Public Shared Operator IsTrue(op As T) As Boolean
 Public Shared Operator IsFalse(op As T) As Boolean
 ```
 
 as well as overloading the corresponding `And` or `Or` operator:
 
-```VB.net
+```vb
 Public Shared Operator And(op1 As T, op2 As T) As T
 Public Shared Operator Or(op1 As T, op2 As T) As T
 ```
 
 When evaluating the `AndAlso` or `OrElse` operators, the first operand is evaluated only once, and the second operand is either not evaluated or evaluated exactly once. For example, consider the following code:
 
-```VB.net
+```vb
 Module Test
     Function TrueValue() As Boolean
         Console.Write(" True")
@@ -3210,7 +3339,7 @@ End Module
 
 It prints the following result:
 
-```VB.net
+```vb
 And: False True
 Or: True False
 AndAlso: False
@@ -3221,28 +3350,31 @@ In the lifted form of the `AndAlso` and `OrElse` operators, if the first operand
 
 __Operation Type:__
 
-|  | Bo | SB | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Da | Ch | St | Ob | 
-|---|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|---|
-| __Bo__ | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Err | Err | Bo | Ob | 
-| __SB__ |  | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Err | Err | Bo | Ob | 
-| __By__ |  |  | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Err | Err | Bo | Ob | 
-| __Sh__ |  |  |  | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Err | Err | Bo | Ob | 
-| __US__ |  |  |  |  | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Err | Err | Bo | Ob | 
-| __In__ |  |  |  |  |  | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Err | Err | Bo | Ob | 
-| __UI__ |  |  |  |  |  |  | Bo | Bo | Bo | Bo | Bo | Bo | Err | Err | Bo | Ob | 
-| __Lo__ |  |  |  |  |  |  |  | Bo | Bo | Bo | Bo | Bo | Err | Err | Bo | Ob | 
-| __UL__ |  |  |  |  |  |  |  |  | Bo | Bo | Bo | Bo | Err | Err | Bo | Ob | 
-| __De__ |  |  |  |  |  |  |  |  |  | Bo | Bo | Bo | Err | Err | Bo | Ob | 
-| __Si__ |  |  |  |  |  |  |  |  |  |  | Bo | Bo | Err | Err | Bo | Ob | 
-| __Do__ |  |  |  |  |  |  |  |  |  |  |  | Bo | Err | Err | Bo | Ob | 
-| __Da__ |  |  |  |  |  |  |  |  |  |  |  |  | Err | Err | Err | Err | 
-| __Ch__ |  |  |  |  |  |  |  |  |  |  |  |  |  | Err | Err | Err | 
-| __St__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  | Bo | Ob | 
-| __Ob__ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | Ob | 
+|        | __Bo__ | __SB__ | __By__ | __Sh__ | __US__ | __In__ | __UI__ | __Lo__ | __UL__ | __De__ | __Si__ | __Do__ | __Da__  | __Ch__  | __St__ | __Ob__ |
+|--------|----|----|----|----|----|----|----|----|----|----|----|----|-----|-----|-----|-----|
+| __Bo__ | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Err | Err | Bo  | Ob  | 
+| __SB__ |    | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Err | Err | Bo  | Ob  | 
+| __By__ |    |    | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Err | Err | Bo  | Ob  | 
+| __Sh__ |    |    |    | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Err | Err | Bo  | Ob  | 
+| __US__ |    |    |    |    | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Err | Err | Bo  | Ob  | 
+| __In__ |    |    |    |    |    | Bo | Bo | Bo | Bo | Bo | Bo | Bo | Err | Err | Bo  | Ob  | 
+| __UI__ |    |    |    |    |    |    | Bo | Bo | Bo | Bo | Bo | Bo | Err | Err | Bo  | Ob  | 
+| __Lo__ |    |    |    |    |    |    |    | Bo | Bo | Bo | Bo | Bo | Err | Err | Bo  | Ob  | 
+| __UL__ |    |    |    |    |    |    |    |    | Bo | Bo | Bo | Bo | Err | Err | Bo  | Ob  | 
+| __De__ |    |    |    |    |    |    |    |    |    | Bo | Bo | Bo | Err | Err | Bo  | Ob  | 
+| __Si__ |    |    |    |    |    |    |    |    |    |    | Bo | Bo | Err | Err | Bo  | Ob  | 
+| __Do__ |    |    |    |    |    |    |    |    |    |    |    | Bo | Err | Err | Bo  | Ob  | 
+| __Da__ |    |    |    |    |    |    |    |    |    |    |    |    | Err | Err | Err | Err | 
+| __Ch__ |    |    |    |    |    |    |    |    |    |    |    |    |     | Err | Err | Err | 
+| __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | Bo  | Ob  | 
+| __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     |     | Ob  | 
 
-<pre>ShortCircuitLogicalOperatorExpression  ::=
-    Expression  <b>AndAlso</b>  [  LineTerminator  ]  Expression  |
-    Expression  <b>OrElse</b>  [  LineTerminator  ]  Expression</pre>
+```antlr
+ShortCircuitLogicalOperatorExpression
+    : Expression 'AndAlso' LineTerminator? Expression
+    | Expression 'OrElse' LineTerminator? Expression
+    ;
+```
 
 ## Shift Operators
 
@@ -3254,26 +3386,28 @@ The `>>` operator causes the bits in the first operand to be shifted right the n
 
 The shift operators shift the bits of the underlying representation of the first operand by the amount of the second operand. If the value of the second operand is greater than the number of bits in the first operand, or is negative, then the shift amount is computed as `RightOperand And SizeMask` where `SizeMask` is:
 
-
-| __LeftOperand Type__ | __SizeMask__ | 
-|----------------------|--------------|
-| `Byte`, `SByte` | 7 (`&H7`) | 
-| `UShort`, `Short` | 15 (`&HF`) | 
-| `UInteger`, `Integer` | 31 (`&H1F`) | 
-| `ULong`, `Long` | 63 (`&H3F`) | 
+| __LeftOperand Type__  | __SizeMask__ | 
+|-----------------------|--------------|
+| `Byte`, `SByte`       | 7 (`&H7`)    | 
+| `UShort`, `Short`     | 15 (`&HF`)   | 
+| `UInteger`, `Integer` | 31 (`&H1F`)  | 
+| `ULong`, `Long`       | 63 (`&H3F`)  | 
 
 If the shift amount is zero, the result of the operation is identical to the value of the first operand. No overflows are possible from these operations.
 
 __Operation Type:__
 
 
-| Bo | SB | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Da | Ch | St | Ob | 
-|---|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|---|
+| __Bo__ | __SB__ | __By__ | __Sh__ | __US__ | __In__ | __UI__ | __Lo__ | __UL__ | __De__ | __Si__ | __Do__ | __Da__  | __Ch__  | __St__ | __Ob__ | 
+|----|----|----|----|----|----|----|----|----|----|----|----|-----|-----|----|----|
 | Sh | SB | By | Sh | US | In | UI | Lo | UL | Lo | Lo | Lo | Err | Err | Lo | Ob | 
 
-<pre>ShiftOperatorExpression  ::=
-    Expression  <b><</b><b><</b>  [  LineTerminator  ]  Expression  |
-    Expression  <b>></b><b>></b>  [  LineTerminator  ]  Expression</pre>
+```antlr
+ShiftOperatorExpression
+    : Expression '<' '<' LineTerminator? Expression
+    | Expression '>' '>' LineTerminator? Expression
+    ;
+```
 
 ## Boolean Expressions
 
@@ -3292,12 +3426,11 @@ A Boolean expression is an expression that can be tested to see if it is true or
 `T` has a narrowing conversion to `Boolean`.
 
 > __Annotation__
-
 > It is interesting to note that if `Option Strict` is off, an expression that has a narrowing conversion to `Boolean` will be accepted without a compile-time error but the language will still prefer an `IsTrue` operator if it exists. This is because `Option Strict` only changes what is and isn't accepted by the language, and never changes the actual meaning of an expression. Thus, `IsTrue` has to always be preferred over a narrowing conversion, regardless of `Option Strict`.
 
 For example, the following class does not define a widening conversion to `Boolean`. As a result, its use in the `If` statement causes a call to the `IsTrue` operator.
 
-```VB.net
+```vb
 Class MyBool
     Public Shared Widening Operator CType(b As Boolean) As MyBool
         ...
@@ -3331,18 +3464,22 @@ Otherwise, a Boolean expression calls the `IsTrue` operator and returns `True` i
 
 In the following example, `Integer` has a narrowing conversion to `Boolean`, so a null `Integer?` has a narrowing conversion to both `Boolean?` (yielding a null `Boolean`) and to `Boolean` (which throws an exception). The narrowing conversion to `Boolean?` is preferred, and so the value of "`i`" as a Boolean expression is therefore `False`.
 
-```VB.net
+```vb
 Dim i As Integer? = Nothing
 If i Then Console.WriteLine()
 ```
 
-<pre>BooleanExpression  ::=  Expression</pre>
+```antlr
+BooleanExpression
+    : Expression
+    ;
+```
 
 ## Lambda Expressions
 
 A *lambda expression* defines an anonymous method called a *lambda method*. Lambda methods make it easy to pass "in-line" methods to other methods that take delegate types. The example:
 
-```VB.net
+```vb
 Module Test
     Delegate Function IntFunc(x As Integer) As Integer
 
@@ -3366,7 +3503,7 @@ End Module
 
 will print out:
 
-```VB.net
+```vb
 2 4 6 8
 ```
 
@@ -3380,8 +3517,9 @@ An __async lambda expression__ is one with the `Async` modifier and no `Iterator
 
 Lambda expressions can either be single-line or multi-line. Single-line `Function` lambda expressions contain a single expression that represents the value returned from the lambda method. Single-line `Sub` lambda expressions contain a single statement without its closing `StatementTerminator`. For example:
 
-```VB.net
-Module Test    Sub Do(a() As Integer, action As Action(Of Integer))
+```vb
+Module Test
+    Sub Do(a() As Integer, action As Action(Of Integer))
         For index As Integer = 0 To a.Length - 1
             action(a(index))
         Next index
@@ -3398,12 +3536,11 @@ End Module
 Single-line lambda constructs bind less tightly than all other expressions and statements. Thus, for example, "`Function() x + 5`" is equivalent to "`Function() (x+5)"` rather than "`(Function() x) + 5`". To avoid ambiguity, a single-line `Sub` lambda expression may not contain a Dim statement or a label declaration statement. Also, unless it is enclosed in parentheses, a single-line `Sub` lambda expression may not be immediately followed by a colon ":", a member access operator ".", a dictionary member access operator "!" or an open parenthesis "(". It may not contain any block statement (`With`, `SyncLock, If...EndIf`, `While`, `For`, `Do`, `Using`) nor `OnError` nor `Resume`.
 
 > __Annotation__
-
 > In the lambda expression "`Function(i) x=i`", the body is interpreted as an *expression* (which tests whether `x` and `i` are equal). But in the lambda expression "`Sub(i) x=i`", the body is interpreted as a statement (which assigns `i` to `x`).
 
 A multi-line lambda expression contains a statement block and must end with an appropriate `End` statement (i.e. `End Function` or `End Sub`). As with regular methods, a multi-line lambda method's `Function` or `Sub` statement and `End` statements must be on their own lines. For example:
 
-```VB.net
+```vb
 ' Error: Function statement must be on its own line!
 Dim x = Sub(x As Integer) : Console.WriteLine(x) : End Sub
 
@@ -3421,7 +3558,7 @@ Multi-line `Function` lambda expressions can declare a return type but cannot pu
 
 For example:
 
-```VB.net
+```vb
 Function f(min As Integer, max As Integer) As IEnumerable(Of Integer)
     If min > max Then Throw New ArgumentException()
     Dim x = Iterator Function()
@@ -3439,7 +3576,7 @@ In all cases, if there are no `Return` (respectively `Yield`) statements, or if 
 
 Note that the return type is calculated from all `Return` statements, even if they are not reachable. For example:
 
-```VB.net
+```vb
 ' Return type is Double
 Dim x = Function()
               Return 10
@@ -3457,7 +3594,7 @@ Static locals cannot be declared in multi-line lambda expressions.
 
 It is not possible to branch into or out of the statement block of a multi-line lambda expression, although the normal branching rules apply within it. For example:
 
-```VB.net
+```vb
 Label1:
 Dim x = Sub()
                ' Error: Cannot branch out
@@ -3474,7 +3611,7 @@ GoTo Label2
 
 A lambda expression is roughly equivalent to an anonymous method declared on the containing type. The initial example is roughly equivalent to:
 
-```VB.net
+```vb
 Module Test
     Delegate Function IntFunc(x As Integer) As Integer
 
@@ -3500,37 +3637,44 @@ Module Test
 End Module
 ```
 
-<pre>LambdaExpression  ::=
-    SingleLineLambda  |
-    MultiLineLambda</pre>
+```antlr
+LambdaExpression
+    : SingleLineLambda
+    | MultiLineLambda
+    ;
 
-<pre>SingleLineLambda  ::=
-    [  LambdaModifier+  ]  <b>Function</b>  [  OpenParenthesis  [  ParametertList  ]  CloseParenthesis  ]  Expression  |
-    [  LambdaModifier+  ]  <b>Sub</b>  [  OpenParenthesis  [  ParametertList  ]  CloseParenthesis  ]  Statement</pre>
+SingleLineLambda
+    : LambdaModifier* 'Function' ( OpenParenthesis ParameterList? CloseParenthesis )? Expression
+    | 'Sub' ( OpenParenthesis ParameterList? CloseParenthesis )? Statement
+    ;
 
-<pre>MultiLineLambda  ::=
-    MultiLineFunctionLambda  |
-    MultiLineSubLambda</pre>
+MultiLineLambda
+    : MultiLineFunctionLambda
+    | MultiLineSubLambda
+    ;
 
-<pre>MultiLineFunctionLambda  ::=
-    [  LambdaModifier+  ]  <b>Function</b>  [  OpenParenthesis  [  ParametertList  ]  CloseParenthesis  ]  [  <b>As</b>  TypeName  ]  LineTerminator
-    Block
-<b>End</b><b>Function</b></pre>
+MultiLineFunctionLambda
+    : LambdaModifier* 'Function' ( OpenParenthesis ParameterList? CloseParenthesis )? ( 'As' TypeName )? LineTerminator
+      Block
+      'End' 'Function'
+    ;
 
-<pre>MultiLineSubLambda  ::=
-    [  LambdaModifier+  ]  <b>Sub</b>  [  OpenParenthesis  [  ParametertList  ]  CloseParenthesis  ]  LineTerminator
-    Block
-<b>End</b><b>Sub</b></pre>
+MultiLineSubLambda
+    : LambdaModifier* 'Sub' ( OpenParenthesis ParameterList? CloseParenthesis )? LineTerminator
+      Block
+      'End' 'Sub'
+    ;
 
-<pre>LambdaModifier  ::=
-<b>Async</b>  |
-<b>Iterator</b></pre>
+LambdaModifier 
+    : 'Async' | 'Iterator'
+    ;
+```
 
 ### Closures
 
 Lambda expressions have access to all of the variables in scope, including local variables or parameters defined in the containing method and lambda expressions. When a lambda expression refers to a local variable or parameter, the lambda expression captures the variable being referred to into a closure. A closure is an object that lives on the heap instead of on the stack, and when a variable is captured, all references to the variable are redirected to the closure. This enables lambda expressions to continue to refer to local variables and parameters even after the containing method is complete. For example:
 
-```VB.net
+```vb
 Module Test
     Delegate Function D() As Integer
 
@@ -3550,7 +3694,7 @@ End Module
 
 is roughly equivalent to:
 
-```VB.net
+```vb
 Module Test
     Delegate Function D() As Integer
 
@@ -3579,7 +3723,7 @@ End Module
 
 A closure captures a new copy of a local variable each time it enters the block in which the local variable is declared, but the new copy is initialized with the value of the previous copy, if any. For example:
 
-```VB.net
+```vb
 Module Test
     Delegate Function D() As Integer
 
@@ -3607,19 +3751,19 @@ End Module
 
 prints
 
-```VB.net
+```vb
 1 2 3 4 5 6 7 8 9 10
 ```
 
 instead of
 
-```VB.net
+```vb
 9 9 9 9 9 9 9 9 9 9
 ```
 
 Because closures have to be initialized when entering a block, it is not allowed to `GoTo` into a block with a closure from outside of that block, although it is allowed to `Resume` into a block with a closure. For example:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim a = 10
@@ -3647,13 +3791,14 @@ Instance expressions (`Me`, `MyClass`, `MyBase`), if the type of `Me` is not a c
 
 The members of an anonymous type-creation expression, if the lambda expression is part of the expression. For example:
 
-```VB.net
+```vb
 ' Error: Lambda cannot refer to anonymous type field
 Dim x = New With { .a = 12, .b = Function() .a }
 ```
 
 `ReadOnly` instance variables in instance constructors or `ReadOnly` shared variables in shared constructors where the variables are used in a non-value context. For example:
 
+```vb
 Class C1
     ReadOnly F1 As Integer
 
@@ -3668,12 +3813,13 @@ Class C1
     Sub ModifyValue(ByRef x As Integer)
     End Sub
 End Class
+```
 
 ## Query Expressions
 
 A *query expression* is an expression that applies a series of *query operators* to the elements of a *queryable* collection. For example, the following expression takes a collection of `Customer` objects and returns the names of all the customers in the state of Washington:
 
-```VB.net
+```vb
 Dim names = _
     From cust In Customers _
     Where cust.State = "WA" _
@@ -3682,31 +3828,40 @@ Dim names = _
 
 A query expression must start with a `From` or an `Aggregate` operator and can end with any query operator. The result of a query expression is classified as a value; the result type of the expression depends on the result type of the last query operator in the expression.
 
-<pre>QueryExpression  ::=  
-    FromOrAggregateQueryOperator  |
-    QueryExpression  QueryOperator</pre>
+```antlr
+QueryExpression
+    : FromOrAggregateQueryOperator QueryOperator*
+    ;
 
-<pre>FromOrAggregateQueryOperator  ::=  FromQueryOperator  |  AggregateQueryOperator</pre>
+FromOrAggregateQueryOperator
+    : FromQueryOperator
+    | AggregateQueryOperator
+    ;
 
-<pre>*JoinOrGroupJoinQueryOperator  ::=  JoinQueryOperator*  |  GroupJoinQueryOperator</pre>
+QueryOperator
+    : FromQueryOperator
+    | AggregateQueryOperator
+    | SelectQueryOperator
+    | DistinctQueryOperator
+    | WhereQueryOperator
+    | OrderByQueryOperator
+    | PartitionQueryOperator
+    | LetQueryOperator
+    | GroupByQueryOperator
+    | JoinOrGroupJoinQueryOperator
+    ;
 
-<pre>QueryOperator ::=
-    FromQueryOperator  |
-    AggregateQueryOperator  |
-    SelectQueryOperator  |
-    DistinctQueryOperator  |
-    WhereQueryOperator  |
-    OrderByQueryOperator  |
-    PartitionQueryOperator  |
-    LetQueryOperator |
-    GroupByQueryOperator  |
-    JoinOrGroupJoinQueryOperator</pre>
+JoinOrGroupJoinQueryOperator
+    : JoinQueryOperator
+    | GroupJoinQueryOperator
+    ;
+```
 
 ### Range Variables
 
 Some query operators introduce a special kind of variable called a *range variable*. Range variables are not real variables; instead, they represent the individual values during the evaluation of the query over the input collections. Range variables are scoped from the introducing query operator to the end of a query expression, or to a query operator such as `Select` that hides them. For example, in the following query
 
-```VB.net
+```vb
 Dim waCusts = _
     From cust As Customer In Customers _
     Where cust.State = "WA"
@@ -3718,7 +3873,7 @@ There are two types of range variables: *collection range variables* and *expres
 
 An expression range variable is a range variable whose value is calculated by an expression rather than a collection. In the following example, the `Select` query operator introduces an expression range variable named `cityState` calculated from two fields:
 
-```VB.net
+```vb
 Dim cityStates = _
     From cust As Customer In Customers _
     Select cityState = cust.City & "," & cust.State _
@@ -3731,26 +3886,30 @@ Only in a Let operator may an expression range variable have its type specified.
 
 A range variable must follow the rules for declaring local variables in respect to shadowing. Thus, a range variable cannot hide the name of a local variable or parameter in the enclosing method or another range variable (unless the query operator specifically hides all current range variables in scope).
 
-<pre>CollectionRangeVariableDeclarationList ::=
-    CollectionRangeVariableDeclaration  |
-    CollectionRangeVariableDeclarationList  Comma  CollectionRangeVariableDeclaration</pre>
+```antlr
+CollectionRangeVariableDeclarationList
+    : CollectionRangeVariableDeclaration ( Comma CollectionRangeVariableDeclaration )*
+    ;
 
-<pre>CollectionRangeVariableDeclaration ::=  
-    Identifier  [  <b>As</b>  TypeName  ]  <b>In</b>  [  LineTerminator  ]  Expression</pre>
+CollectionRangeVariableDeclaration
+    : Identifier ( 'As' TypeName )? 'In' LineTerminator? Expression
+    ;
 
-<pre>ExpressionRangeVariableDeclarationList ::=
-    ExpressionRangeVariableDeclaration  |
-    ExpressionRangeVariableDeclarationList  Comma  ExpressionRangeVariableDeclaration</pre>
+ExpressionRangeVariableDeclarationList
+    : ExpressionRangeVariableDeclaration ( Comma ExpressionRangeVariableDeclaration )*
+    ;
 
-<pre>ExpressionRangeVariableDeclaration ::=  
-    [  Identifier  [  <b>As</b>  TypeName  ]  Equals  ]  Expression</pre>
+ExpressionRangeVariableDeclaration
+    : Identifier ( 'As' TypeName )? Equals Expression
+    ;
+```
 
 ### Queryable Types
 
 Query expressions are implemented by translating the expression into calls to well-known methods on a collection type. These well-defined methods define the element type of the queryable collection as well as the result types of query operators executed on the collection. Each query operator specifies the method or methods that the query operator is generally translated into, although the specific translation is implementation dependent. The methods are given in the specification using a general format that looks like:
 
-```VB.net
-Function Select(selector As Func(Of T, R)) As C<sub>R</sub>
+```vb
+Function Select(selector As Func(Of T, R)) As CR</sub>
 ```
 
 The following applies to the methods:
@@ -3777,37 +3936,42 @@ The type `B` represents a type that can be used in a Boolean expression.
 
 The type `R` represents the element type of the result collection, if the query operator produces a result collection. `R` depends on the number of range variables in scope at the conclusion of the query operator. If a single range variable is in scope, then `R` is the type of that range variable. In the example
 
+```vb
 Dim custNames = _
       From c In Customers _
       Select c.Name
+```
 
 the result of the query will be a collection type with an element type of `String`. If multiple range variables are in scope, then `R` is an anonymous type that contains all of the range variables in scope as `Key` fields. In the example:
 
+```vb
 Dim custAndOrderNames = _
       From c In Customers, o In c.Orders _
       Select Name = c.Name, ProductName = o.ProductName
+```
 
 the result of the query will be a collection type with an element type of an anonymous type with a read-only property named `Name` of type `String` and a read-only property named `ProductName` of type `String`.
 
 Within a query expression, anonymous types generated to contain range variables are *transparent*, which means that range variables are always available without qualification. For example, in the previous example the range variables `c` and `o` could be accessed without qualification in the `Select` query operator, even though the input collection's element type was an anonymous type.
 
-The type `C`<sub>X</sub> represents a collection type, not necessarily the input collection type, whose element type is some type `X`.
+The type `CX` represents a collection type, not necessarily the input collection type, whose element type is some type `X`.
 
 A queryable collection type must satisfy one of the following conditions, in order of preference:
 
 It must define a conforming `Select` method.
 
 It must have have one of the following methods
-
-Function AsEnumerable() As C<sub>T</sub>
-Function AsQueryable() As C<sub>T</sub>
+```vb
+Function AsEnumerable() As CT
+Function AsQueryable() As CT
+```
 
 which can be called to obtain a queryable collection. If both methods are provided, `AsQueryable` is preferred over `AsEnumerable`.
 
 It must have a method
 
-```VB.net
-Function Cast(Of T)() As C<sub>T</sub>
+```vb
+Function Cast(Of T)() As CT
 ```
 
 which can be called with the type of the range variable to produce a queryable collection.
@@ -3816,7 +3980,7 @@ Because determining the element type of a collection occurs independently of an 
 
 Query operator translation occurs in the order in which the query operators occur in the expression. It is not necessary for a collection object to implement all of the methods needed by all the query operators, although every collection object must at least support the `Select` query operator. If a needed method is not present, a compile-time error occurs. When binding well-known method names, non-methods are ignored for the purpose of multiple inheritance in interfaces and extension method binding, although shadowing semantics still apply. For example:
 
-```VB.net
+```vb
 Class Q1
     Public Function [Select](selector As Func(Of Integer, Integer)) As Q1
     End Function
@@ -3842,7 +4006,7 @@ End Module
 
 Every queryable collection type whose element type is `T` and does not already have a default property is considered to have a default property of the following general form:
 
-```VB.net
+```vb
 Public ReadOnly Default Property Item(index As Integer) As T
     Get
         Return Me.ElementAtOrDefault(index)
@@ -3852,7 +4016,7 @@ End Property
 
 The default property can only be referred to using the default property access syntax; the default property cannot be referred to by name. For example:
 
-```VB.net
+```vb
 Dim customers As IEnumerable(Of Customer) = ...
 Dim customerThree = customers(2)
 
@@ -3866,13 +4030,13 @@ If the collection type does not have an `ElementAtOrDefault` member, a compile-t
 
 The `From` query operator introduces a collection range variable that represents the individual members of a collection to be queried. For example, the query expression:
 
-```VB.net
+```vb
 From c As Customer In Customers ...
 ```
 
 can be thought of as equivalent to
 
-```VB.net
+```vb
 For Each c As Customer In Customers
         ...
 Next c
@@ -3880,7 +4044,7 @@ Next c
 
 When a `From` query operator declares multiple collection range variables or is not the first `From` query operator in the query expression, each new collection range variable is *cross joined* to the existing set of range variables. The result is that the query is evaluated over the cross-product of all the elements in the joined collections. For example, the expression:
 
-```VB.net
+```vb
 From c In Customers _
 From e In Employees _
 ...
@@ -3888,7 +4052,7 @@ From e In Employees _
 
 can be thought of as equivalent to:
 
-```VB.net
+```vb
 For Each c In Customers
     For Each e In Employees
             ...
@@ -3898,13 +4062,13 @@ Next c
 
 and is exactly equivalent to:
 
-```VB.net
+```vb
 From c In Customers, e In Employees ...
 ```
 
 The range variables introduced in previous query operators can be used in a later `From` query operator. For example, in the following query expression the second `From` query operator refers to the value of the first range variable:
 
-```VB.net
+```vb
 From c As Customer In Customers _
 From o As Order In c.Orders _
 Select c.Name, o
@@ -3912,15 +4076,15 @@ Select c.Name, o
 
 Multiple range variables in a `From` query operator or multiple `From` query operators are only supported if the collection type contains one or both of the following methods:
 
-```VB.net
-Function SelectMany(selector As Func(Of T, C<sub>R</sub>)) As C<sub>R</sub>
-Function SelectMany(selector As Func(Of T, C<sub>S</sub>), _
-                          resultsSelector As Func(Of T, S, R)) As C<sub>R</sub>
+```vb
+Function SelectMany(selector As Func(Of T, CR)) As CR
+Function SelectMany(selector As Func(Of T, CS), _
+                          resultsSelector As Func(Of T, S, R)) As CR
 ```
 
 The code
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim ys() As Integer = ...
 Dim zs = From x In xs, y In ys ...
@@ -3928,7 +4092,7 @@ Dim zs = From x In xs, y In ys ...
 
 is generally translated to
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim ys() As Integer = ...
 Dim zs = _
@@ -3938,17 +4102,19 @@ Dim zs = _
 ```
 
 > __Note__
-
 > `From` is not a reserved word.
 
-<pre>FromQueryOperator ::=
-    [  LineTerminator  ]  <b>From</b>  [  LineTerminator  ]  CollectionRangeVariableDeclarationList</pre>
+```antlr
+FromQueryOperator
+    : LineTerminator? 'From' LineTerminator? CollectionRangeVariableDeclarationList
+    ;
+```
 
 ### Join Query Operator
 
 The `Join` query operator joins existing range variables with a new collection range variable, producing a single collection whose elements have been joined together based on an equality expression. For example:
 
-```VB.net
+```vb
 Dim customersAndOrders = _
     From cust In Customers _
     Join ord In Orders On cust.ID Equals ord.CustomerID
@@ -3972,16 +4138,16 @@ Otherwise, a compile-time error occurs.
 
 The expressions are compared using hash values (i.e. by calling `GetHashCode()`) rather than by using equality operators for efficiency. A `Join` query operator may do multiple joins or equality conditions in the same operator. A `Join` query operator is only supported if the collection type contains a method:
 
-```VB.net
-Function Join(inner As C<sub>S</sub>, _
+```vb
+Function Join(inner As CS, _
                   outerSelector As Func(Of T, K), _
                   innerSelector As Func(Of S, K), _
-                  resultSelector As Func(Of T, S, R)) As C<sub>R</sub>
+                  resultSelector As Func(Of T, S, R)) As CR
 ```
 
 The code
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim ys() As Integer = ...
 Dim zs = From x In xs _
@@ -3991,7 +4157,7 @@ Dim zs = From x In xs _
 
 is generally translated to
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim ys() As Integer = ...
 Dim zs = _
@@ -4003,24 +4169,28 @@ Dim zs = _
 ```
 
 > __Note__
-
 > `Join`, `On` and `Equals` are not reserved words.
 
-<pre>JoinQueryOperator  ::=
-    [  LineTerminator  ]  <b>Join</b>  [  LineTerminator  ]  CollectionRangeVariableDeclaration
-        [  JoinOrGroupJoinQueryOperator  ]  [  LineTerminator  ]  <b>On</b>  [  LineTerminator  ]  JoinConditionList</pre>
+```antlr
+JoinQueryOperator
+    : LineTerminator? 'Join' LineTerminator? CollectionRangeVariableDeclaration
+      JoinOrGroupJoinQueryOperator? LineTerminator? 'On' LineTerminator? JoinConditionList
+    ;
 
-<pre>JoinConditionList  ::=
-    JoinCondition  |
-    JoinConditionList  <b>And</b>  [  LineTerminator  ]  JoinCondition</pre>
+JoinConditionList
+    : JoinCondition ( 'And' LineTerminator? JoinCondition )*
+    ;
 
-<pre>JoinCondition  ::=  Expression  <b>Equals</b>  [  LineTerminator  ]  Expression</pre>
+JoinCondition
+    : Expression 'Equals' LineTerminator? Expression
+    ;
+```
 
 ### Let Query Operator
 
 The `Let` query operator introduces an expression range variable. This allows calculating an intermediate value once that will be used multiple times in later query operators. For example:
 
-```VB.net
+```vb
 Dim taxedPrices = _
     From o In Orders _
     Let tax = o.Price * 0.088 _
@@ -4030,7 +4200,7 @@ Dim taxedPrices = _
 
 can be thought of as equivalent to:
 
-```VB.net
+```vb
 For Each o In Orders
     Dim tax = o.Price * 0.088
     ...
@@ -4039,13 +4209,13 @@ Next o
 
 A `Let` query operator is only supported if the collection type contains a method:
 
-```VB.net
-Function Select(selector As Func(Of T, R)) As C<sub>R</sub>
+```vb
+Function Select(selector As Func(Of T, R)) As CR
 ```
 
 The code
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim zs = From x In xs _
             Let y = x * 10 _
@@ -4054,20 +4224,23 @@ Dim zs = From x In xs _
 
 is generally translated to
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim zs = _
     xs.Select(Function(x As Integer) New With {x, .y = x * 10})...
 ```
 
-<pre>LetQueryOperator ::=
-    [  LineTerminator  ]  <b>Let</b>  [  LineTerminator  ]  ExpressionRangeVariableDeclarationList</pre>
+```antlr
+LetQueryOperator
+    : LineTerminator? 'Let' LineTerminator? ExpressionRangeVariableDeclarationList
+    ;
+```
 
 ### Select Query Operator
 
 The `Select` query operator is like the `Let` query operator in that it introduces expression range variables; however, a `Select` query operator hides the currently available range variables instead of adding to them. Also, the type of an expression range variable introduced by a `Select` query operator is always inferred using local variable type inference rules; an explicit type cannot be specified, and if no type can be inferred, a compile-time error occurs. For example, in the query:
 
-```VB.net
+```vb
 Dim smiths = _
     From cust In Customers _
     Select name = cust.name _
@@ -4078,7 +4251,7 @@ the `Where` query operator only has access to the `name` range variable introduc
 
 Instead of explicitly specifying the names of the range variables, a `Select` query operator can infer the names of the range variables, using the same rules as anonymous type object creation expressions. For example:
 
-```VB.net
+```vb
 Dim custAndOrderNames = _
       From cust In Customers, ord In cust.Orders _
       Select cust.name, ord.ProductName _
@@ -4087,7 +4260,7 @@ Dim custAndOrderNames = _
 
 If the name of the range variable is not supplied and a name cannot be inferred, a compile-time error occurs. If the `Select` query operator contains only a single expression, no error occurs if a name for that range variable cannot be inferred but the range variable is nameless.  For example:
 
-```VB.net
+```vb
 Dim custAndOrderNames = _
       From cust In Customers, ord In cust.Orders _
       Select cust.Name & " bought " & ord.ProductName _
@@ -4096,7 +4269,7 @@ Dim custAndOrderNames = _
 
 If there is an ambiguity in a `Select` query operator between assigning a name to a range variable and an equality expression, the name assignment is preferred. For example:
 
-```VB.net
+```vb
 Dim badCustNames = _
       From c In Customers _
         Let name = "John Smith" _
@@ -4111,13 +4284,13 @@ Dim goodCustNames = _
 
 Each expression in the `Select` query operator must be classified as a value. A `Select` query operator is supported only if the collection type contains a method:
 
-```VB.net
-Function Select(selector As Func(Of T, R)) As C<sub>R</sub>
+```vb
+Function Select(selector As Func(Of T, R)) As CR
 ```
 
 The code
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim zs = From x In xs _
             Select x, y = x * 10 _
@@ -4126,20 +4299,23 @@ Dim zs = From x In xs _
 
 is generally translated to
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim zs = _
     xs.Select(Function(x As Integer) New With {x, .y = x * 10})...
 ```
 
-<pre>SelectQueryOperator  ::=
-    [  LineTerminator  ]  <b>Select</b>  [  LineTerminator  ]  ExpressionRangeVariableDeclarationList</pre>
+```antlr
+SelectQueryOperator
+    : LineTerminator? 'Select' LineTerminator? ExpressionRangeVariableDeclarationList
+    ;
+```
 
 ### Distinct Query Operator
 
 The `Distinct` query operator restricts the values in a collection only to those with distinct values, as determined by comparing the element type for equality. For example, the query:
 
-```VB.net
+```vb
 Dim distinctCustomerPrice = _
     From cust In Customers, ord In cust.Orders _
     Select cust.Name, ord.Price _
@@ -4148,13 +4324,13 @@ Dim distinctCustomerPrice = _
 
 will only return one row for each distinct pairing of customer name and order price, even if the customer has multiple orders with the same price. A `Distinct` query operator is supported only if the collection type contains a method:
 
-```VB.net
-Function Distinct() As C<sub>T</sub>
+```vb
+Function Distinct() As CT
 ```
 
 The code
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim zs = From x In xs _
             Distinct _
@@ -4163,22 +4339,25 @@ Dim zs = From x In xs _
 
 is generally translated to
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim zs = xs.Distinct()...
 ```
 
 > __Note__
-
 > `Distinct` is not a reserved word.
 
-<pre>DistinctQueryOperator ::=  [  LineTerminator  ]  <b>Distinct</b>  [  LineTerminator  ]</pre>
+```antlr
+DistinctQueryOperator
+    : LineTerminator? 'Distinct' LineTerminator?
+    ;
+```
 
 ### Where Query Operator
 
 The `Where` query operator restricts the values in a collection to those that satisfy a given condition. A `Where` query operator takes a Boolean expression that is evaluated for each set of range variable values; if the value of the expression is true, then the values appear in the output collection, otherwise the values are skipped. For example, the query expression:
 
-```VB.net
+```vb
 From cust In Customers, ord In Orders _
 Where cust.ID = ord.CustomerID _
 ...
@@ -4186,7 +4365,7 @@ Where cust.ID = ord.CustomerID _
 
 can be thought of as equivalent to the nested loop
 
-```VB.net
+```vb
 For Each cust In Customers
     For Each ord In Orders
             If cust.ID = ord.CustomerID Then
@@ -4198,13 +4377,13 @@ Next cust
 
 A `Where` query operator is supported only if the collection type contains a method:
 
-```VB.net
-Function Where(predicate As Func(Of T, B)) As C<sub>T</sub>
+```vb
+Function Where(predicate As Func(Of T, B)) As CT
 ```
 
 The code
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim zs = From x In xs _
             Where x < 10 _
@@ -4213,17 +4392,20 @@ Dim zs = From x In xs _
 
 is generally translated to
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim zs = _
     xs.Where(Function(x As Integer) x < 10)...
 ```
 
 > __Note__
-
 > `Where` is not a reserved word.
 
-<pre>WhereQueryOperator ::=  [  LineTerminator  ]  <b>Where</b>  [  LineTerminator  ]  BooleanExpression</pre>
+```antlr
+WhereQueryOperator
+    : LineTerminator? 'Where' LineTerminator? BooleanExpression
+    ;
+```
 
 ### Partition Query Operators
 
@@ -4231,31 +4413,31 @@ The `Take` query operator results in the first `n` elements of a collection. Whe
 
 A `Take` query operator is supported only if the collection type contains a method:
 
-```VB.net
-Function Take(count As N) As C<sub>T</sub>
+```vb
+Function Take(count As N) As CT
 ```
 
 A `Skip` query operator is supported only if the collection type contains a method:
 
-```VB.net
-Function Skip(count As N) As C<sub>T</sub>
+```vb
+Function Skip(count As N) As CT
 ```
 
 A `TakeWhile` query operator is supported only if the collection type contains a method:
 
-```VB.net
-Function TakeWhile(predicate As Func(Of T, B)) As C<sub>T</sub>
+```vb
+Function TakeWhile(predicate As Func(Of T, B)) As CT
 ```
 
 A `SkipWhile` query operator is supported only if the collection type contains a method:
 
-```VB.net
-Function SkipWhile(predicate As Func(Of T, B)) As C<sub>T</sub>
+```vb
+Function SkipWhile(predicate As Func(Of T, B)) As CT
 ```
 
 The code
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim zs = From x In xs _
             Skip 10 _
@@ -4267,7 +4449,7 @@ Dim zs = From x In xs _
 
 is generally translated to
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim zs = _
     xs.Skip(10). _
@@ -4277,20 +4459,22 @@ Dim zs = _
 ```
 
 > __Note__
-
 > `Take` and `Skip` are not reserved words.
 
-<pre>PartitionQueryOperator ::=  
-    [  LineTerminator  ]  <b>Take</b>  [  LineTerminator  ]  Expression  |
-      [  LineTerminator  ]  <b>Take</b><b>While</b>  [  LineTerminator  ]  BooleanExpression  |
-    [  LineTerminator  ]  <b>Skip</b>  [  LineTerminator  ]  Expression  |
-    [  LineTerminator  ]  <b>Skip</b><b>While</b>  [  LineTerminator  ]  BooleanExpression  </pre>
+```antlr
+PartitionQueryOperator
+    : LineTerminator? 'Take' LineTerminator? Expression
+    | LineTerminator? 'Take' 'While' LineTerminator? BooleanExpression
+    | LineTerminator? 'Skip' LineTerminator? Expression
+    | LineTerminator? 'Skip' 'While' LineTerminator? BooleanExpression
+    ;
+```
 
 ### Order By Query Operator
 
 The `Order By` query operator orders the values that appear in the range variables. An `Order By` query operator takes expressions that specify the key values that should be used to order the iteration variables. For example, the following query returns products sorted by price:
 
-```VB.net
+```vb
 Dim productsByPrice = _
     From p In Products _
     Order By p.Price _
@@ -4299,7 +4483,7 @@ Dim productsByPrice = _
 
 An ordering can be marked as `Ascending`, in which case smaller values come before larger values, or `Descending`, in which case larger values come before smaller values. The default for an ordering if none is specified is `Ascending`. For example, the following query returns products sorted by price with the most expensive product first:
 
-```VB.net
+```vb
 Dim productsByPriceDesc = _
     From p In Products _
     Order By p.Price Descending _
@@ -4308,7 +4492,7 @@ Dim productsByPriceDesc = _
 
 The `Order By` query operator may specify multiple expressions for ordering, in which case the collection is ordered in a nested manner. For example, the following query orders customers by state, then by city within each state and then by ZIP code within each city:
 
-```VB.net
+```vb
 Dim customersByLocation = _
     From c In Customers _
     Order By c.State, c.City, c.ZIP _
@@ -4317,21 +4501,21 @@ Dim customersByLocation = _
 
 The expressions in an `Order By` query operator must be classified as a value. An `Order By` query operator is supported only if the collection type contains one or both of the following methods:
 
-```VB.net
-Function OrderBy(keySelector As Func(Of T, K)) As C<sub>T</sub>
-Function OrderByDescending(keySelector As Func(Of T, K)) As C<sub>T</sub>
+```vb
+Function OrderBy(keySelector As Func(Of T, K)) As CT
+Function OrderByDescending(keySelector As Func(Of T, K)) As CT
 ```
 
-The return type `C`<sub>T</sub> must be an *ordered collection*. An ordered collection is a collection type that contains one or both of the methods:
+The return type `CT` must be an *ordered collection*. An ordered collection is a collection type that contains one or both of the methods:
 
-```VB.net
-Function ThenBy(keySelector As Func(Of T, K)) As C<sub>T</sub>
-Function ThenByDescending(keySelector As Func(Of T, K)) As C<sub>T</sub>
+```vb
+Function ThenBy(keySelector As Func(Of T, K)) As CT
+Function ThenByDescending(keySelector As Func(Of T, K)) As CT
 ```
 
 The code
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim zs = From x In xs _
             Order By x Ascending, x Mod 2 Descending _
@@ -4340,34 +4524,40 @@ Dim zs = From x In xs _
 
 is generally translated to
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim zs = _
     xs.OrderBy(Function(x) x).ThenByDescending(Function(x) x Mod 2)...
 ```
 
 > __Annotation__
-
 > Because query operators simply map syntax to methods that implement a particular query operation, order preservation is not dictated by the language and is determined by the implementation of the operator itself. This is very similar to user-defined operators in that the implementation to overload the addition operator for a user-defined numeric type may not perform anything resembling an addition. Of course, to preserve predictability, implementing something that does not match user expectations is not recommended.
 
-Note   `Order` and `By` are not reserved words.
+Note that `Order` and `By` are not reserved words.
 
-<pre>OrderByQueryOperator  ::=  [  LineTerminator  ]  <b>Order</b><b>By</b>  [  LineTerminator  ]  OrderExpressionList</pre>
+```antlr
+OrderByQueryOperator
+    : LineTerminator? 'Order' 'By' LineTerminator? OrderExpressionList
+    ;
 
-<pre>OrderExpressionList  ::=
-    OrderExpression  |
-    OrderExpressionList  Comma  OrderExpression</pre>
+OrderExpressionList
+    : OrderExpression ( Comma OrderExpression )*
+    ;
 
-<pre>OrderExpression  ::=
-    Expression  [  Ordering  ]</pre>
+OrderExpression
+    : Expression Ordering?
+    ;
 
-<pre>Ordering  ::=  <b>Ascending</b>  |  <b>Descending</b></pre>
+Ordering
+    : 'Ascending' | 'Descending'
+    ;
+```
 
 ### Group By Query Operator
 
 The `Group By` query operator groups the range variables in scope based on one or more expressions, and then produces new range variables based on those groupings. For example, the following query groups all customers by `State`, and then computes the count and average age of each group:
 
-```VB.net
+```vb
 Dim averageAges = _
     From cust In Customers _
     Group By cust.State _
@@ -4376,7 +4566,7 @@ Dim averageAges = _
 
 The `Group By` query operator has three clauses: the optional `Group` clause, the `By` clause, and the `Into` clause. The `Group` clause has the same syntax and effect as a `Select` query operator, except that it only affects the range variables available in the `Into` clause and not the `By` clause. For example:
 
-```VB.net
+```vb
 Dim averageAges = _
     From cust In Customers _
     Group cust.Age By cust.State _
@@ -4385,7 +4575,7 @@ Dim averageAges = _
 
 The `By` clause declares expression range variables that are used as key values in the grouping operation. The `Into` clause allows the declaration of expression range variables that calculate aggregations over each of the groups formed by the `By` clause. Within the `Into` clause, the expression range variable can only be assigned an expression which is a method invocation of an *aggregate function*. An aggregate function is a function on the collection type of the group (which may not necessarily be the same collection type of the original collection) which looks like either of the following methods:
 
-```VB.net
+```vb
 Function <name>() As <type>
 Function <name>(selector As Func(Of T, R)) As R
 ```
@@ -4396,7 +4586,7 @@ All collection types are considered to have the aggregate function `Group` defin
 
 `Count` and `LongCount`, which return the count of the elements in the group or the count of the elements in the group that satisfy a Boolean expression. `Count` and `LongCount` are supported only if the collection type contains one of the methods:
 
-```VB.net
+```vb
 Function Count() As N
 Function Count(selector As Func(Of T, B)) As N
 Function LongCount() As N
@@ -4405,63 +4595,63 @@ Function LongCount(selector As Func(Of T, B)) As N
 
 `Sum`, which returns the sum of an expression across all the elements in the group. `Sum` is supported only if the collection type contains one of the methods:
 
-```VB.net
+```vb
 Function Sum() As N
 Function Sum(selector As Func(Of T, N)) As N
 ```
 
 `Min` which returns the minimum value of an expression across all the elements in the group. `Min` is supported only if the collection type contains one of the methods:
 
-```VB.net
+```vb
 Function Min() As N
 Function Min(selector As Func(Of T, N)) As N
 ```
 
 `Max`, which returns the maximum value of an expression across all the elements in the group. `Max` is supported only if the collection type contains one of the methods:
 
-```VB.net
+```vb
 Function Max() As N
 Function Max(selector As Func(Of T, N)) As N
 ```
 
 `Average`, which returns the average of an expression across all the elements in the group. `Average` is supported only if the collection type contains one of the methods:
 
-```VB.net
+```vb
 Function Average() As N
 Function Average(selector As Func(Of T, N)) As N
 ```
 
 `Any`, which determines whether a group contains members or if a Boolean expression is true for any element in the group. `Any` returns a value that can be used in a Boolean expression and is supported only if the collection type contains one of the methods:
 
-```VB.net
+```vb
 Function Any() As B
 Function Any(predicate As Func(Of T, B)) As B
 ```
 
 `All`, which determines whether a Boolean expression is true for all elements in the group. `All` returns a value that can be used in a Boolean expression and is supported only if the collection type contains a method:
 
-```VB.net
+```vb
 Function All(predicate As Func(Of T, B)) As B
 ```
 
 After a `Group By` query operator, the range variables previously in scope are hidden, and the range variables introduced by the `By` and `Into` clauses are available. A `Group By` query operator is supported only if the collection type contains the method:
 
-```VB.net
+```vb
 Function GroupBy(keySelector As Func(Of T, K), _
-                      resultSelector As Func(Of K, C<sub>T</sub>, R)) As C<sub>R</sub>
+                      resultSelector As Func(Of K, CT, R)) As CR
 ```
 
 Range variable declarations in the `Group` clause are supported only if the collection type contains the method:
 
-```VB.net
+```vb
 Function GroupBy(keySelector As Func(Of T, K), _
                       elementSelector As Func(Of T, S), _
-                      resultSelector As Func(Of K, C<sub>S</sub>, R)) As C<sub>R</sub>
+                      resultSelector As Func(Of K, CS, R)) As CR
 ```
 
 The code
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim zs = From x In xs _
             Group y = x * 10, z = x / 10 By evenOdd = x Mod 2 _
@@ -4471,7 +4661,7 @@ Dim zs = From x In xs _
 
 is generally translated to
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim zs = _
     xs.GroupBy( _
@@ -4483,18 +4673,22 @@ Dim zs = _
             .Average = group.Average(Function(e) e.z)})...
 ```
 
-Note   `Group`, `By`, and `Into` are not reserved words.
+> __Note__
+> `Group`, `By`, and `Into` are not reserved words.
 
-<pre>GroupByQueryOperator  ::=
-    [  LineTerminator  ]  <b>Group</b>  [ [  LineTerminator  ]  ExpressionRangeVariableDeclarationList ]
-        [  LineTerminator  ]  <b>By</b>  [  LineTerminator  ]  ExpressionRangeVariableDeclarationList  
-        [  LineTerminator  ]  <b>Into</b>  [  LineTerminator  ]  ExpressionRangeVariableDeclarationList</pre>
+```antlr
+GroupByQueryOperator
+    : LineTerminator? 'Group' ( LineTerminator? ExpressionRangeVariableDeclarationList )?
+      LineTerminator? 'By' LineTerminator? ExpressionRangeVariableDeclarationList
+      LineTerminator? 'Into' LineTerminator? ExpressionRangeVariableDeclarationList
+    ;
+```
 
 ### Aggregate Query Operator
 
 The `Aggregate` query operator performs a similar function as the `Group By` operator, except it allows aggregating over groups that have already been formed. Because the group has already been formed, the `Into` clause of an `Aggregate` query operator does not hide the range variables in scope (in this way, `Aggregate` is more like a `Let`, and `Group By` is more like a `Select`). For example, the following query aggregates the total of all the orders placed by customers in Washington:
 
-```VB.net
+```vb
 Dim orderTotals = _
     From cust In Customers _
     Where cust.State = "WA" _
@@ -4506,7 +4700,7 @@ The result of this query is a collection whose element type is an anonymous type
 
 Unlike `Group By`, additional query operators can be placed between the `Aggregate` and `Into` clauses. Between an `Aggregate` clause and the end of the `Into` clause, all range variables in scope, including those declared by the `Aggregate` clause can be used. For example, the following query aggregates the sum total of all the orders placed by customers in Washington before 2006:
 
-```VB.net
+```vb
 Dim orderTotals = _
     From cust In Customers _
     Where cust.State = "WA" _
@@ -4517,7 +4711,7 @@ Dim orderTotals = _
 
 The `Aggregate` operator can also be used to start a query expression. In this case, the result of the query expression will be the single value computed by the `Into` clause. For example, the following query calculates the sum of all the order totals before January 1st, 2006:
 
-```VB.net
+```vb
 Dim ordersTotal = _
     Aggregate order In Orders _
     Where order.Date <= #01/01/2006# _
@@ -4526,7 +4720,7 @@ Dim ordersTotal = _
 
 The result of the query is a single `Integer` value. An `Aggregate` query operator is always available (although the aggregate function must be also be available for the expression to be valid). The code
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim zs = _
     Aggregate x In xs _
@@ -4536,24 +4730,27 @@ Dim zs = _
 
 is generally translated to
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim zs = _
     xs.Where(Function(x) x < 5).Sum()
 ```
 
-Note   `Aggregate` and `Into` are not reserved words.
+> __Note__
+>  `Aggregate` and `Into` are not reserved words.
 
-<pre>AggregateQueryOperator ::=
-    [  LineTerminator  ]  <b>Aggregate</b>  [  LineTerminator  ]  CollectionRangeVariableDeclaration  
-        [  QueryOperator+  ]  
-        [  LineTerminator  ]  <b>Into</b>  [  LineTerminator  ]  ExpressionRangeVariableDeclarationList</pre>
+```antlr
+AggregateQueryOperator
+    : LineTerminator? 'Aggregate' LineTerminator? CollectionRangeVariableDeclaration QueryOperator*
+      LineTerminator? 'Into' LineTerminator? ExpressionRangeVariableDeclarationList
+    ;
+```
 
 ### Group Join Query Operator
 
 The `Group Join` query operator combines the functions of the `Join` and `Group By` query operators into a single operator. `Group``Join` joins two collections based on matching keys extracted from the elements, grouping together all of the elements on the right side of the join that match a particular element on the left side of the join. Thus, the operator produces a set of hierarchical results. For example, the following query produces elements that contain a single customer's name, a group of all of their orders, and the total amount of all of those orders:
 
-```VB.net
+```vb
 Dim custsWithOrders = _
     From cust In Customers _
     Group Join order In Orders On cust.ID Equals order.CustomerID _ 
@@ -4563,16 +4760,16 @@ Dim custsWithOrders = _
 
 The result of the query is a collection whose element type is an anonymous type with three properties: `Name`, typed as `String`, `Orders` typed as a collection whose element type is `Order`, and `OrdersTotal`, typed as `Integer`. A `Group Join` query operator is supported only if the collection type contains the method:
 
-```VB.net
-Function GroupJoin(inner As C<sub>S</sub>, _
+```vb
+Function GroupJoin(inner As CS, _
                          outerSelector As Func(Of T, K), _
                          innerSelector As Func(Of S, K), _
-                         resultSelector As Func(Of T, C<sub>S</sub>, R)) As C<sub>R</sub>
+                         resultSelector As Func(Of T, CS, R)) As CR
 ```
 
 The code
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim ys() As Integer = ...
 Dim zs = From x In xs _
@@ -4583,7 +4780,7 @@ Dim zs = From x In xs _
 
 is generally translated to
 
-```VB.net
+```vb
 Dim xs() As Integer = ...
 Dim ys() As Integer = ...
 Dim zs = _
@@ -4594,12 +4791,16 @@ Dim zs = _
         Function(x, group) New With {x, .g = group})...
 ```
 
-Note   `Group`, `Join`, and `Into` are not reserved words.
+> __Note__
+> `Group`, `Join`, and `Into` are not reserved words.
 
-<pre>GroupJoinQueryOperator  ::=
-    [  LineTerminator  ]  <b>Group</b><b>Join</b>  [  LineTerminator  ]  CollectionRangeVariableDeclaration
-         [  JoinOrGroupJoinQueryOperator  ]   [  LineTerminator  ]  <b>On</b>  [  LineTerminator  ]  JoinConditionList
-        [  LineTerminator  ]  <b>Into</b>  [  LineTerminator  ]  ExpressionRangeVariableDeclarationList</pre>
+```antlr
+GroupJoinQueryOperator
+    : LineTerminator? 'Group' 'Join' LineTerminator? CollectionRangeVariableDeclaration
+      JoinOrGroupJoinQueryOperator? LineTerminator? 'On' LineTerminator? JoinConditionList
+      LineTerminator? 'Into' LineTerminator? ExpressionRangeVariableDeclarationList
+    ;
+```
 
 ## Conditional Expressions
 
@@ -4609,7 +4810,7 @@ If three operands are provided, all three expressions must be classified as valu
 
 If two operands are provided, both of the operands must be classified as values, and the first operand must be either a reference type or a nullable value type. The expression `If(x, y)` is then evaluated as if was the expression `If(x IsNot Nothing, x, y)`, with two exceptions. First, the first expression is only ever evaluated once, and second, if the second operand's type is a non-nullable value type and the first operand's type is, the `?` is removed from the type of the first operand when determining the dominant type for the result type of the expression. For example:
 
-```VB.net
+```vb
 Module Test
     Sub Main()
         Dim x?, y As Integer
@@ -4623,22 +4824,25 @@ End Module
 
 In both forms of the expression, if an operand is `Nothing`, its type is not used to determine the dominant type. In the case of the expression `If(<expression>, Nothing, Nothing)`, the dominant type is considered to be `Object`.
 
-<pre>ConditionalExpression  ::=  
-<b>If</b>  OpenParenthesis  BooleanExpression  Comma  Expression  Comma  Expression  CloseParenthesis  |
-<b>If</b>  OpenParenthesis  Expression  Comma  Expression  CloseParenthesis</pre>
+```antlr
+ConditionalExpression
+    : 'If' OpenParenthesis BooleanExpression Comma Expression Comma Expression CloseParenthesis
+    | 'If' OpenParenthesis Expression Comma Expression CloseParenthesis
+    ;
+```
 
 ## XML Literal Expressions
 
 An XML literal expression represents an XML (eXtensible Markup Language) 1.0 value. The result of an XML literal expression is a value typed as one of the types from the `System.Xml.Linq` namespace. If the types in that namespace are not available, then an XML literal expression will cause a compile-time error. The values are generated through constructor calls translated from the XML literal expression. For example, the code:
 
-```VB.net
+```vb
 Dim book As System.Xml.Linq.XElement = _
     <book title="My book"></book>
 ```
 
 is roughly equivalent to the code:
 
-```VB.net
+```vb
 Dim book As System.Xml.Linq.XElement = _
     New System.Xml.Linq.XElement( _
         "book", _
@@ -4648,14 +4852,17 @@ Dim book As System.Xml.Linq.XElement = _
 An XML literal expression can take the form of an XML document, an XML element, an XML processing instruction, an XML comment, or a CDATA section.
 
 > __Annotation__
-
 > This specification contains only enough of a description of XML to describe the behavior of the Visual Basic language. More information on XML can be found at [http://www.w3.org/TR/REC-xml/][2].
 
-<pre>XMLLiteralExpression  ::=
-    XMLDocument  |
-    XMLElement  |    XMLProcessingInstruction  |
-    XMLComment  |
-    XMLCDATASection</pre>
+```antlr
+XMLLiteralExpression
+    : XMLDocument
+    | XMLElement
+    | XMLProcessingInstruction
+    | XMLComment
+    | XMLCDATASection
+    ;
+```
 
 ### Lexical rules
 
@@ -4663,7 +4870,7 @@ XML literal expressions are interpreted using the lexical rules of XML instead o
 
 White space is significant in XML. As a result, the grammar for XML literal expressions explicitly states where white space is allowed. Whitespace is not preserved, except when it occurs in the context of character data within an element. For example:
 
-```VB.net
+```vb
 ' The following element preserves no whitespace
 Dim e1 = _
     <customer>
@@ -4685,61 +4892,88 @@ Line terminators are considered white space in XML. As a result, no line-continu
 
 XML does not accept full-width characters. If full-width characters are used, a compile-time error will occur.
 
-<pre>XMLCharacter  ::=
-    < Unicode tab character (0x0009) >  |
-    < Unicode linefeed character (0x000A) >  |
-    < Unicode carriage return character (0x000D) >  |
-    < Unicode characters 0x0020 ? 0xD7FF >  |
-    < Unicode characters 0xE000 ? 0xFFFD >  |
-    < Unicode characters 0x10000 ? 0x10FFFF ></pre>
+```antlr
+XMLCharacter
+    : '<Unicode tab character (0x0009)>'
+    | '<Unicode linefeed character (0x000A)>'
+    | '<Unicode carriage return character (0x000D)>'
+    | '<Unicode characters 0x0020 - 0xD7FF>'
+    | '<Unicode characters 0xE000 - 0xFFFD>'
+    | '<Unicode characters 0x10000 - 0x10FFFF>'
+    ;
 
-<pre>XMLString  ::=  XMLCharacter+</pre>
+XMLString
+    : XMLCharacter+
+    ;
 
-<pre>XMLWhitespace  ::=  XMLWhitespaceCharacter+</pre>
+XMLWhitespace
+    : XMLWhitespaceCharacter+
+    ;
 
-<pre>XMLWhitespaceCharacter  ::=
-    < Unicode carriage return character (0x000D) >  |
-    < Unicode linefeed character (0x000A) >  |
-    < Unicode space character (0x0020) >  |
-    < Unicode tab character (0x0009) ></pre>
+XMLWhitespaceCharacter
+    : '<Unicode carriage return character (0x000D)>'
+    | '<Unicode linefeed character (0x000A)>'
+    | '<Unicode space character (0x0020)>'
+    | '<Unicode tab character (0x0009)>'
+    ;
 
-<pre>XMLNameCharacter  ::= XMLLetter  |  XMLDigit  |  <b>.</b>  |  <b>-</b>  |  <b>_</b>  |  <b>:</b>  |  XMLCombiningCharacter  |  XMLExtender </pre>
+XMLNameCharacter
+    : XMLLetter
+    | XMLDigit
+    | '.'
+    | '-'
+    | '_'
+    | ':'
+    | XMLCombiningCharacter
+    | XMLExtender
+    ;
 
-<pre>XMLNameStartCharacter  ::=  XMLLetter  |  _  |  :</pre>
+XMLNameStartCharacter
+    : XMLLetter
+    | '_'
+    | ':'
+    ;
 
-<pre>XMLName  ::=  XMLNameStartCharacter  [  XMLNameCharacter+  ] </pre>
+XMLName
+    : XMLNameStartCharacter XMLNameCharacter*
+    ;
 
-<pre>XMLLetter  ::=  
-    < Unicode character as defined in the Letter production of the XML 1.0 specification ></pre>
+XMLLetter
+    : '<Unicode character as defined in the Letter production of the XML 1.0 specification>'
+    ;
 
-<pre>XMLDigit  ::=
-    < Unicode character as defined in the Digit production of the XML 1.0 specification ></pre>
+XMLDigit
+    : '<Unicode character as defined in the Digit production of the XML 1.0 specification>'
+    ;
 
-<pre>XMLCombiningCharacter  ::=
-    < Unicode character as defined in the CombiningChar production of the XML 1.0 specification ></pre>
+XMLCombiningCharacter
+    : '<Unicode character as defined in the CombiningChar production of the XML 1.0 specification>'
+    ;
 
-<pre>XMLExtender  ::=
-    < Unicode character as defined in the Extender production of the XML 1.0 specification ></pre>
+XMLExtender
+    : '<Unicode character as defined in the Extender production of the XML 1.0 specification>'
+    ;
+```
 
 ### Embedded expressions
 
 XML literal expressions can contain *embedded expressions*. An embedded expression is a Visual Basic expression that is evaluated and used to fill in one or more values at the location of embedded expression. For example, the following code places the string `John Smith` as the value of the XML element:
 
-```VB.net
+```vb
 Dim name as String = "John Smith"
 Dim element As System.Xml.Linq.XElement = <customer><%= name %></customer>
 ```
 
 Expressions can be embedded in a number of contexts. For example, the following code produces an element named `customer`:
 
-```VB.net
+```vb
 Dim name As String = "customer"
 Dim element As System.Xml.Linq.XElement = <<%= name %>>John Smith</>
 ```
 
 Each context where an embedded expression can be used specifies the types that will be accepted. When within the context of the expression part of an embedded expression, the normal lexical rules for Visual Basic code still apply so, for example, line continuations must be used:
 
-```VB.net
+```vb
 ' Visual Basic expression uses line continuation, XML does not
 Dim element As System.Xml.Linq.XElement = _
     <<%= name & _
@@ -4747,14 +4981,17 @@ Dim element As System.Xml.Linq.XElement = _
                      Smith</>
 ```
 
-<pre>XMLEmbeddedExpression  ::=
-<b><</b><b>%</b><b>=</b>  [  LineTerminator  ]  Expression  [  LineTerminator  ]  <b>%</b><b>></b></pre>
+```antlr
+XMLEmbeddedExpression
+    : '<' '%' '=' LineTerminator? Expression LineTerminator? '%' '>'
+    ;
+```
 
 ### XML Documents
 
 An XML document results in a value typed as `System.Xml.Linq.XDocument`. Unlike the XML 1.0 specification, XML documents in XML literal expressions are required to specify the XML document prologue; XML literal expressions without the XML document prologue are interpreted as their individual entity. For example:
 
-```VB.net
+```vb
 Dim doc As System.Xml.Linq.XDocument = _
     <?xml version="1.0"?>
     <?instruction?>
@@ -4769,80 +5006,109 @@ An XML document can contain an embedded expression whose type can be any type; a
 Unlike regular XML, XML document expressions do not support DTDs (Document Type Declarations). Also, the encoding attribute, if supplied, will be ignored since the encoding of the Xml literal expression is always the same as the encoding of the source file itself.
 
 > __Annotation__
-
 > Although the encoding attribute is ignored, it is still valid attribute in order to maintain the ability to include any valid Xml 1.0 documents in source code.
 
-<pre>XMLDocument  ::=
-    XMLDocumentPrologue  [  XMLMisc+  ]  XMLDocumentBody  [  XMLMisc+  ]</pre>
+```antlr
+XMLDocument
+    : XMLDocumentPrologue XMLMisc* XMLDocumentBody XMLMisc*
+    ;
 
-<pre>XMLDocumentPrologue  ::=
-<b><</b><b>?</b><b>xml</b>  XMLVersion  [  XMLEncoding  ]  [  XMLStandalone  ]  [  XMLWhitespace  ]  <b>?</b><b>></b></pre>
+XMLDocumentPrologue
+    : '<' '?' 'xml' XMLVersion XMLEncoding? XMLStandalone? XMLWhitespace? '?' '>'
+    ;
 
-<pre>XMLVersion  ::=
-    XMLWhitespace  <b>version</b>  [  XMLWhitespace  ]  <b>=</b>  [  XMLWhitespace  ]  XMLVersionNumberValue</pre>
+XMLVersion
+    : XMLWhitespace 'version' XMLWhitespace? '=' XMLWhitespace? XMLVersionNumberValue
+    ;
 
-<pre>XMLVersionNumberValue  ::=  
-    SingleQuoteCharacter  <b>1</b><b>.</b><b>0</b>  SingleQuoteCharacter  |
-    DoubleQuoteCharacter  <b>1</b><b>.</b><b>0</b>  DoubleQuoteCharacter</pre>
+XMLVersionNumberValue
+    : SingleQuoteCharacter '1' '.' '0' SingleQuoteCharacter
+    | DoubleQuoteCharacter '1' '.' '0' DoubleQuoteCharacter
+    ;
 
-<pre>XMLEncoding  ::=
-    XMLWhitespace  <b>encoding</b>  [  XMLWhitespace  ]  <b>=</b>  [  XMLWhitespace  ]  XMLEncodingNameValue</pre>
+XMLEncoding
+    : XMLWhitespace 'encoding' XMLWhitespace? '=' XMLWhitespace? XMLEncodingNameValue
+    ;
 
-<pre>XMLEncodingNameValue  ::=  
-    SingleQuoteCharacter  XMLEncodingName  SingleQuoteCharacter  |
-    DoubleQuoteCharacter  XMLEncodingName  DoubleQuoteCharacter</pre>
+XMLEncodingNameValue
+    : SingleQuoteCharacter XMLEncodingName SingleQuoteCharacter
+    | DoubleQuoteCharacter XMLEncodingName DoubleQuoteCharacter
+    ;
 
-<pre>XMLEncodingName  ::=  XMLLatinAlphaCharacter  [  XMLEncodingNameCharacter+  ]</pre>
+XMLEncodingName
+    : XMLLatinAlphaCharacter XMLEncodingNameCharacter*
+    ;
 
-<pre>XMLEncodingNameCharacter  ::=
-    XMLUnderscoreCharacter  |
-    XMLLatinAlphaCharacter  |
-    XMLNumericCharacter  |
-    XMLPeriodCharacter  |
-    XMLDashCharacter</pre>
+XMLEncodingNameCharacter
+    : XMLUnderscoreCharacter
+    | XMLLatinAlphaCharacter
+    | XMLNumericCharacter
+    | XMLPeriodCharacter
+    | XMLDashCharacter
+    ;
 
-<pre>XMLLatinAlphaCharacter  ::=
-    < Unicode Latin alphabetic character (0x0041-0x005a, 0x0061-0x007a) ></pre>
+XMLLatinAlphaCharacter
+    : '<Unicode Latin alphabetic character (0x0041-0x005a, 0x0061-0x007a)>'
+    ;
 
-<pre>XMLNumericCharacter  ::=  < Unicode digit character (0x0030-0x0039) ></pre>
+XMLNumericCharacter
+    : '<Unicode digit character (0x0030-0x0039)>'
+    ;
 
-<pre>XMLHexNumericCharacter  ::=
-    XMLNumericCharacter  |
-    < Unicode Latin hex alphabetic character (0x0041-0x0046, 0x0061-0x0066) ></pre>
+XMLHexNumericCharacter
+    : XMLNumericCharacter
+    | '<Unicode Latin hex alphabetic character (0x0041-0x0046, 0x0061-0x0066)>'
+    ;
 
-<pre>XMLPeriodCharacter  ::=  < Unicode period character (0x002e) ></pre>
+XMLPeriodCharacter
+    : '<Unicode period character (0x002e)>'
+    ;
 
-<pre>XMLUnderscoreCharacter  ::=  < Unicode underscore character (0x005f) ></pre>
+XMLUnderscoreCharacter
+    : '<Unicode underscore character (0x005f)>'
+    ;
 
-<pre>XMLDashCharacter  ::=  < Unicode dash character (0x002d) ></pre>
+XMLDashCharacter
+    : '<Unicode dash character (0x002d)>'
+    ;
 
-<pre>XMLStandalone  ::=
-    XMLWhitespace  <b>standalone</b>  [  XMLWhitespace  ]  <b>=</b>  [  XMLWhitespace  ]  XMLYesNoValue</pre>
+XMLStandalone
+    : XMLWhitespace 'standalone' XMLWhitespace? '=' XMLWhitespace? XMLYesNoValue
+    ;
 
-<pre>XMLYesNoValue  ::=  
-    SingleQuoteCharacter  XMLYesNo  SingleQuoteCharacter  |
-    DoubleQuoteCharacter  XMLYesNo  DoubleQuoteCharacter</pre>
+XMLYesNoValue
+    : SingleQuoteCharacter XMLYesNo SingleQuoteCharacter
+    | DoubleQuoteCharacter XMLYesNo DoubleQuoteCharacter
+    ;
 
-<pre>XMLYesNo  ::=  <b>yes</b>  |  <b>no</b></pre>
+XMLYesNo
+    : 'yes'
+    | 'no'
+    ;
 
-<pre>XMLMisc  ::=
-    XMLComment  |
-    XMLProcessingInstruction  |
-    XMLWhitespace</pre>
+XMLMisc
+    : XMLComment
+    | XMLProcessingInstruction
+    | XMLWhitespace
+    ;
 
-<pre>XMLDocumentBody  ::=  XMLElement  |  XMLEmbeddedExpression</pre>
+XMLDocumentBody
+    : XMLElement
+    | XMLEmbeddedExpression
+    ;
+```
 
 ### XML Elements
 
 An XML element results in a value typed as `System.Xml.Linq.XElement`. Unlike regular XML, XML elements can omit the name in the closing tag and the current most-nested element will be closed. For example:
 
-```VB.net
+```vb
 Dim name = <name>Bob</>
 ```
 
 Attribute declarations in an XML element result in values typed as `System.Xml.Linq.XAttribute`. Attribute values are normalized according to the XML specification. When the value of an attribute is `Nothing` the attribute will not be created, so the attribute value expression will not have to be checked for `Nothing`. For example:
 
-```VB.net
+```vb
 Dim expr = Nothing
 
 ' Throws null argument exception
@@ -4858,104 +5124,126 @@ XML elements and attributes can contain nested expressions in the following plac
 
 The name of the element, in which case the embedded expression must be a value of a type implicitly convertible to `System.Xml.Linq.XName`. For example:
 
-```VB.net
+```vb
 Dim name = <<%= "name" %>>Bob</>
 ```
 
 The name of an attribute of the element, in which case the embedded expression must be a value of a type implicitly convertible to `System.Xml.Linq.XName`. For example:
 
-```VB.net
+```vb
 Dim name = <name <%= "length" %>="3">Bob</>
 ```
 
 The value of an attribute of the element, in which case the embedded expression can be a value of any type. For example:
 
-```VB.net
+```vb
 Dim name = <name length=<%= 3 %>>Bob</>
 ```
 
 An attribute of the element, in which case the embedded expression can be a value of any type. For example:
 
-```VB.net
+```vb
 Dim name = <name <%= new XAttribute("length", 3) %>>Bob</>
 ```
 
 The content of the element, in which case the embedded expression can be a value of any type. For example:
 
-```VB.net
+```vb
 Dim name = <name><%= "Bob" %></>
 ```
 
 If the type of the embedded expression is `Object()`, the array will be passed as a paramarray to the `XElement` constructor.
 
-<pre>XMLElement  ::=
-    XMLEmptyElement  |
-    XMLElementStart  XMLContent  XMLElementEnd</pre>
+```antlr
+XMLElement
+    : XMLEmptyElement
+    | XMLElementStart XMLContent XMLElementEnd
+    ;
 
-<pre>XMLEmptyElement  ::=
-<b><</b>  XMLQualifiedNameOrExpression  [  XMLAttribute+  ]  [  XMLWhitepace  ]  <b>/</b><b>></b></pre>
+XMLEmptyElement
+    : '<' XMLQualifiedNameOrExpression XMLAttribute* XMLWhitespace? '/' '>'
+    ;
 
-<pre>XMLElementStart  ::=
-<b><</b>  XMLQualifiedNameOrExpression  [  XMLAttribute+  ]  [  XMLWhitespace  ]  <b>></b></pre>
+XMLElementStart
+    : '<' XMLQualifiedNameOrExpression XMLAttribute* XMLWhitespace? '>'
+    ;
 
-<pre>XMLElementEnd  ::=
-<b><</b><b>/</b><b>></b>  |
-<b><</b><b>/</b>  XMLQualifiedName  [  XMLWhitespace  ]  <b>></b></pre>
+XMLElementEnd
+    : '<' '/' '>'
+    | '<' '/' XMLQualifiedName XMLWhitespace? '>'
+    ;
 
-<pre>XMLContent  ::=
-    [  XMLCharacterData  ]  [  XMLNestedContent  [  XMLCharacterData  ]  ]+</pre>
+XMLContent
+    : XMLCharacterData? ( XMLNestedContent XMLCharacterData? )+
+    ;
 
-<pre>XMLCharacterData  ::=
-    < Any XMLCharacterDataString that does not contain the string "`]]>`" ></pre>
+XMLCharacterData
+    : '<Any XMLCharacterDataString that does not contain the string "]]>">'
+    ;
 
-<pre>XMLCharacterDataString  ::=
-    < Any Unicode character except `<` or `&` >+</pre>
+XMLCharacterDataString
+    : '<Any Unicode character except < or &>'+
+    ;
 
-<pre>XMLNestedContent  ::=
-    XMLElement  |
-    XMLReference  |
-    XMLCDATASection  |
-    XMLProcessingInstruction  |
-    XMLComment  |
-    XMLEmbeddedExpression</pre>
+XMLNestedContent
+    : XMLElement
+    | XMLReference
+    | XMLCDATASection
+    | XMLProcessingInstruction
+    | XMLComment
+    | XMLEmbeddedExpression
+    ;
 
-<pre>XMLAttribute  ::=
-    XMLWhitespace  XMLAttributeName  [  XMLWhitespace  ]  <b>=</b>  [  XMLWhitespace  ]  XMLAttributeValue  |
-    XMLWhitespace  XMLEmbeddedExpression</pre>
+XMLAttribute
+    : XMLWhitespace XMLAttributeName XMLWhitespace? '=' XMLWhitespace? XMLAttributeValue
+    | XMLWhitespace XMLEmbeddedExpression
+    ;
 
-<pre>XMLAttributeName  ::=
-    XMLQualifiedNameOrExpression  |
-    XMLNamespaceAttributeName</pre>
+XMLAttributeName
+    : XMLQualifiedNameOrExpression
+    | XMLNamespaceAttributeName
+    ;
 
-<pre>XMLAttributeValue  ::=
-    DoubleQuoteCharacter  [  XMLAttributeDoubleQuoteValueCharacter+  ]  DoubleQuoteCharacter  |
-    SingleQuoteCharacter  [  XMLAttributeSingleQuoteValueCharacter+  ]  SingleQuoteCharacter  |
-    XMLEmbeddedExpression</pre>
+XMLAttributeValue
+    : DoubleQuoteCharacter XMLAttributeDoubleQuoteValueCharacter* DoubleQuoteCharacter
+    | SingleQuoteCharacter XMLAttributeSingleQuoteValueCharacter* SingleQuoteCharacter
+    | XMLEmbeddedExpression
+    ;
 
-<pre>XMLAttributeDoubleQuoteValueCharacter  ::= 
-    < Any XMLCharacter except `<`, `&`, or DoubleQuoteCharacter >  |
-    XMLReference</pre>
+XMLAttributeDoubleQuoteValueCharacter
+    : '<Any XMLCharacter except <, &, or DoubleQuoteCharacter>'
+    | XMLReference
+    ;
 
-<pre>XMLAttributeSingleQuoteValueCharacter ::=
-    < Any XMLCharacter except `<`, `&`, or SingleQuoteCharacter >  |
-    XMLReference</pre>
+XMLAttributeSingleQuoteValueCharacter
+    : '<Any XMLCharacter except <, &, or SingleQuoteCharacter>'
+    | XMLReference
+    ;
 
-<pre>XMLReference  ::=  XMLEntityReference  |  XMLCharacterReference</pre>
+XMLReference
+    : XMLEntityReference
+    | XMLCharacterReference
+    ;
 
-<pre>XMLEntityReference  ::=
-<b>&</b>  XMLEntityName  ;</pre>
+XMLEntityReference
+    : '&' XMLEntityName ';'
+    ;
 
-<pre>XMLEntityName  ::=  <b>lt</b>  |  <b>gt</b>  |  <b>amp</b>  |  <b>apos</b>  |  <b>quot</b></pre>
+XMLEntityName
+    : 'lt' | 'gt' | 'amp' | 'apos' | 'quot'
+    ;
 
-<pre>XMLCharacterReference  ::=
-<b>&</b><b>#</b>  XMLNumericCharacter+  <b>;</b>  |
-<b>&</b><b>#</b><b>x</b>  XMLHexNumericCharacter+  <b>;</b></pre>
+XMLCharacterReference
+    : '&' '#' XMLNumericCharacter+ ';'
+    | '&' '#' 'x' XMLHexNumericCharacter+ ';'
+    ;
+```
 
 ### XML Namespaces
 
 XML elements can contain XML namespace declarations, as defined by the XML namespaces 1.0 specification. The restrictions on defining the namespaces `xml` and `xmlns` are enforced and will produce compile-time errors. XML namespace declarations cannot have an embedded expression for their value; the value supplied must be a non-empty string literal. For example:
 
-```VB.net
+```vb
 ' Declares a valid namespace
 Dim customer = <db:customer xmlns:db="http://example.org/database">Bob</>
 
@@ -4967,12 +5255,11 @@ Dim bad2 = <elem xmlns:db=<%= "http://example.org/database" %>>Bob</>
 ```
 
 > __Annotation__
-
 > This specification contains only enough of a description of XML namespace to describe the behavior of the Visual Basic language. More information on XML namespaces can be found at [http://www.w3.org/TR/REC-xml-names/][3].
 
 XML element and attribute names can be qualified using namespace names. Namespaces are bound as in regular XML, with the exception that any namespace imports declared at the file level are considered to be declared in a context enclosing the declaration, which is itself enclosed by any namespace imports declared by the compilation environment. If a namespace name cannot be found, a compile-time error occurs. For example:
 
-```VB.net
+```vb
 Imports System.Xml.Linq
 Imports <xmlns:db="http://example.org/database">
 
@@ -5000,7 +5287,7 @@ End Module
 
 XML namespaces declared in an element do not apply to XML literals inside embedded expressions. For example:
 
-```VB.net
+```vb
 ' Error: Namespace prefix 'db' is not declared
 Dim customer = _
     <db:customer xmlns:db="http://example.org/database">
@@ -5009,69 +5296,100 @@ Dim customer = _
 ```
 
 > __Annotation__
-
 > This is because the embedded expression can be anything, including a function call. If the function call contained an XML literal expression, it is not clear whether programmers would expect the XML namespace to be applied or ignored.
 
-<pre>XMLNamespaceAttributeName ::=
-    XMLPrefixedNamespaceAttributeName  |
-    XMLDefaultNamespaceAttributeName</pre>
+```antlr
+XMLNamespaceAttributeName
+    : XMLPrefixedNamespaceAttributeName
+    | XMLDefaultNamespaceAttributeName
+    ;
 
-<pre>XMLPrefixedNamespaceAttributeName  ::=
-<b>xmlns</b><b>:</b>  XMLNamespaceName</pre>
+XMLPrefixedNamespaceAttributeName
+    : 'xmlns' ':' XMLNamespaceName
+    ;
 
-<pre>XMLDefaultNamespaceAttributeName  ::=
-<b>xmlns</b></pre>
+XMLDefaultNamespaceAttributeName
+    : 'xmlns'
+    ;
 
-<pre>XMLNamespaceName  ::=  XMLNamespaceNameStartCharacter  [  XMLNamespaceNameCharacter+  ]</pre>
+XMLNamespaceName
+    : XMLNamespaceNameStartCharacter XMLNamespaceNameCharacter*
+    ;
 
-<pre>XMLNamespaceNameStartCharacter  ::=
-    < Any XMLNameCharacter except `:`  ></pre>
+XMLNamespaceNameStartCharacter
+    : '<Any XMLNameCharacter except :>'
+    ;
 
-<pre>XMLNamespaceNameCharacter  ::=  XMLLetter  |  _</pre>
+XMLNamespaceNameCharacter
+    : XMLLetter
+    | '_'
+    ;
 
-<pre>XMLQualifiedNameOrExpression  ::=  XMLQualifiedName  |  XMLEmbeddedExpression</pre>
+XMLQualifiedNameOrExpression
+    : XMLQualifiedName
+    | XMLEmbeddedExpression
+    ;
 
-<pre>XMLQualifiedName  ::=
-    XMLPrefixedName  |
-    XMLUnprefixedName</pre>
+XMLQualifiedName
+    : XMLPrefixedName
+    | XMLUnprefixedName
+    ;
 
-<pre>XMLPrefixedName  ::=  XMLNamespaceName  :  XMLNamespaceName</pre>
+XMLPrefixedName
+    : XMLNamespaceName ':' XMLNamespaceName
+    ;
 
-<pre>XMLUnprefixedName  ::=  XMLNamespaceName</pre>
+XMLUnprefixedName
+    : XMLNamespaceName
+    ;
+```
 
 ### XML Processing Instructions
 
 An XML processing instruction results in a value typed as `System.Xml.Linq.XProcessingInstruction`. XML processing instructions cannot contain embedded expressions, as they are valid syntax within the processing instruction.
 
-<pre>XMLProcessingInstruction  ::=
-<b><</b><b>?</b>  XMLProcessingTarget  [  XMLWhitespace  [  XMLProcessingValue  ]  ]  <b>?</b><b>></b></pre>
+```antlr
+XMLProcessingInstruction
+    : '<' '?' XMLProcessingTarget ( XMLWhitespace XMLProcessingValue? )? '?' '>'
+    ;
 
-<pre>XMLProcessingTarget  ::=
-    < Any XMLName except a casing permutation of the string "`xml`" ></pre>
+XMLProcessingTarget
+    : '<Any XMLName except a casing permutation of the string "xml">'
+    ;
 
-<pre>XMLProcessingValue  ::=
-    < Any XMLString that does not contain the string "`?>"` ></pre>
+XMLProcessingValue
+    : '<Any XMLString that does not contain a question-mark followed by ">">'
+    ;
+```
 
 ### XML Comments
 
 An XML comment results in a value typed as `System.Xml.Linq.XComment`. XML comments cannot contain embedded expressions, as they are valid syntax within the comment.
 
-<pre>XMLComment  ::=
-<b><</b><b>!</b><b>-</b><b>-</b>  [  XMLCommentCharacter+  ]  <b>-</b><b>-</b><b>></b></pre>
+```antlr
+XMLComment
+    : '<' '!' '-' '-' XMLCommentCharacter* '-' '-' '>'
+    ;
 
-<pre>XMLCommentCharacter  ::=
-    < Any XMLCharacter except dash (0x002D) >  |
-<b>-</b>  < Any XMLCharacter except dash (0x002D) ></pre>
+XMLCommentCharacter
+    : '<Any XMLCharacter except dash (0x002D)>'
+    | '-' '<Any XMLCharacter except dash (0x002D)>'
+    ;
+```
 
 ### CDATA sections
 
 A CDATA section results in a value typed as `System.Xml.Linq.XCData`. CDATA sections cannot contain embedded expressions, as they are valid syntax within the CDATA section.
 
-<pre>XMLCDATASection  ::=
-<b><</b><b>!</b><b>[</b><b>CDATA</b><b>[</b>  [  XMLCDATASectionString  ]  <b>]</b><b>]</b><b>></b></pre>
+```antlr
+XMLCDATASection
+    : '<' '!' ( 'CDATA' '[' XMLCDATASectionString? ']' )? '>'
+    ;
 
-<pre>XMLCDATASectionString  ::=
-    < Any XMLString that does not contain the string "`]]>`" ></pre>
+XMLCDATASectionString
+    : '<Any XMLString that does not contain the string "]]>">'
+    ;
+```
 
 ## XML Member Access Expressions
 
@@ -5079,41 +5397,53 @@ An XML member access expression accesses the members of an XML value. There are 
 
 Element access, in which an XML name follows a single dot. For example:
 
+```vb
 Dim customer = _
     <customer>
         <name>Bob</>
     </>
 Dim customerName = customer.<name>.Value
+```
 
 Element access maps to the function:
 
+```vb
 Function Elements(name As System.Xml.Linq.XName) As _
     System.Collections.Generic.IEnumerable(Of _
         System.Xml.Linq.XNode)
+```
 
 So the above example is equivalent to:
 
+```vb
 Dim customerName = customer.Elements("name").Value
+```
 
 Attribute access, in which a Visual Basic identifier follows a dot and an at sign, or an XML name follows a dot and an at sign. For example:
 
+```vb
 Dim customer = <customer age="30"/>
 Dim customerAge = customer.@age
+```
 
 Attribute access maps to the function:
 
+```vb
 Function AttributeValue(name As System.Xml.Linq.XName) as String
+```
 
 So the above example is equivalent to:
 
+```vb
 Dim customerAge = customer.AttributeValue("age")
+```
 
 > __Annotation__
-
 > The `AttributeValue` extension method (as well as the related extension property `Value`) is not currently defined in any assembly. If the extension members are needed, they are automatically defined in the assembly being produced.
 
 Descendents access, in which an XML names follows three dots. For example:
 
+```vb
 Dim company = _
     <company>
         <customers>
@@ -5123,16 +5453,21 @@ Dim company = _
         </>
     </>
 Dim customers = company...<customer>
+```
 
 Descendents access maps to the function:
 
+```vb
 Function Descendents(name As System.Xml.Linq.XName) As _
     System.Collections.Generic.IEnumerable(Of _
         System.Xml.Linq.XElement)
+```
 
 So the above example is equivalent to:
 
+```vb
 Dim customers = company.Descendants("customer")
+```
 
 The base expression of an XML member access expression must be a value and must be of the type:
 
@@ -5142,7 +5477,7 @@ If an attribute access,  `System.Xml.Linq.XElement` or a derived type, or `Syste
 
 Names in XML member access expressions cannot be empty. They can be namespace qualified, using any namespaces defined by imports. For example:
 
-```VB.net
+```vb
 Imports <xmlns:db="http://example.org/database">
 
 Module Test
@@ -5158,7 +5493,7 @@ End Module
 
 Whitespace is not allowed after the dot(s) in an XML member access expression, or between the angle brackets and the name. For example:
 
-```VB.net
+```vb
 Dim customer = _
     <customer age="30">
         <name>Bob</>
@@ -5171,11 +5506,14 @@ Dim names = customer...< name >
 
 If the types in the `System.Xml.Linq` namespace are not available, then an XML member access expression will cause a compile-time error.
 
-<pre>XMLMemberAccessExpression  ::=
-    Expression  <b>.</b>  [  LineTerminator  ]  <b><</b>  XMLQualifiedName  <b>></b>  |
-    Expression  <b>.</b>  [  LineTerminator  ]  <b>@</b>  [  LineTerminator  ]  <b><</b>  XMLQualifiedName  <b>></b>  |
-    Expression  <b>.</b>  [  LineTerminator  ]  <b>@</b>  [  LineTerminator  ]  IdentifierOrKeyword  |
-    Expression  <b>.</b><b>.</b><b>.</b>  [  LineTerminator  ]  <b><</b>  XMLQualifiedName  <b>></b></pre>
+```antlr
+XMLMemberAccessExpression
+    : Expression '.' LineTerminator? '<' XMLQualifiedName '>'
+    | Expression '.' LineTerminator? '@' LineTerminator? '<' XMLQualifiedName '>'
+    | Expression '.' LineTerminator? '@' LineTerminator? IdentifierOrKeyword
+    | Expression '.' '.' '.' LineTerminator? '<' XMLQualifiedName '>'
+    ;
+```
 
 ## Await Operator
 
@@ -5194,7 +5532,7 @@ If `GetResult` was a `Sub`, then the await expression is classified as void. Oth
 
 Here is an example of a class that can be awaited:
 
-```VB.net
+```vb
 Class MyTask(Of T)
     Function GetAwaiter() As MyTaskAwaiter(Of T)
         Return New MyTaskAwaiter With {.m_Task = Me}
@@ -5233,7 +5571,6 @@ End Structure
 ```
 
 > __Annotation__
-
 > Library authors are recommended to follow the pattern that they invoke the continuation delegate on the same `SynchronizationContext` as their `OnCompleted` was itself invoked on. Also, the resumption delegate should not be executed synchronously within the `OnCompleted` method since that can lead to stack overflow: instead, the delegate should be queued for subsequent execution.
 
 When control flow reaches an `Await` operator, behavior is as follows.
@@ -5257,5 +5594,8 @@ If the await operand has type Object, then this behavior is deferred until runti
 
 The resumption delegate passed in 3.1 may only be invoked once. If it is invoked more than once, the behavior is undefined.
 
-<pre>AwaitOperatorExpression  ::=  <b>Await</b>  Expression</pre>
-
+```antlr
+AwaitOperatorExpression 
+    : 'Await' Expression
+    ;
+```

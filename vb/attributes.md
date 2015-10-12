@@ -200,12 +200,26 @@ An attribute consists of an optional attribute modifier, an attribute name, an o
 If a source file contains an attribute block at the top of the file that specifies attributes for the assembly or module that will contain the source file, each attribute in the attribute block must be prefixed by both the `Assembly` or `Module` modifier and a colon.
 
 ```antlr
-Attributes:         AttributeBlock+;
-AttributeBlock:     LineTerminator? '<' AttributeList LineTerminator? '>' LineTerminator?;
-AttributeList:      Attribute ( Comma Attribute )*;
-Attribute:          ( AttributeModifier ':' )? SimpleTypeName
-                    ( OpenParenthesis AttributeArguments? CloseParenthesis )?;
-AttributeModifier:  'Assembly' | 'Module';
+Attributes
+    : AttributeBlock+
+    ;
+
+AttributeBlock
+    : LineTerminator? '<' AttributeList LineTerminator? '>' LineTerminator?
+    ;
+
+AttributeList
+    : Attribute ( Comma Attribute )*
+    ;
+
+Attribute
+    : ( AttributeModifier ':' )? SimpleTypeName
+    ( OpenParenthesis AttributeArguments? CloseParenthesis )?
+    ;
+
+AttributeModifier
+    : 'Assembly' | 'Module'
+    ;
 ```
 
 ### Attribute Names
@@ -327,11 +341,27 @@ End Class
 
 
 ```antlr
-AttributeArguments:              AttributePositionalArgumentList
-                                 | AttributePositionalArgumentList Comma VariablePropertyInitializerList
-                                 | VariablePropertyInitializerList;
-AttributePositionalArgumentList: AttributeArgumentExpression? ( Comma AttributeArgumentExpression? )*;
-VariablePropertyInitializerList: VariablePropertyInitializer ( Comma VariablePropertyInitializer )*;
-VariablePropertyInitializer:     IdentifierOrKeyword ColonEquals AttributeArgumentExpression;
-AttributeArgumentExpression:     ConstantExpression | GetTypeExpression | ArrayExpression;
+AttributeArguments
+    : AttributePositionalArgumentList
+    | AttributePositionalArgumentList Comma VariablePropertyInitializerList
+    | VariablePropertyInitializerList
+    ;
+
+AttributePositionalArgumentList
+    : AttributeArgumentExpression? ( Comma AttributeArgumentExpression? )*
+    ;
+
+VariablePropertyInitializerList
+    : VariablePropertyInitializer ( Comma VariablePropertyInitializer )*
+    ;
+
+VariablePropertyInitializer
+    : IdentifierOrKeyword ColonEquals AttributeArgumentExpression
+    ;
+
+AttributeArgumentExpression
+    : ConstantExpression
+    | GetTypeExpression
+    | ArrayExpression
+    ;
 ```

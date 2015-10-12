@@ -8,7 +8,7 @@ This chapter describes document comments and recommended XML tags to use with do
 
 Document comments are special comments that begin with `'''`, three single quote marks. They must immediately precede the type (such as a class, delegate, or interface) or type member (such as a field, event, property, or method) that they document. A document comment on a partial method declaration will be replaced by the document comment on the method that supplies its body, if there is one. All adjacent document comments are appended together to produce a single document comment. If there is a whitespace character following the `'''` characters, then that whitespace character is not included in the concatenation. For example:
 
-```VB.net
+```vb
 ''' <remarks>
 ''' Class <c>Point</c> models a point in a two-dimensional plane.
 ''' </remarks>
@@ -83,7 +83,7 @@ __Syntax:__
 
 __Example:__
 
-```VB.net
+```vb
 ''' <remarks>
 ''' Class <c>Point</c> models a point in a two-dimensional plane.
 ''' </remarks>
@@ -103,7 +103,7 @@ __Syntax:__
 
 __Example:__
 
-```VB.net
+```vb
 ''' <summary>
 ''' This method changes the point's location by the given x- and 
 ''' y-offsets.
@@ -148,7 +148,7 @@ __Syntax:__
 
 __Example:__
 
-```VB.net
+```vb
 Public Module DataBaseOperations
     ''' <exception cref="MasterFileFormatCorruptException"></exception>
     ''' <exception cref="MasterFileLockedOpenException"></exception>
@@ -177,7 +177,7 @@ __Example:__
 
 If the source code contained a declaration like the following:
 
-```VB.net
+```vb
 ''' <include file="docs.xml" path="extra/class[@name="IntList"]/*" />
 ```
 
@@ -235,7 +235,7 @@ __Syntax:__
 
 __Example:__
 
-```VB.net
+```vb
 Public Class TestClass
     ''' <remarks>
     ''' Here is an example of a bulleted list:
@@ -265,7 +265,7 @@ __Syntax:__
 
 __Example:__
 
-```VB.net
+```vb
 ''' <summary>
 ''' This is the entry point of the Point class testing program.
 ''' <para>This program tests each method and operator, and
@@ -288,7 +288,7 @@ __Syntax:__
 
 __Example:__
 
-```VB.net
+```vb
 ''' <summary>
 ''' This method changes the point's location to the given
 ''' coordinates.
@@ -313,7 +313,7 @@ __Syntax:__
 
 __Example:__
 
-```VB.net
+```vb
 ''' <summary>
 ''' This constructor initializes the new Point to
 ''' (<paramref name="x"/>,<paramref name="y"/>).
@@ -338,7 +338,7 @@ __Syntax:__
 
 __Example:__
 
-```VB.net
+```vb
 ''' <permission cref="System.Security.PermissionSet">Everyone can
 ''' access this method.</permission>
 Public Shared Sub Test()
@@ -357,7 +357,7 @@ __Syntax:__
 
 __Example:__
 
-```VB.net
+```vb
 ''' <remarks>
 ''' Class <c>Point</c> models a point in a two-dimensional plane.
 ''' </remarks>
@@ -377,7 +377,7 @@ __Syntax:__
 
 __Example:__
 
-```VB.net
+```vb
 ''' <summary>
 ''' Report a point's location as a string.
 ''' </summary>
@@ -402,7 +402,7 @@ __Syntax:__
 
 __Example:__
 
-```VB.net
+```vb
 ''' <summary>
 ''' This method changes the point's location to the given
 ''' coordinates.
@@ -436,7 +436,7 @@ __Syntax:__
 
 __Example:__
 
-```VB.net
+```vb
 ''' <summary>
 ''' This method determines whether two Points have the same location.
 ''' </summary>
@@ -459,7 +459,7 @@ __Syntax:__
 
 __Example:__
 
-```VB.net
+```vb
 ''' <summary>
 ''' This constructor initializes the new Point to (0,0).
 ''' </summary>
@@ -480,7 +480,7 @@ __Syntax:__
 
 __Example:__
 
-```VB.net
+```vb
 ''' <typeparam name="T">
 ''' The base item type. Must implement IComparable.
 ''' </typeparam>
@@ -500,7 +500,7 @@ __Syntax:__
 
 __Example:__
 
-```VB.net
+```vb
 ''' <value>
 ''' Property <c>X</c> represents the point's x-coordinate.
 ''' </value>
@@ -534,7 +534,7 @@ The following examples each show a fragment of VB code, along with the ID string
 
 Types are represented using their fully qualified name.
 
-```VB.net
+```vb
 Enum Color
     Red
     Blue
@@ -579,7 +579,7 @@ End Namespace
 
 Fields are represented by their fully qualified name.
 
-```VB.net
+```vb
 Namespace Acme
     Structure ValueType
         Private total As Integer
@@ -611,7 +611,7 @@ End Namespace
 
 Constructors.
 
-```VB.net
+```vb
 Namespace Acme
     Class Widget
         Shared Sub New()
@@ -632,7 +632,7 @@ End Namespace
 
 Methods.
 
-```VB.net
+```vb
 Namespace Acme
     Structure ValueType
         Public Sub M(i As Integer)
@@ -678,7 +678,7 @@ End Namespace
 
 Properties.
 
-```VB.net
+```vb
 Namespace Acme
     Class Widget
         Public Property Width() As Integer
@@ -712,7 +712,7 @@ End Namespace
 
 Events   
 
-```VB.net
+```vb
 Namespace Acme
     Class Widget
         Public Event AnEvent As EventHandler
@@ -726,7 +726,7 @@ End Namespace
 
 Operators.
 
-```VB.net
+```vb
 Namespace Acme
     Class Widget
         Public Shared Operator +(x As Widget) As Widget
@@ -743,7 +743,7 @@ End Namespace
 
 Conversion operators have a trailing '~' followed by the return type.
 
-```VB.net
+```vb
 Namespace Acme
     Class Widget
         Public Shared Narrowing Operator CType(x As Widget) As _
@@ -763,7 +763,7 @@ End Namespace
 
 The following example shows the source code of a `Point` class:
 
-```VB.net
+```vb
 Namespace Graphics
     ''' <remarks>
     ''' Class <c>Point</c> models a point in a two-dimensional

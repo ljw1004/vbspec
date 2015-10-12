@@ -1295,7 +1295,13 @@ End Class
 > The C# language (and possibly other languages) allows a generic type to access `Protected` members regardless of what type arguments are supplied. This should be kept in mind when designing generic classes that contain `Protected` members.
 
 ```antlr
-AccessModifier:  'Public' | 'Protected' | 'Friend' | 'Private' | 'Protected' 'Friend';
+AccessModifier
+    : 'Public'
+    | 'Protected'
+    | 'Friend'
+    | 'Private'
+    | 'Protected' 'Friend'
+    ;
 ```
 
 ### Constituent Types
@@ -1584,9 +1590,17 @@ When a declaration supplies a type argument to `MyStack`, the same type argument
 As a type, type parameters are purely a compile-time construct. At run-time, each type parameter is bound to a run-time type that was specified by supplying a type argument to the generic declaration. Thus, the type of a variable declared with a type parameter will, at run-time, be a non-generic type or a specific constructed type. The run-time execution of all statements and expressions involving type parameters uses the actual type that was supplied as the type argument for that parameter.
 
 ```antlr
-TypeParameterList:  OpenParenthesis 'Of' TypeParameter ( Comma TypeParameter )* CloseParenthesis;
-TypeParameter:      VarianceModifier? Identifier TypeParameterConstraints?;
-VarianceModifier:   'In' | 'Out';
+TypeParameterList
+    : OpenParenthesis 'Of' TypeParameter ( Comma TypeParameter )* CloseParenthesis
+    ;
+
+TypeParameter
+    : VarianceModifier? Identifier TypeParameterConstraints?
+    ;
+
+VarianceModifier
+    : 'In' | 'Out'
+    ;
 ```
 
 ### Type Constraints
@@ -1805,9 +1819,21 @@ End Class
 ```
 
 ```antlr
-TypeParameterConstraints:  'As' Constraint | 'As' OpenCurlyBrace ConstraintList CloseCurlyBrace;
-ConstraintList:            Constraint ( Comma Constraint )*;
-Constraint:                TypeName | 'New' | 'Structure' | 'Class';
+TypeParameterConstraints
+    : 'As' Constraint
+    | 'As' OpenCurlyBrace ConstraintList CloseCurlyBrace
+    ;
+
+ConstraintList
+    : Constraint ( Comma Constraint )*
+    ;
+
+Constraint
+    : TypeName
+    | 'New'
+    | 'Structure'
+    | 'Class'
+    ;
 ```
 
 ### Type Parameter Variance

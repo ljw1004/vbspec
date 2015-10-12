@@ -9,12 +9,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vb", "vb", "{C24050FF-0515-
 	ProjectSection(SolutionItems) = preProject
 		..\vb\attributes.md = ..\vb\attributes.md
 		..\vb\conversions.md = ..\vb\conversions.md
+		..\vb\documentation-comments.md = ..\vb\documentation-comments.md
+		..\vb\expressions.md = ..\vb\expressions.md
 		..\vb\general-concepts.md = ..\vb\general-concepts.md
 		..\vb\introduction.md = ..\vb\introduction.md
 		..\vb\lexical-grammar.md = ..\vb\lexical-grammar.md
 		..\vb\preprocessing-directives.md = ..\vb\preprocessing-directives.md
 		..\vb\readme.md = ..\vb\readme.md
 		..\vb\source-files-and-namespaces.md = ..\vb\source-files-and-namespaces.md
+		..\vb\statements.md = ..\vb\statements.md
+		..\vb\type-members.md = ..\vb\type-members.md
 		..\vb\types.md = ..\vb\types.md
 	EndProjectSection
 EndProject

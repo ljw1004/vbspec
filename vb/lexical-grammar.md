@@ -6,10 +6,27 @@ Compilation of a Visual Basic program first involves translating the raw stream 
 > With the introduction of XML literal expressions in version 9.0 of the language, Visual Basic no longer has a distinct lexical grammar in the sense that Visual Basic code can be tokenized without regard to the syntactic context. This is due to the fact that XML and Visual Basic have different lexical rules and the set of lexical rules in use at any particular time depends on what syntactic construct is being processed at that moment. This specification retains this lexical grammar section as a guide to the lexical rules of regular Visual Basic code. However, long term the lexical rules will likely be merged into the syntactic rules.
 
 ```antlr
-LogicalLineStart:    LogicalLine*;
-LogicalLine:         LogicalLineElement* Comment? LineTerminator;
-LogicalLineElement:  WhiteSpace | LineContinuation | Token;
-Token:               Identifier | Keyword | Literal | Separator | Operator;
+LogicalLineStart
+    : LogicalLine*
+    ;
+
+LogicalLine
+    : LogicalLineElement* Comment? LineTerminator
+    ;
+
+LogicalLineElement
+    : WhiteSpace
+    | LineContinuation
+    | Token
+    ;
+
+Token
+    : Identifier
+    | Keyword
+    | Literal
+    | Separator
+    | Operator
+    ;
 ```
 
 ## Characters and Lines
@@ -17,7 +34,9 @@ Token:               Identifier | Keyword | Literal | Separator | Operator;
 Visual Basic programs are composed of characters from the Unicode character set.
 
 ```antlr
-Character:  '<Any Unicode character except a LineTerminator>';
+Character:
+    '<Any Unicode character except a LineTerminator>'
+    ;
 ```
 
 ### Line Terminators
@@ -25,9 +44,14 @@ Character:  '<Any Unicode character except a LineTerminator>';
 Unicode line break characters separate logical lines.
 
 ```antlr
-LineTerminator:  '<Unicode 0x00D>' | '<Unicode 0x00A>'
-                 | '<CR>' | '<LF>'
-                 | '<Unicode 0x2028>' | '<Unicode 0x2029>';
+LineTerminator
+    : '<Unicode 0x00D>'
+    | '<Unicode 0x00A>'
+    | '<CR>'
+    | '<LF>'
+    | '<Unicode 0x2028>'
+    | '<Unicode 0x2029>'
+    ;
 ```
 
 ### Line Continuation
@@ -102,15 +126,41 @@ Line continuations will not be inferred in conditional compilation contexts.
 > This last restriction is required because text in conditional compilation blocks that are not compiled do not have to be syntactically valid. Thus, text in the block might accidentally get "picked up" by the conditional compilation statement, especially as the language gets extended in the future. 
 
 ```antlr
-LineContinuation:  WhiteSpace '_' WhiteSpace* LineTerminator;
-Comma:             ',' LineTerminator?;
-Period:            '.' LineTerminator?;
-OpenParenthesis:   '(' LineTerminator?;
-CloseParenthesis:  LineTerminator? ')';
-OpenCurlyBrace:    '{' LineTerminator?;
-CloseCurlyBrace:   LineTerminator? '}';
-Equals:            '=' LineTerminator?;
-ColonEquals:       ':' '=' LineTerminator?;
+LineContinuation
+    : WhiteSpace '_' WhiteSpace* LineTerminator
+    ;
+
+Comma
+    : ',' LineTerminator?
+    ;
+
+Period
+    : '.' LineTerminator?
+    ;
+
+OpenParenthesis
+    : '(' LineTerminator?
+    ;
+
+CloseParenthesis
+    : LineTerminator? ')'
+    ;
+
+OpenCurlyBrace
+    : '{' LineTerminator?
+    ;
+
+CloseCurlyBrace
+    : LineTerminator? '}'
+    ;
+
+Equals
+    : '=' LineTerminator?
+    ;
+
+ColonEquals
+    : ':' '=' LineTerminator?
+    ;
 ```
 
 ### White Space
@@ -121,7 +171,10 @@ ColonEquals:       ':' '=' LineTerminator?;
 > Line terminators are not considered white space.
 
 ```antlr
-WhiteSpace:  '<Unicode class Zs>' | '<Unicode Tab 0x0009>';
+WhiteSpace
+    : '<Unicode class Zs>'
+    | '<Unicode Tab 0x0009>'
+    ;
 ```
 
 ### Comments
@@ -129,9 +182,20 @@ WhiteSpace:  '<Unicode class Zs>' | '<Unicode Tab 0x0009>';
 A *comment* begins with a single-quote character or the keyword `REM`. A single-quote character is either an ASCII single-quote character, a Unicode left single-quote character, or a Unicode right single-quote character. Comments can begin anywhere on a source line, and the end of the physical line ends the comment. The compiler ignores the characters between the beginning of the comment and the line terminator. Consequently, comments cannot extend across multiple lines by using line continuations.
 
 ```antlr
-Comment:               CommentMarker Character*;
-CommentMarker:         SingleQuoteCharacter | 'REM';
-SingleQuoteCharacter:  '\'' | '<Unicode 0x2018>' | '<Unicode 0x2019>';
+Comment
+    : CommentMarker Character*
+    ;
+
+CommentMarker
+    : SingleQuoteCharacter
+    | 'REM'
+    ;
+
+SingleQuoteCharacter
+    : '\''
+    | '<Unicode 0x2018>'
+    | '<Unicode 0x2019>'
+    ;
 ```
 
 ## Identifiers
@@ -166,18 +230,61 @@ Identifiers are case insensitive, so two identifiers are considered to be the sa
 > The Unicode Standard one-to-one case mappings are used when comparing identifiers and any locale-specific case mappings are ignored.
 
 ```antlr
-Identifier:            NonEscapedIdentifier TypeCharacter? | Keyword TypeCharacter | EscapedIdentifier;
-NonEscapedIdentifier:  '<Any IdentifierName but not Keyword>';
-EscapedIdentifier:     '[' IdentifierName ']';
-IdentifierName:        IdentifierStart IdentifierCharacter*;
-IdentifierStart:       AlphaCharacter | UnderscoreCharacter IdentifierCharacter;
-IdentifierCharacter:   UnderscoreCharacter | AlphaCharacter | NumericCharacter | CombiningCharacter | FormattingCharacter;
-AlphaCharacter:        '<Unicode classes Lu,Ll,Lt,Lm,Lo,Nl>';
-NumericCharacter:      '<Unicode decimal digit class Nd>';
-CombiningCharacter:    '<Unicode combining character classes Mn, Mc>';
-FormattingCharacter:   '<Unicode formatting character class Cf>';
-UnderscoreCharacter:   '<Unicode connection character class Pc>';
-IdentifierOrKeyword:   Identifier | Keyword;
+Identifier
+    : NonEscapedIdentifier TypeCharacter?
+    | Keyword TypeCharacter
+    | EscapedIdentifier
+    ;
+
+NonEscapedIdentifier
+    : '<Any IdentifierName but not Keyword>'
+    ;
+
+EscapedIdentifier
+    : '[' IdentifierName ']'
+    ;
+
+IdentifierName
+    : IdentifierStart IdentifierCharacter*
+    ;
+
+IdentifierStart
+    : AlphaCharacter
+    | UnderscoreCharacter IdentifierCharacter
+    ;
+
+IdentifierCharacter
+    : UnderscoreCharacter
+    | AlphaCharacter
+    | NumericCharacter
+    | CombiningCharacter
+    | FormattingCharacter
+    ;
+
+AlphaCharacter
+    : '<Unicode classes Lu,Ll,Lt,Lm,Lo,Nl>'
+    ;
+
+NumericCharacter
+    : '<Unicode decimal digit class Nd>'
+    ;
+
+CombiningCharacter
+    : '<Unicode combining character classes Mn, Mc>'
+    ;
+
+FormattingCharacter
+    : '<Unicode formatting character class Cf>'
+    ;
+
+UnderscoreCharacter
+    : '<Unicode connection character class Pc>'
+    ;
+
+IdentifierOrKeyword
+    : Identifier
+    | Keyword
+    ;
 ```
 
 ### Type Characters
@@ -213,14 +320,38 @@ End Module
 The type character `!` presents a special problem in that it can be used both as a type character and as a separator in the language. To remove ambiguity, a `!` character is a type character as long as the character that follows it cannot start an identifier. If it can, then the `!` character is a separator, not a type character.
 
 ```antlr
-TypeCharacter:         IntegerTypeCharacter | LongTypeCharacter | DecimalTypeCharacter
-                       | SingleTypeCharacter | DoubleTypeCharacter | StringTypeCharacter;
-IntegerTypeCharacter:  '%';
-LongTypeCharacter:     '&';
-DecimalTypeCharacter:  '@';
-SingleTypeCharacter:   '!';
-DoubleTypeCharacter:   '#';
-StringTypeCharacter:   '$';
+TypeCharacter
+    : IntegerTypeCharacter
+    | LongTypeCharacter
+    | DecimalTypeCharacter
+    | SingleTypeCharacter
+    | DoubleTypeCharacter
+    | StringTypeCharacter
+    ;
+
+IntegerTypeCharacter
+    : '%'
+    ;
+
+LongTypeCharacter
+    : '&'
+    ;
+
+DecimalTypeCharacter
+    : '@'
+    ;
+
+SingleTypeCharacter
+    : '!'
+    ;
+
+DoubleTypeCharacter
+    : '#'
+    ;
+
+StringTypeCharacter
+    : '$'
+    ;
 ```
 
 ## Keywords
@@ -232,7 +363,9 @@ language construct. All keywords are reserved by the language and may not be use
 > `EndIf`, `GoSub`, `Let`, `Variant`, and `Wend` are retained as keywords, although they are no longer used in Visual Basic.
 
 ```antlr
-Keyword:   '<Any member of keyword table in 2.3>';
+Keyword
+    : '<Any member of keyword table in 2.3>'
+    ;
 ```
 
 |-----------------|----------------|-------------|---------------|
@@ -280,8 +413,15 @@ Keyword:   '<Any member of keyword table in 2.3>';
 A *literal* is a textual representation of a particular value of a type. Literal types include Boolean, integer, floating point, string, character, and date.
 
 ```antlr
-Literal: BooleanLiteral | IntegerLiteral | FloatingPointLiteral
-         | StringLiteral | CharacterLiteral | DateLiteral | Nothing;
+Literal
+    : BooleanLiteral
+    | IntegerLiteral
+    | FloatingPointLiteral
+    | StringLiteral
+    | CharacterLiteral
+    | DateLiteral
+    | Nothing
+    ;
 ```
 
 ### Boolean Literals
@@ -289,7 +429,9 @@ Literal: BooleanLiteral | IntegerLiteral | FloatingPointLiteral
 `True` and `False` are literals of the `Boolean` type that map to the true and false state, respectively.
 
 ```antlr
-BooleanLiteral:  'True' | 'False';
+BooleanLiteral
+    : 'True' | 'False'
+    ;
 ```
 
 ### Integer Literals
@@ -302,24 +444,75 @@ The type of a literal is determined by its value or by the following type charac
 > There isn't a type character for `Byte` because the most natural character would be `B`, which is a legal character in a hexadecimal literal.
 
 ```antlr
-IntegerLiteral:            IntegralLiteralValue IntegralTypeCharacter?;
-IntegralLiteralValue:      IntLiteral | HexLiteral | OctalLiteral;
-IntegralTypeCharacter:     ShortCharacter | UnsignedShortCharacter | IntegerCharacter
-                           | UnsignedIntegerCharacter | LongCharacter | UnsignedLongCharacter
-                           | IntegerTypeCharacter | LongTypeCharacter;
-ShortCharacter:            'S';
-UnsignedShortCharacter:    'US';
-IntegerCharacter:          'I';
-UnsignedIntegerCharacter:  'UI';
-LongCharacter:             'L';
-UnsignedLongCharacter:     'UL';
-IntLiteral:                Digit+;
-HexLiteral:                '&' 'H' HexDigit+;
-OctalLiteral:              '&' 'O' OctalDigit+;
-Digit:                     '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
-HexDigit:                  '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' |
-                           'A' | 'B' | 'C' | 'D' | 'E' | 'F';
-OctalDigit:                '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7';
+IntegerLiteral
+    : IntegralLiteralValue IntegralTypeCharacter?
+    ;
+
+IntegralLiteralValue
+    : IntLiteral
+    | HexLiteral
+    | OctalLiteral
+    ;
+
+IntegralTypeCharacter
+    : ShortCharacter
+    | UnsignedShortCharacter
+    | IntegerCharacter
+    | UnsignedIntegerCharacter
+    | LongCharacter
+    | UnsignedLongCharacter
+    | IntegerTypeCharacter
+    | LongTypeCharacter
+    ;
+
+ShortCharacter
+    : 'S'
+    ;
+
+UnsignedShortCharacter
+    : 'US'
+    ;
+
+IntegerCharacter
+    : 'I'
+    ;
+
+UnsignedIntegerCharacter
+    : 'UI'
+    ;
+
+LongCharacter
+    : 'L'
+    ;
+
+UnsignedLongCharacter
+    : 'UL'
+    ;
+
+IntLiteral
+    : Digit+
+    ;
+
+HexLiteral
+    : '&' 'H' HexDigit+
+    ;
+
+OctalLiteral
+    : '&' 'O' OctalDigit+
+    ;
+
+Digit
+    : '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+    ;
+
+HexDigit
+    : '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+    | 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
+    ;
+
+OctalDigit
+    : '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7'
+    ;
 ```
 
 ### Floating-Point Literals
@@ -330,17 +523,46 @@ A floating-point literal is an integer literal followed by an optional decimal p
 > It is worth noting that the `Decimal` data type can encode trailing zeros in a value. The specification currently makes no comment about whether trailing zeros in a `Decimal` literal should be honored by a compiler.
 
 ```antlr
-FloatingPointLiteral:       FloatingPointLiteralValue FloatingPointTypeCharacter?
-                            | IntLiteral FloatingPointTypeCharacter;
-FloatingPointTypeCharacter: SingleCharacter | DoubleCharacter | DecimalCharacter
-                            | SingleTypeCharacter | DoubleTypeCharacter | DecimalTypeCharacter;
-SingleCharacter:            'F';
-DoubleCharacter:            'R';
-DecimalCharacter:           'D';
-FloatingPointLiteralValue:  IntLiteral '.' IntLiteral Exponent? | '.' IntLiteral Exponent?
-                            | IntLiteral Exponent;
-Exponent:                   'E' Sign? IntLiteral;
-Sign:                       '+' | '-';
+FloatingPointLiteral
+    : FloatingPointLiteralValue FloatingPointTypeCharacter?
+    | IntLiteral FloatingPointTypeCharacter
+    ;
+
+FloatingPointTypeCharacter
+    : SingleCharacter
+    | DoubleCharacter
+    | DecimalCharacter
+    | SingleTypeCharacter
+    | DoubleTypeCharacter
+    | DecimalTypeCharacter
+    ;
+
+SingleCharacter
+    : 'F'
+    ;
+
+DoubleCharacter
+    : 'R'
+    ;
+
+DecimalCharacter
+    : 'D'
+    ;
+
+FloatingPointLiteralValue
+    : IntLiteral '.' IntLiteral Exponent?
+    | '.' IntLiteral Exponent?
+    | IntLiteral Exponent
+    ;
+
+Exponent
+    : 'E' Sign? IntLiteral
+    ;
+
+Sign
+    : '+'
+    | '-'
+    ;
 ```
 
 ### String Literals
@@ -365,7 +587,7 @@ End Module
 
 The compiler is allowed to replace a constant string expression with a string literal. Each string literal does not necessarily result in a new string instance. When two or more string literals that are equivalent according to the string equality operator using binary comparison semantics appear in the same program, these string literals may refer to the same string instance. For instance, the output of the following program may return `True` because the two literals may refer to the same string instance.
 
-```antlr
+```vb
 Module Test
     Sub Main()
         Dim a As Object = "he" & "llo"
@@ -378,11 +600,20 @@ End Module
 Here is the grammar:
 
 ```antlr
-StringLiteral:        DoubleQuoteCharacter StringCharacter* DoubleQuoteCharacter;
-DoubleQuoteCharacter: '"' | '<unicode left double-quote 0x201c>'
-                      | '<unicode right double-quote 0x201D>';
-StringCharacter:      '<Any character except DoubleQuoteCharacter>'
-                      | DoubleQuoteCharacter DoubleQuoteCharacter;
+StringLiteral
+    : DoubleQuoteCharacter StringCharacter* DoubleQuoteCharacter
+    ;
+
+DoubleQuoteCharacter
+    : '"'
+    | '<unicode left double-quote 0x201c>'
+    | '<unicode right double-quote 0x201D>'
+    ;
+
+StringCharacter
+    : '<Any character except DoubleQuoteCharacter>'
+    | DoubleQuoteCharacter DoubleQuoteCharacter
+    ;
 ```
 
 ### Character Literals
@@ -403,7 +634,9 @@ End Module
 ```
 
 ```antlr
-CharacterLiteral:  DoubleQuoteCharacter StringCharacter DoubleQuoteCharacter 'C';
+CharacterLiteral
+    : DoubleQuoteCharacter StringCharacter DoubleQuoteCharacter 'C'
+    ;
 ```
 
 ### Date Literals
@@ -427,19 +660,58 @@ d = # 13:45:39PM #             ' This date value is not valid.
 ```
 
 ```antlr
-DateLiteral:  '#' WhiteSpace* DateOrTime WhiteSpace* '#';
-DateOrTime:   DateValue WhiteSpace+ TimeValue | DateValue | TimeValue;
-DateValue:    MonthValue '/' DayValue '/' YearValue | MonthValue '-' DayValue '-' YearValue;
-TimeValue:    HourValue ':' MinuteValue ( ':' SecondValue )? WhiteSpace* AMPM?
-              | HourValue WhiteSpace* AMPM;
-MonthValue:   IntLiteral;
-DayValue:     IntLiteral;
-YearValue:    IntLiteral;
-HourValue:    IntLiteral;
-MinuteValue:  IntLiteral;
-SecondValue:  IntLiteral;
-AMPM:         'AM' | 'PM';
-ElseIf:       'ElseIf' | 'Else' 'If';
+DateLiteral
+    : '#' WhiteSpace* DateOrTime WhiteSpace* '#'
+    ;
+
+DateOrTime
+    : DateValue WhiteSpace+ TimeValue
+    | DateValue
+    | TimeValue
+    ;
+
+DateValue
+    : MonthValue '/' DayValue '/' YearValue
+    | MonthValue '-' DayValue '-' YearValue
+    ;
+
+TimeValue
+    : HourValue ':' MinuteValue ( ':' SecondValue )? WhiteSpace* AMPM?
+    | HourValue WhiteSpace* AMPM
+    ;
+
+MonthValue
+    : IntLiteral
+    ;
+
+DayValue
+    : IntLiteral
+    ;
+
+YearValue
+    : IntLiteral
+    ;
+
+HourValue
+    : IntLiteral
+    ;
+
+MinuteValue
+    : IntLiteral
+    ;
+
+SecondValue
+    : IntLiteral
+    ;
+
+AMPM
+    : 'AM' | 'PM'
+    ;
+
+ElseIf
+    : 'ElseIf'
+    | 'Else' 'If'
+    ;
 ```
 
 ### Nothing
@@ -447,7 +719,9 @@ ElseIf:       'ElseIf' | 'Else' 'If';
 `Nothing` is a special literal; it does not have a type and is convertible to all types in the type system, including type parameters. When converted to a particular type, it is the equivalent of the default value of that type.
 
 ```antlr
-Nothing:  'Nothing';
+Nothing
+    : 'Nothing'
+    ;
 ```
 
 ## Separators
@@ -455,7 +729,9 @@ Nothing:  'Nothing';
 The following ASCII characters are separators:
 
 ```antlr
-Separator:  '(' | ')' | '{' | '}' | '!' | '#' | ',' | '.' | ':' | '?';
+Separator
+    : '(' | ')' | '{' | '}' | '!' | '#' | ',' | '.' | ':' | '?'
+    ;
 ```
 
 ## Operator Characters
@@ -463,6 +739,8 @@ Separator:  '(' | ')' | '{' | '}' | '!' | '#' | ',' | '.' | ':' | '?';
 The following ASCII characters or character sequences denote operators:
 
 ```antlr
-Operator:   '&' | '*' | '+' | '-' | '/' | '\\' | '^' | '<' | '=' | '>';
+Operator
+    : '&' | '*' | '+' | '-' | '/' | '\\' | '^' | '<' | '=' | '>'
+    ;
 ```
 

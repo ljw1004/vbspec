@@ -5,17 +5,48 @@ The two fundamental categories of types in Visual Basic are *value types* and *r
 Every type has a *default value*, which is the value that is assigned to variables of that type upon initialization.
 
 ```antlr
-TypeName:            ArrayTypeName | NonArrayTypeName;
-NonArrayTypeName:    SimpleTypeName | NullableTypeName;
-SimpleTypeName:      QualifiedTypeName | BuiltInTypeName;
-QualifiedTypeName:   Identifier TypeArguments? (Period IdentifierOrKeyword TypeArguments?)*
-                     | 'Global' Period IdentifierOrKeyword TypeArguments?
-                       (Period IdentifierOrKeyword TypeArguments?)*;
-TypeArguments:       OpenParenthesis 'Of' TypeArgumentList CloseParenthesis;
-TypeArgumentList:    TypeName ( Comma TypeName )*;
-BuiltInTypeName:     'Object' | PrimitiveTypeName;
-TypeModifier:        AccessModifier | 'Shadows';
-IdentifierModifiers: NullableNameModifier? ArrayNameModifier?;
+TypeName
+    : ArrayTypeName
+    | NonArrayTypeName
+    ;
+
+NonArrayTypeName
+    : SimpleTypeName
+    | NullableTypeName
+    ;
+
+SimpleTypeName
+    : QualifiedTypeName
+    | BuiltInTypeName
+    ;
+
+QualifiedTypeName
+    : Identifier TypeArguments? (Period IdentifierOrKeyword TypeArguments?)*
+    | 'Global' Period IdentifierOrKeyword TypeArguments?
+      (Period IdentifierOrKeyword TypeArguments?)*
+    ;
+
+TypeArguments
+    : OpenParenthesis 'Of' TypeArgumentList CloseParenthesis
+    ;
+
+TypeArgumentList
+    : TypeName ( Comma TypeName )*
+    ;
+
+BuiltInTypeName
+    : 'Object'
+    | PrimitiveTypeName
+    ;
+
+TypeModifier
+    : AccessModifier
+    | 'Shadows'
+    ;
+
+IdentifierModifiers
+    : NullableNameModifier? ArrayNameModifier?
+    ;
 ```
 
 ## Value Types and Reference Types
@@ -77,8 +108,13 @@ A variable may also be declared to be of a nullable value type by putting a null
 A nullable value type `T?` has the members of `System.Nullable(Of T)` as well as any operators or conversions *lifted* from the underlying type `T` into the type `T?`. Lifting copies operators and conversions from the underlying type, in most cases substituting nullable value types for non-nullable value types. This allows many of the same conversions and operations that apply to `T` to apply to `T?` as well.
 
 ```antlr
-NullableTypeName:      NonArrayTypeName '?';
-NullableNameModifier:  '?';
+NullableTypeName
+    : NonArrayTypeName '?'
+    ;
+
+NullableNameModifier
+    : '?'
+    ;
 ```
 
 ## Interface Implementation
@@ -169,8 +205,13 @@ End Class
 ```
 
 ```antlr
-TypeImplementsClause:  'Implements' TypeImplements StatementTerminator;
-TypeImplements:        NonArrayTypeName ( Comma NonArrayTypeName )*;
+TypeImplementsClause
+    : 'Implements' TypeImplements StatementTerminator
+    ;
+
+TypeImplements
+    : NonArrayTypeName ( Comma NonArrayTypeName )*
+    ;
 ```
 
 ## Primitive Types
@@ -205,11 +246,28 @@ The `String` reference type, which represents a sequence of Unicode characters a
 
 
 ```antlr
-PrimitiveTypeName:     NumericTypeName | 'Boolean' | 'Date' | 'Char' | 'String';
-NumericTypeName:       IntegralTypeName | FloatingPointTypeName | 'Decimal';
-IntegralTypeName:      'Byte' | 'SByte' | 'UShort' | 'Short'
-                       | 'UInteger' | 'Integer' | 'ULong' | 'Long';
-FloatingPointTypeName: 'Single' | 'Double';
+PrimitiveTypeName
+    : NumericTypeName
+    | 'Boolean'
+    | 'Date'
+    | 'Char'
+    | 'String'
+    ;
+
+NumericTypeName
+    : IntegralTypeName
+    | FloatingPointTypeName
+    | 'Decimal'
+    ;
+
+IntegralTypeName
+    : 'Byte' | 'SByte' | 'UShort' | 'Short' | 'UInteger'
+    | 'Integer' | 'ULong' | 'Long'
+    ;
+
+FloatingPointTypeName
+    : 'Single' | 'Double'
+    ;
 ```
 
 ## Enumerations
@@ -231,10 +289,12 @@ End Enum
 A developer might choose to use an underlying type of `Long`, as in the example, to enable the use of values that are in the range of `Long`, but not in the range of `Integer`, or to preserve this option for the future.
 
 ```antlr
-EnumDeclaration:       Attributes? TypeModifier* 'Enum' Identifier
-                       ( 'As' NonArrayTypeName )? StatementTerminator
-                       EnumMemberDeclaration+
-                       'End' 'Enum' StatementTerminator;
+EnumDeclaration
+    : Attributes? TypeModifier* 'Enum' Identifier
+      ( 'As' NonArrayTypeName )? StatementTerminator
+      EnumMemberDeclaration+
+      'End' 'Enum' StatementTerminator
+    ;
 ```
 
 ### Enumeration Members
@@ -245,8 +305,10 @@ The scope of an enumeration member is the enumeration declaration body. This mea
 
 Declaration order for enumeration member declarations is significant when constant expression values are omitted. Enumeration members implicitly have `Public` access only; no access modifiers are allowed on enumeration member declarations.
 
-```
-EnumMemberDeclaration: Attributes? Identifier ( Equals ConstantExpression )? StatementTerminator;
+```antlr
+EnumMemberDeclaration
+    : Attributes? Identifier ( Equals ConstantExpression )? StatementTerminator
+    ;
 ```
 
 ### Enumeration Values
@@ -427,12 +489,20 @@ End Module
 There are two class-specific modifiers, `MustInherit` and `NotInheritable`. It is invalid to specify them both.
 
 ```antlr
-ClassDeclaration:  Attributes? ClassModifier* 'Class' Identifier TypeParameterList? StatementTerminator
-                   ClassBase?
-                   TypeImplementsClause*
-                   ClassMemberDeclaration*
-                   'End' 'Class' StatementTerminator;
-ClassModifier:     TypeModifier | 'MustInherit' | 'NotInheritable' | 'Partial';
+ClassDeclaration
+    : Attributes? ClassModifier* 'Class' Identifier TypeParameterList? StatementTerminator
+      ClassBase?
+      TypeImplementsClause*
+      ClassMemberDeclaration*
+      'End' 'Class' StatementTerminator
+    ;
+
+ClassModifier
+    : TypeModifier
+    | 'MustInherit'
+    | 'NotInheritable'
+    | 'Partial'
+    ;
 ```
 
 ### Class Base Specification
@@ -468,7 +538,9 @@ Classes may only derive from `Object` and classes. It is invalid for a class to 
 Every class has exactly one direct base class, and circularity in derivation is prohibited. It is not possible to derive from a `NotInheritable` class, and the accessibility domain of the base class must be the same as or a superset of the accessibility domain of the class itself.
 
 ```antlr
-ClassBase:        'Inherits' NonArrayTypeName StatementTerminator;
+ClassBase
+    : 'Inherits' NonArrayTypeName StatementTerminator
+    ;
 ```
 
 ### Class Members
@@ -480,14 +552,16 @@ A class member declaration may have `Public`, `Protected`, `Friend`, `Protected 
 The scope of a class member is the class body in which the member declaration occurs, plus the constraint list of that class (if it is generic and has constraints). If the member has `Friend` access, its scope extends to the class body of any derived class in the same program or any assembly that has been given `Friend` access, and if the member has `Public`, `Protected`, or `Protected Friend` access, its scope extends to the class body of any derived class in any program.
 
 ```antlr
-ClassMemberDeclaration:  NonModuleDeclaration
-                         | EventMemberDeclaration
-                         | VariableMemberDeclaration
-                         | ConstantMemberDeclaration
-                         | MethodMemberDeclaration
-                         | PropertyMemberDeclaration
-                         | ConstructorMemberDeclaration
-                         | OperatorDeclaration;
+ClassMemberDeclaration
+    : NonModuleDeclaration
+    | EventMemberDeclaration
+    | VariableMemberDeclaration
+    | ConstantMemberDeclaration
+    | MethodMemberDeclaration
+    | PropertyMemberDeclaration
+    | ConstructorMemberDeclaration
+    | OperatorDeclaration
+    ;
 ```
 
 ## Structures
@@ -524,12 +598,18 @@ End Module
 The assignment of `a` to `b` creates a copy of the value, and `b` is thus unaffected by the assignment to `a.x`. Had `Point` instead been declared as a class, the output would be `100` because `a` and `b` would reference the same object.
 
 ```antlr
-StructureDeclaration:  Attributes? StructureModifier* 'Structure' Identifier
-                       TypeParameterList? StatementTerminator
-                       TypeImplementsClause*
-                       StructMemberDeclaration*
-                       'End' 'Structure' StatementTerminator;
-StructureModifier:     TypeModifier | 'Partial';
+StructureDeclaration
+    : Attributes? StructureModifier* 'Structure' Identifier
+      TypeParameterList? StatementTerminator
+      TypeImplementsClause*
+      StructMemberDeclaration*
+      'End' 'Structure' StatementTerminator
+    ;
+
+StructureModifier
+    : TypeModifier
+    | 'Partial'
+    ;
 ```
 
 ### Structure Members
@@ -570,14 +650,16 @@ End Structure
 Normally, a structure member declaration may only have `Public`, `Friend`, or `Private` access, but when overriding members inherited from `Object`, `Protected` and `Protected Friend` access may also be used. When a structure member declaration does not include an access modifier, the declaration defaults to `Public` access. The scope of a member declared by a structure is the structure body in which the declaration occurs, plus the constraints of that structure (if it was generic and had constraints).
 
 ```antlr
-StructMemberDeclaration:  NonModuleDeclaration
-                          | VariableMemberDeclaration
-                          | ConstantMemberDeclaration
-                          | EventMemberDeclaration
-                          | MethodMemberDeclaration
-                          | PropertyMemberDeclaration
-                          | ConstructorMemberDeclaration
-                          | OperatorDeclaration;
+StructMemberDeclaration
+    : NonModuleDeclaration
+    | VariableMemberDeclaration
+    | ConstantMemberDeclaration
+    | EventMemberDeclaration
+    | MethodMemberDeclaration
+    | PropertyMemberDeclaration
+    | ConstructorMemberDeclaration
+    | OperatorDeclaration
+    ;
 ```
 
 ## Standard Modules
@@ -616,9 +698,11 @@ End Namespace
 A module may only be declared in a namespace and may not be nested in another type. Standard modules may not implement interfaces, they implicitly derive from `Object`, and they have only `Shared` constructors.
 
 ```antlr
-ModuleDeclaration:  Attributes? TypeModifier* 'Module' Identifier StatementTerminator
-                    ModuleMemberDeclaration*
-                    'End' 'Module' StatementTerminator;
+ModuleDeclaration
+    : Attributes? TypeModifier* 'Module' Identifier StatementTerminator
+      ModuleMemberDeclaration*
+      'End' 'Module' StatementTerminator
+    ;
 ```
 
 ### Standard Module Members
@@ -630,13 +714,15 @@ Normally, a standard module member declaration may only have `Public`, `Friend`,
 As previously noted, the scope of a standard module member is the declaration containing the standard module declaration. Members inherited from `Object` are not included in this special scoping; those members have no scope and must always be qualified with the name of the module. If the member has `Friend` access, its scope extends only to namespace members declared in the same program or assemblies that have been given `Friend` access.
 
 ```antlr
-ModuleMemberDeclaration:  NonModuleDeclaration
-                         | VariableMemberDeclaration
-                         | ConstantMemberDeclaration
-                         | EventMemberDeclaration
-                         | MethodMemberDeclaration
-                         | PropertyMemberDeclaration
-                         | ConstructorMemberDeclaration;
+ModuleMemberDeclaration
+    : NonModuleDeclaration
+    | VariableMemberDeclaration
+    | ConstantMemberDeclaration
+    | EventMemberDeclaration
+    | MethodMemberDeclaration
+    | PropertyMemberDeclaration
+    | ConstructorMemberDeclaration
+    ;
 ```
 
 ## Interfaces
@@ -703,11 +789,13 @@ End Class
 ```
 
 ```antlr
-InterfaceDeclaration:  Attributes? TypeModifier* 'Interface' Identifier
-                       TypeParameterList? StatementTerminator
-                       InterfaceBase*
-                       InterfaceMemberDeclaration*
-                       'End' 'Interface' StatementTerminator;
+InterfaceDeclaration
+    : Attributes? TypeModifier* 'Interface' Identifier
+      TypeParameterList? StatementTerminator
+      InterfaceBase*
+      InterfaceMemberDeclaration*
+      'End' 'Interface' StatementTerminator
+    ;
 ```
 
 ### Interface Inheritance
@@ -776,8 +864,13 @@ End Interface
 The accessibility domain of a base interface must be the same as or a superset of the accessibility domain of the interface itself.
 
 ```antlr
-InterfaceBase:         'Inherits' InterfaceBases StatementTerminator;
-InterfaceBases:        NonArrayTypeName ( Comma NonArrayTypeName )*;
+InterfaceBase
+    : 'Inherits' InterfaceBases StatementTerminator
+    ;
+
+InterfaceBases
+    : NonArrayTypeName ( Comma NonArrayTypeName )*
+    ;
 ```
 
 ### Interface Members
@@ -803,10 +896,12 @@ End Module
 Members of an interface with the same name as members of `Object` implicitly shadow `Object` members. Only nested types, methods, properties, and events may be members of an interface. Methods and properties may not have a body. Interface members are implicitly `Public` and may not specify an access modifier. The scope of a member declared in an interface is the interface body in which the declaration occurs, plus the constraint list of that interface (if it is generic and has constraints).
 
 ```antlr
-InterfaceMemberDeclaration:  NonModuleDeclaration
-                             | InterfaceEventMemberDeclaration
-                             | InterfaceMethodMemberDeclaration
-                             | InterfacePropertyMemberDeclaration;
+InterfaceMemberDeclaration
+    : NonModuleDeclaration
+    | InterfaceEventMemberDeclaration
+    | InterfaceMethodMemberDeclaration
+    | InterfacePropertyMemberDeclaration
+    ;
 ```
 
 ## Arrays
@@ -903,11 +998,26 @@ End Module
 In the last case, `(3)` is interpreted as part of the type name rather than as a set of constructor arguments.
 
 ```antlr
-ArrayTypeName:       NonArrayTypeName ArrayTypeModifiers;
-ArrayTypeModifiers:  ArrayTypeModifier+;
-ArrayTypeModifier:   OpenParenthesis RankList? CloseParenthesis;
-RankList:            Comma*;
-ArrayNameModifier:   ArrayTypeModifiers | ArraySizeInitializationModifier;
+ArrayTypeName
+    : NonArrayTypeName ArrayTypeModifiers
+    ;
+
+ArrayTypeModifiers
+    : ArrayTypeModifier+
+    ;
+
+ArrayTypeModifier
+    : OpenParenthesis RankList? CloseParenthesis
+    ;
+
+RankList
+    : Comma*
+    ;
+
+ArrayNameModifier
+    : ArrayTypeModifiers
+    | ArraySizeInitializationModifier
+    ;
 ```
 
 ## Delegates
@@ -964,8 +1074,14 @@ End Sub
 It is unimportant to the `MultiCall` method what the target method for the `SimpleDelegate` is, what accessibility this method has, or whether the method is `Shared` or not. All that matters is that the signature of the target method is compatible with `SimpleDelegate`.
 
 ```antlr
-DelegateDeclaration:  Attributes? TypeModifier* 'Delegate' MethodSignature StatementTerminator;
-MethodSignature:      SubSignature | FunctionSignature;
+DelegateDeclaration
+    : Attributes? TypeModifier* 'Delegate' MethodSignature StatementTerminator
+    ;
+
+MethodSignature
+    : SubSignature
+    | FunctionSignature
+    ;
 ```
 
 ## Partial types

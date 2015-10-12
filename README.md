@@ -46,6 +46,18 @@ Dim x = "Hello"
 ``
 ```
 
+To put a code block inside an annotation, it needs a quoted but otherwise empty line before and after:
+```
+> __Annotation__
+> Start of annotation
+>
+> ``vb
+> Dim x = "Hello"
+> ``
+>
+> More annotation
+```
+
 Grammar blocks are like this, and can be up to 105 characters wide:
 ```
 ``antlr
