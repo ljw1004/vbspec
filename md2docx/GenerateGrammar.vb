@@ -6,15 +6,13 @@
 ' File.WriteAllText("vb11.ebnf", ISO14977.ToString(grammar, "vb11"))
 ' File.WriteAllText("vb11.html", Html.ToString(grammar, "vb11"), Encoding.UTF8)
 
-
 Imports System.Text
-Imports md2docx
 
 Class Production
     Public EBNF As EBNF, ProductionName As String ' optional. ProductionName contains no whitespace and is not delimited by '
     Public Comment As String ' optional. Does not contain *) or newline
     Public RuleStartsOnNewLine As Boolean ' e.g. "Rule: \n | Choice1"
-    Public Reference As Uri ' optional. Link to the spec
+    Public Link, LinkName As String ' optional. Link to the spec
 End Class
 
 Class EBNF
@@ -26,7 +24,7 @@ Class EBNF
 End Class
 
 Enum EBNFKind
-    ZeroOrMoreOf ' has exactly one child  e*  {e}
+    ZeroOrMoreOf ' has exactly one child   e*  {e}
     OneOrMoreOf  ' has exactly one child   e+  [e]
     ZeroOrOneOf  ' has exactly one child   e?  {e}-
     Sequence     ' has 2+ children
@@ -38,7 +36,7 @@ End Enum
 
 
 Class Grammar
-    Public productions As IEnumerable(Of Production)
+    Public productions As New List(Of Production)
 
     Public Function IsSameAs(copy As Grammar) As Boolean
 
@@ -362,6 +360,7 @@ Class Html
     ' "Terminals" stores plain-strings of terminals, and stores extended terminals normalized as <extendedterminal>
     ' All other data-structures apart from CaseEscapedNames are keyed off strings like "production" or "'terminal'" or "'<extendedterminal>'"
     Dim Productions As New Dictionary(Of String, IEnumerable(Of EBNF)) ' String ::= EBNF0 | EBNF1 | ...
+    Dim ProductionReferences As New Dictionary(Of String, Tuple(Of String, String))
     Dim Terminals As New HashSet(Of String) ' The list of [extended]terminals.
     Dim CaseEscapedNames As New Dictionary(Of String, String) ' For a given Production/Terminal string, gives a version that's case-escaped
     Dim MayBeEmptySet As New Dictionary(Of String, Boolean)  ' Says whether a given production/[extended]terminal may be empty
@@ -396,6 +395,7 @@ Class Html
             Dim choices = If(p.EBNF.Kind = EBNFKind.Choice, CType(p.EBNF.Children, IEnumerable(Of EBNF)), {p.EBNF})
             If flatten(choices).Where(Function(e) e.Kind = EBNFKind.Choice).Count > 0 Then Throw New Exception("nested choice not implemented")
             Me.Productions.Add(p.ProductionName, choices)
+            If p.Link IsNot Nothing Then Me.ProductionReferences.Add(p.ProductionName, Tuple.Create(p.Link, p.LinkName))
         Next
         Dim InvalidReferences As New HashSet(Of String)
         For Each p In Me.Productions
@@ -529,6 +529,11 @@ pup.style.top = top + "px";
                                     %>
                                 </ul>
                                 <ul>
+                                    <%= Iterator Function()
+                                            If Not ProductionReferences.ContainsKey(production.Key) Then Return
+                                            Dim tt = ProductionReferences(production.Key)
+                                            Yield <li><a href=<%= tt.Item2 %>><%= tt.Item1 %></a></li>
+                                        End Function() %>
                                     <li class="u">(used in <%= From p In UsedBySet(production.Key) Select <xml>&#x20;<%= MakeNonterminal(p) %></xml>.Nodes %>)</li>
                                     <li class="t"><%= If(MayBeEmptySet(production.Key), "May be empty", "Never empty") %></li>
                                     <li class="t">MayStartWith: <%= From t In MayStartWithSet(production.Key) Select <xml>&#x20;<%= MakeTerminal(t) %></xml>.Nodes %></li>
@@ -846,7 +851,7 @@ Class Antlr
     End Function
 
     Public Shared Function ReadString(src As String) As Grammar
-        Return New Grammar With {.productions = ReadInternal(src)}
+        Return New Grammar With {.productions = ReadInternal(src).ToList()}
     End Function
 
     Private Shared Iterator Function ReadInternal(src As String) As IEnumerable(Of Production)

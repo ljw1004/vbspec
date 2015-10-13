@@ -82,6 +82,10 @@ The following is [link1](README.md#conventions)
 
 The following is [link2](README.md#experiments-and-stuff)
 
+The following is a heading with inline code. Github gives it the link
+
+### `<c>`
+
 The following experiment is about code blocks in quoted blocks. Both styles are fine.
 
 > __Annotation__

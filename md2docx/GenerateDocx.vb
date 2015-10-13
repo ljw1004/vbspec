@@ -9,41 +9,67 @@ Imports FSharp.Markdown
 Imports Microsoft.FSharp.Core
 
 Class MarkdownSpec
-    Dim s As String
-    Dim files As IEnumerable(Of String)
-    Dim _antlr As String
+    Private s As String
+    Private files As IEnumerable(Of String)
+    Public Grammar As New Grammar
+    Public Sections As New Dictionary(Of String, Tuple(Of String, String)) ' statements.md#goto-statement => ("Goto Statement", "10.1.2")
 
     Public Shared Function ReadString(s As String) As MarkdownSpec
-        Return New MarkdownSpec With {.s = s}
+        Dim md As New MarkdownSpec With {.s = s}
+        md.Init()
+        Return md
     End Function
 
     Public Shared Function ReadFiles(files As IEnumerable(Of String)) As MarkdownSpec
-        Return New MarkdownSpec With {.files = files}
+        Dim md As New MarkdownSpec With {.files = files}
+        md.Init()
+        Return md
     End Function
 
-    Public ReadOnly Property AntlrCodeBlocks As String
-        Get
-            If _antlr IsNot Nothing Then Return _antlr
-            Dim sb As New StringBuilder
-            For Each src In Sources()
-                Dim md = Markdown.Parse(src)
-                For Each mdc In md.Paragraphs.OfType(Of MarkdownParagraph.CodeBlock)
-                    Dim code = mdc.Item1, lang = mdc.Item2
-                    If lang <> "antlr" Then Continue For
-                    sb.AppendLine(code)
-                    sb.AppendLine()
-                Next
-            Next
-            _antlr = sb.ToString()
-            Return _antlr
-        End Get
-    End Property
+    Private Sub Init()
+        ' (1) Add sections into the dictionary
+        Dim h0 = 0, h1 = 0, h2 = 0, h3 = 0
+        Dim link = "", linkname = ""
 
-    Private Iterator Function Sources() As IEnumerable(Of String)
-        If s IsNot Nothing Then Yield s
+        ' (2) Turn all the antlr code blocks into a grammar
+        Dim sbantlr As New StringBuilder
+
+        For Each src In Sources()
+            Dim md = Markdown.Parse(src.Item2)
+
+            For Each mdp In md.Paragraphs
+                If mdp.IsHeading Then
+                    Dim mdh = CType(mdp, MarkdownParagraph.Heading), level = mdh.Item1, spans = mdh.Item2
+                    If spans.Length <> 1 OrElse Not spans.First.IsLiteral Then Throw New NotSupportedException("Heading must be a literal")
+                    Dim heading = CType(spans.First, MarkdownSpan.Literal).Item
+                    link = Path.GetFileName(src.Item1) & "#" & heading.ToLowerInvariant().Replace(" ", "-")
+                    linkname = heading
+                    Dim section = ""
+                    If level = 0 Then h0 += 1 : h1 = 0 : h2 = 0 : h3 = 0 : section = $"{h0}"
+                    If level = 1 Then h1 += 1 : h2 = 0 : h3 = 0 : section = $"{h0}.{h1}"
+                    If level = 2 Then h2 += 1 : h3 = 0 : section = $"{h0}.{h1}.{h2}"
+                    If level = 3 Then h3 += 1 : section = $"{h0}.{h1}.{h2}.{h3}"
+                    Sections(heading) = Tuple.Create(linkname, section)
+
+                ElseIf mdp.IsCodeBlock Then
+                    Dim mdc = CType(mdp, MarkdownParagraph.CodeBlock), code = mdc.Item1, lang = mdc.Item2
+                    If lang <> "antlr" Then Continue For
+                    Dim g = Antlr.ReadString(code)
+                    For Each p In g.productions
+                        p.Link = link : p.LinkName = linkname
+                        Grammar.productions.Add(p)
+                    Next
+                End If
+            Next
+
+        Next
+    End Sub
+
+    Private Iterator Function Sources() As IEnumerable(Of Tuple(Of String, String))
+        If s IsNot Nothing Then Yield Tuple.Create("", s)
         If files IsNot Nothing Then
             For Each fn In files
-                Yield File.ReadAllText(fn)
+                Yield Tuple.Create(fn, File.ReadAllText(fn))
             Next
         End If
     End Function
@@ -59,7 +85,7 @@ Class MarkdownSpec
             body.RemoveAllChildren()
 
             For Each src In Sources()
-                For Each p In New MarkdownConverter(src, resultDoc).Paragraphs
+                For Each p In New MarkdownConverter(src.Item2, resultDoc).Paragraphs
                     body.AppendChild(p)
                 Next
             Next
