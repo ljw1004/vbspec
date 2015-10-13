@@ -71,6 +71,11 @@ Left
     ;
 ```
 
+Links are like this, which will render in github as a hyperlinked word "Conventions", and will render in Word as "5.2: Conventions". The thing that comes after the # is the section/subsection title, converted to lowercase, with spaces replaced by hyphens.
+```
+For more information see Section [Conventions](README.md#conventions)
+```
+
 ## Experiments and stuff
 
 The following is [link1](README.md#conventions)

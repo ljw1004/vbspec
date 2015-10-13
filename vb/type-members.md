@@ -286,11 +286,11 @@ InterfaceMethodMemberDeclaration
 
 There are two types of methods: *subroutines*, which do not return values, and *functions*, which do. The body and `End` construct of a method may only be omitted if the method is defined in an interface or has the `MustOverride` modifier. If no return type is specified on a function and strict semantics are being used, a compile-time error occurs; otherwise the type is implicitly `Object` or the type of the method's type character. The accessibility domain of the return type and parameter types of a method must be the same as or a superset of the accessibility domain of the method itself.
 
-A __regular method__ is one with neither `Async` nor `Iterator` modifiers. It may be a subroutine or a function. Section 10.1.1 details what happens when a regular method is invoked.
+A __regular method__ is one with neither `Async` nor `Iterator` modifiers. It may be a subroutine or a function. Section [Regular Methods](statements.md#regular-methods) details what happens when a regular method is invoked.
 
-An __iterator method__ is one with the `Iterator` modifier and no `Async` modifier. It must be a function, and its return type must be `IEnumerator`, `IEnumerable`, or `IEnumerator(Of T)` or `IEnumerable(Of T)` for some `T`, and it must have no `ByRef` parameters. Section 10.1.2 details what happens when an iterator method is invoked.
+An __iterator method__ is one with the `Iterator` modifier and no `Async` modifier. It must be a function, and its return type must be `IEnumerator`, `IEnumerable`, or `IEnumerator(Of T)` or `IEnumerable(Of T)` for some `T`, and it must have no `ByRef` parameters. Section [Iterator Methods](statements.md#iterator-methods) details what happens when an iterator method is invoked.
 
-An __async method__ is one with the `Async` modifier and no `Iterator` modifier. It must be either a subroutine, or a function with return type `Task` or `Task(Of T)` for some `T`, and must have no `ByRef` parameters. Section 10.1.3 details what happens when an async method is invoked.
+An __async method__ is one with the `Async` modifier and no `Iterator` modifier. It must be either a subroutine, or a function with return type `Task` or `Task(Of T)` for some `T`, and must have no `ByRef` parameters. Section [Async Methods](statements.md#async-methods) details what happens when an async method is invoked.
 
 It is a compile-time error if a method is not one of these three kinds of method. Subroutine and function declarations are special in that their beginning and end statements must each start at the beginning of a logical line. Additionally, the body of a non-`MustOverride` subroutine or function declaration must start at the beginning of a logical line. For example:
 
