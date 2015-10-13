@@ -2802,7 +2802,7 @@ Property x4(5) As Short
 
 ### Iterator Properties
 
-An *iterator property* is a property with the `Iterator` modifier. It is used for the same reason an iterator method (10.1.2) is used - as a convenient way to generate a sequence, one which can be consumed by the `For Each` statement. The `Get` accessor of an iterator property is interpreted in the same way as an iterator method.
+An *iterator property* is a property with the `Iterator` modifier. It is used for the same reason an iterator method (Section [Iterator Methods](statements.md#iterator-methods)) is used - as a convenient way to generate a sequence, one which can be consumed by the `For Each` statement. The `Get` accessor of an iterator property is interpreted in the same way as an iterator method.
 
 An iterator property must have an explicit `Get` accessor, and its type must be `IEnumerator`, or `IEnumerable`, or `IEnumerator(Of T)` or `IEnumerable(Of T)` for some `T`.
 

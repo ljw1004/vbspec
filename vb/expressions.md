@@ -350,7 +350,7 @@ ParenthesizedExpression
 
 ### Instance Expressions
 
-An *instance expression* is the keyword `Me`. It may only be used within the body of a non-shared method, constructor, or property accessor. It is classified as a value. . The keyword `Me` represents the instance of the type containing the method or property accessor being executed. If a constructor explicitly invokes another constructor (Section 9.3), `Me` cannot be used until after that constructor call, because the instance has not yet been constructed.
+An *instance expression* is the keyword `Me`. It may only be used within the body of a non-shared method, constructor, or property accessor. It is classified as a value. The keyword `Me` represents the instance of the type containing the method or property accessor being executed. If a constructor explicitly invokes another constructor (Section [Constructors](type-members.md#constructors)), `Me` cannot be used until after that constructor call, because the instance has not yet been constructed.
 
 ```antlr
 InstanceExpression
@@ -1144,7 +1144,7 @@ End Module
 
 Otherwise, overload resolution is applied to the methods to pick the most applicable method for the given argument list(s). If the most applicable method is a function, then the result of the invocation expression is classified as a value typed as the return type of the function. If the most applicable method is a subroutine, then the result is classified as void. If the most applicable method is a partial method that has no body, then the invocation expression is ignored and the result is classified as void.
 
-For an early-bound invocation expression, the arguments are evaluated in the order in which the corresponding parameters are declared in the target method. For a late-bound member access expression, they are evaluated in the order in which they appear in the member access expression: see Section 11.3, Late-Bound Expressions.
+For an early-bound invocation expression, the arguments are evaluated in the order in which the corresponding parameters are declared in the target method. For a late-bound member access expression, they are evaluated in the order in which they appear in the member access expression: see Section [Late-Bound Expressions](expressions.md#late-bound-expressions).
 
 ```antlr
 InvocationExpression
@@ -1180,7 +1180,7 @@ Given a method group, the most applicable method in the group for an argument li
 
 1.  First, if no type arguments have been supplied, apply type inference to any methods which have type parameters. If type inference succeeds for a method, then the inferred type arguments are used for that particular method. If type inference fails for a method, then that method is eliminated from the set.
 
-2.  Next, eliminate all members from the set that are inaccessible or not applicable (11.8.2) to the argument list
+2.  Next, eliminate all members from the set that are inaccessible or not applicable (Section [Applicability To Argument List](expressions.md#applicability-to-argument-list)) to the argument list
 
 3.  Next, if one or more arguments are `AddressOf` or lambda expressions, then calculate the *delegate relaxation levels* for each such argument as below. If the worst (lowest) delegate relaxation level in `N` is worse than the lowest delegate relaxation level in `M`, then eliminate `N` from the set.
 
@@ -1215,7 +1215,7 @@ Given a method group, the most applicable method in the group for an argument li
 
     ```
 
-5.  Next, elimination is done based on narrowing as follows. (Note that, if Option Strict is On, then all members that require narrowing have already been judged inapplicable (11.8.2) and removed by Step 2.)
+5.  Next, elimination is done based on narrowing as follows. (Note that, if Option Strict is On, then all members that require narrowing have already been judged inapplicable (Section [Applicability To Argument List](expressions.md#applicability-to-argument-list)) and removed by Step 2.)
 
     51. If some instance members of the set only require narrowing conversions where the argument expression type is `Object`, then eliminate all other members.
     52. If the set contains more than one member which requires narrowing only from `Object`, then the invocation target expression is reclassified as a late-bound method access (and an error is given if the type containing the method group is an interface, or if any of the applicable members were extension members).
@@ -1266,7 +1266,7 @@ Given a method group, the most applicable method in the group for an argument li
     > __Annotation__
     > Extension methods are ignored if there are applicable instance methods to guarantee that adding an import (that might bring new extension methods into scope) will not cause a call on an existing instance method to rebind to an extension method. Given the broad scope of some extension methods (i.e. those defined on interfaces and/or type parameters), this is a safer approach to binding to extension methods.
 
-7.  Next, if, given any two members of the set, `M` and `N`, `M` is more *specific* (Section 11.8.1.1) than `N` given the argument list, eliminate `N` from the set. If more than one member remains in the set and the remaining members are not equally specific given the argument list, a compile-time error results.
+7.  Next, if, given any two members of the set `M` and `N`, `M` is more *specific* (Section [Specificity of members/types given an argument list](expressions.md#specificity-of-memberstypes-given-an-argument-list)) than `N` given the argument list, eliminate `N` from the set. If more than one member remains in the set and the remaining members are not equally specific given the argument list, a compile-time error results.
 
 8.  Otherwise, given any two members of the set, `M` and `N`, apply the following tie-breaking rules, in order:
 
@@ -1438,11 +1438,11 @@ Given a method group, the most applicable method in the group for an argument li
         End Module
         ```
 
-    85. Before type arguments have been substituted, if `M` is *less generic* (Section 11.8.1.2) than `N`, eliminate `N` from the set.
+    85. Before type arguments have been substituted, if `M` is *less generic* (Section [Genericity](expressions.md#genericity)) than `N`, eliminate `N` from the set.
 
     86. If `M` is not an extension method and `N` is, eliminate `N` from the set.
 
-    87. If `M` and `N` are extension methods and `M` was found before `N` (Section 11.6.3), eliminate `N` from the set. For example:
+    87. If `M` and `N` are extension methods and `M` was found before `N` (Section [Extension Method Collection](expressions.md#extension-method-collection)), eliminate `N` from the set. For example:
 
         ```vb
         Imports System.Runtime.CompilerServices
@@ -1518,7 +1518,7 @@ Given a method group, the most applicable method in the group for an argument li
 
     810. If `M` did not use any optional parameter defaults in place of explicit arguments, but `N` did, then eliminate `N` from the set.
 
-    811. Before type arguments have been substituted, if `M` has *greater depth of genericity* (Section 11.8.1.3) than `N`, then eliminate `N` from the set.
+    811. Before type arguments have been substituted, if `M` has *greater depth of genericity* (Section [Genericity](expressions.md#genericity)) than `N`, then eliminate `N` from the set.
 
 9. Otherwise, the call is ambiguous and a compile-time error occurs.
 
@@ -2139,7 +2139,7 @@ An array instance's rank and length of each dimension are constant for the entir
 
 #### Array Literals
 
-An array literal denotes an array whose element type, rank, and bounds are inferred from a combination of the expression context and a collection initializer. This is explained in Section 11.1.1, Expression Reclassification. For example:
+An array literal denotes an array whose element type, rank, and bounds are inferred from a combination of the expression context and a collection initializer. This is explained in Section [Expression Reclassification](expressions.md#expression-reclassification). For example:
 
 ```vb
 ' array of integers
@@ -4852,7 +4852,7 @@ Dim book As System.Xml.Linq.XElement = _
 An XML literal expression can take the form of an XML document, an XML element, an XML processing instruction, an XML comment, or a CDATA section.
 
 > __Annotation__
-> This specification contains only enough of a description of XML to describe the behavior of the Visual Basic language. More information on XML can be found at [http://www.w3.org/TR/REC-xml/][2].
+> This specification contains only enough of a description of XML to describe the behavior of the Visual Basic language. More information on XML can be found at http://www.w3.org/TR/REC-xml/.
 
 ```antlr
 XMLLiteralExpression
@@ -5255,7 +5255,7 @@ Dim bad2 = <elem xmlns:db=<%= "http://example.org/database" %>>Bob</>
 ```
 
 > __Annotation__
-> This specification contains only enough of a description of XML namespace to describe the behavior of the Visual Basic language. More information on XML namespaces can be found at [http://www.w3.org/TR/REC-xml-names/][3].
+> This specification contains only enough of a description of XML namespace to describe the behavior of the Visual Basic language. More information on XML namespaces can be found at http://www.w3.org/TR/REC-xml-names/.
 
 XML element and attribute names can be qualified using namespace names. Namespaces are bound as in regular XML, with the exception that any namespace imports declared at the file level are considered to be declared in a context enclosing the declaration, which is itself enclosed by any namespace imports declared by the compilation environment. If a namespace name cannot be found, a compile-time error occurs. For example:
 
@@ -5517,7 +5517,7 @@ XMLMemberAccessExpression
 
 ## Await Operator
 
-The await operator is related to async methods, which are described in Section 10.1.3.
+The await operator is related to async methods, which are described in Section [Async Methods](statements.md#async-methods).
 
 `Await` is a reserved word if the immediately enclosing method or lambda expression in which it appears has an `Async` modifier, and if the `Await` appears after that `Async` modifier; it is unreserved elsewhere. It is also unreserved in preprocessor directives. The await operator is only allowed in the body of a method or lambda expressions where it is a reserved word. Within the immediately enclosing method or lambda, an await expression may not occur inside the body of a `Catch` or `Finally` block, nor inside the body of a `SyncLock` statement, nor inside a query expression.
 
@@ -5580,10 +5580,10 @@ When control flow reaches an `Await` operator, behavior is as follows.
    1. The `GetResult` method of the awaiter is invoked. If `GetResult` was a function, then the value of the await expression is the return value of this function.
 - If the IsCompleted property isn't true then:
    2. Either `ICriticalNotifyCompletion.UnsafeOnCompleted` is invoked on the awaiter (if the awaiter's type `E` implements `ICriticalNotifyCompletion`) or `INotifyCompletion.OnCompleted` (otherwise). In both cases it passes a *resumption delegate* associated with the current instance of the async method.
-   3. The control point of the current async method instance is suspended, and control flow resumes in the *current caller* (defined in Section 10.1.3).
+   3. The control point of the current async method instance is suspended, and control flow resumes in the *current caller* (defined in Section [Async Methods](statements.md#async-methods)).
    4. If later the resumption delegate is invoked,
       1. the resumption delegate first restores `System.Threading.Thread.CurrentThread.ExecutionContext` to what it was at the time `OnCompleted` was called,
-      2. then it resumes control flow at the control point of the async method instance (see Section 10.1.3),
+      2. then it resumes control flow at the control point of the async method instance (see Section [Async Methods](statements.md#async-methods)),
       3. where it calls the `GetResult` method of the awaiter, as in 2.1 above.
 
 If the await operand has type Object, then this behavior is deferred until runtime:

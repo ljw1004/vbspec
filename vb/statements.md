@@ -27,7 +27,7 @@ Statement
 
 *Control flow* is the sequence in which statements and expressions are executed. The order of execution depends on the particular statement or expression.
 
-For example, when evaluating an addition operator (Section 11.3), first the left operand is evaluated, then the right operand, and then the operator itself. Blocks are executed (Section 10.1.2) by first executing their first substatement, and then proceeding one by one through the statements of the block.
+For example, when evaluating an addition operator (Section [Addition Operator](expressions.md#addition-operator)), first the left operand is evaluated, then the right operand, and then the operator itself. Blocks are executed (Section [Blocks and Labels](statements.md#blocks-and-labels)) by first executing their first substatement, and then proceeding one by one through the statements of the block.
 
 Implicit in this ordering is the concept of a *control point*, which is the next operation to be executed. When a method is invoked (or "called"), we say it creates an *instance* of the method. A method instance consists of its own copy of the method's parameters and local variables, and its own control point.
 
@@ -49,7 +49,7 @@ When a regular method is invoked,
 1. First an instance of the method is created specific to that invocation. This instance includes a copy of all parameters and local variables of the method.
 2. Then all of its parameters are initialized to the supplied values, and all of its local variables to the default values of their types.
 3. In the case of a `Function`, an implicit local variable is also initialized called the *function return variable* whose name is the function's name, whose type is the return type of the function and whose initial value is the default of its type.
-4. The method instance's control point is then set at the first statement of the method body, and the method body immediately starts to execute from there (Section 10.1.4).
+4. The method instance's control point is then set at the first statement of the method body, and the method body immediately starts to execute from there (Section [Blocks and Labels](statements.md#blocks-and-labels)).
 
 When control flow exits the method body normally - through reaching the `End Function` or `End Sub` that mark its end, or through an explicit `Return` or `Exit` statement - control flow returns to the caller of the method instance. If there is a function return variable, the result of the invocation is the final value of this variable.
 
@@ -59,7 +59,7 @@ After control flow has exited, there are no longer any live references to the me
 
 ### Iterator Methods
 
-Iterator methods are used as a convenient way to generate a sequence, one which can be consumed by the `For Each` statement. Iterator methods use the `Yield` statement (Section 10.15) to provide elements of the sequence. (An iterator method with no `Yield` statements will produce an empty sequence). Here is an example of an iterator method:
+Iterator methods are used as a convenient way to generate a sequence, one which can be consumed by the `For Each` statement. Iterator methods use the `Yield` statement (Section [Yield Statements](statements.md#yield-statements)) to provide elements of the sequence. (An iterator method with no `Yield` statements will produce an empty sequence). Here is an example of an iterator method:
 
 ```vb
 Iterator Function Test() As IEnumerable(Of Integer)
@@ -101,7 +101,7 @@ As for the other possible return types of an iterator function,
 2. When an iterator method is invoked whose return type is the non-generic interface `IEnumerator`, the behavior is exactly as for `IEnumerator(Of Object)`.
 3. When an iterator method is invoked whose return type is the non-generic interface `IEnumerable`, the behavior is exactly as for `IEnumerable(Of Object)`.
 
-### Async methods
+### Async Methods
 
 Async methods are a convenient way to do long-running work without for example blocking the UI of an application. Async is short for *Asynchronous* - it means that the caller of the async method will resume its execution promptly, but the eventual completion of the async method's instance may happen at some later time in the future. By convention async methods are named with the suffix "Async".
 
@@ -126,11 +126,11 @@ When an async method is invoked
 2. Then all of its parameters are initialized to the supplied values, and all of its local variables to the default values of their types.
 3. In the case of an async method with return type `Task(Of T)` for some `T`, an implicit local variable is also initialized called the *task return variable*, whose type is `T` and whose initial value is the default of `T`.
 4. If the async method is a `Function` with return type `Task` or `Task(Of T)` for some `T`, then an object of that type implicitly created, associated with the current invocation. This is called an *async object* and represents the future work that will be done by executing the instance of the async method. When control resumes in the caller of this async method instance, the caller will receive this async object as the result of its invocation.
-5. The instance's control point is then set at the first statement of the async method body, and immediately starts to execute the method body from there [Section 10.1.2].
+5. The instance's control point is then set at the first statement of the async method body, and immediately starts to execute the method body from there (Section [Blocks and Labels](statements.md#blocks-and-labels)).
 
 __Resumption Delegate and Current Caller__
 
-As detailed in Section 11.25 "Await Operator", execution of an `Await` expression has the ability to suspend the method instance's control point leaving control flow to go elsewhere. Control flow can later resume at the same instance's control point through invocation of a *resumption delegate*. Note that this suspension is done without exiting the async method, and does not cause finally handlers to execute. The method instance is still referenced by both the resumption delegate and the `Task` or `Task(Of T)` result (if any), and will not be garbage collected so long as there exists a live reference to either delegate or result.
+As detailed in Section [Await Operator](expressions.md#await-operator), execution of an `Await` expression has the ability to suspend the method instance's control point leaving control flow to go elsewhere. Control flow can later resume at the same instance's control point through invocation of a *resumption delegate*. Note that this suspension is done without exiting the async method, and does not cause finally handlers to execute. The method instance is still referenced by both the resumption delegate and the `Task` or `Task(Of T)` result (if any), and will not be garbage collected so long as there exists a live reference to either delegate or result.
 
 > __Annotation__
 > It is helpful to imagine the statement "`Dim x = Await WorkAsync()`" approximately as syntactic shorthand for the following:
@@ -231,7 +231,7 @@ Statements
 
 ### Local Variables and Parameters
 
-Sections 10.1.1-10.1.3 detail how and when method instances are created, and with them the copies of a method's local variables and parameters. In addition, each time the body of a loop is entered, a new copy is made of each local variable declared inside that loop as described in Section 10.9, and the method instance now contains this copy of its local variable rather than the previous copy.
+The preceding sections detail how and when method instances are created, and with them the copies of a method's local variables and parameters. In addition, each time the body of a loop is entered, a new copy is made of each local variable declared inside that loop as described in Section [Loop Statements](statements.md#loop-statements), and the method instance now contains this copy of its local variable rather than the previous copy.
 
 All locals are initialized to their type's default value. Local variables and parameters are always publicly accessible. It is an error to refer to a local variable in a textual position that precedes its declaration, as the following example illustrates:
 
@@ -963,7 +963,7 @@ ConditionalStatement
 
 ### If...Then...Else Statements
 
-An `If...Then...Else` statement is the basic conditional statement. Each expression in an `If...Then...Else` statement must be a Boolean expression, as per Section 11.19. (Note: this does not require the expression to have Boolean type). If the expression in the `If` statement is true, the statements enclosed by the `If` block are executed. If the expression is false, each of the `ElseIf` expressions is evaluated. If one of the `ElseIf` expressions evaluates to true, the corresponding block is executed. If no expression evaluates to true and there is an `Else` block, the `Else` block is executed. Once a block finishes executing, execution passes to the end of the `If...Then...Else` statement.
+An `If...Then...Else` statement is the basic conditional statement. Each expression in an `If...Then...Else` statement must be a Boolean expression, as per Section [Boolean Expressions](expressions.md#boolean-expressions). (Note: this does not require the expression to have Boolean type). If the expression in the `If` statement is true, the statements enclosed by the `If` block are executed. If the expression is false, each of the `ElseIf` expressions is evaluated. If one of the `ElseIf` expressions evaluates to true, the corresponding block is executed. If no expression evaluates to true and there is an `Else` block, the `Else` block is executed. Once a block finishes executing, execution passes to the end of the `If...Then...Else` statement.
 
 The line version of the `If` statement has a single set of statements to be executed if the `If` expression is `True` and an optional set of statements to be executed if the expression is `False`. For example:
 
@@ -1164,7 +1164,7 @@ LoopStatement
 
 ### While...End While and Do...Loop Statements
 
-A `While` or `Do` loop statement loops based on a Boolean expression. A `While` loop statement loops as long as the Boolean expression evaluates to true; a `Do` loop statement may contain a more complex condition. An expression may be placed after the `Do` keyword or after the `Loop` keyword, but not after both. The Boolean expression is evaluated as per Section 11.19. (Note: this does not require the expression to have Boolean type). It is also valid to specify no expression at all; in that case, the loop will never exit. If the expression is placed after `Do`, it will be evaluated before the loop block is executed on each iteration. If the expression is placed after `Loop`, it will be evaluated after the loop block has executed on each iteration. Placing the expression after `Loop` will therefore generate one more loop than placement after `Do`. The following example demonstrates this behavior:
+A `While` or `Do` loop statement loops based on a Boolean expression. A `While` loop statement loops as long as the Boolean expression evaluates to true; a `Do` loop statement may contain a more complex condition. An expression may be placed after the `Do` keyword or after the `Loop` keyword, but not after both. The Boolean expression is evaluated as per Section [Boolean Expressions](expressions.md#boolean-expressions). (Note: this does not require the expression to have Boolean type). It is also valid to specify no expression at all; in that case, the loop will never exit. If the expression is placed after `Do`, it will be evaluated before the loop block is executed on each iteration. If the expression is placed after `Loop`, it will be evaluated after the loop block has executed on each iteration. Placing the expression after `Loop` will therefore generate one more loop than placement after `Do`. The following example demonstrates this behavior:
 
 ```vb
 Module Test
@@ -1226,11 +1226,11 @@ WhileOrUntil
 ### For...Next Statements
 
 1. A `For...Next` statement loops based on a set of bounds. A `For` statement specifies a loop control variable, a lower bound expression, an upper bound expression, and an optional step value expression. The loop control variable is specified either through an identifier followed by an optional `As` clause or an expression. As per the following rules, the loop control variable refers either to a new local variable specific to this For...Next statement, or to a pre-existing variable, or to an expression.If the loop control variable is an identifier with an `As` clause, the identifier defines a new local variable of the type specified in the `As` clause, scoped to the entire `For` loop.
-2. If the loop control variable is an identifier without an `As` clause, then the identifier is first resolved using the simple name resolution rules (see Section 11.4.4), excepting that this occurrence of the identifier would not in and of itself cause an implicit local variable to be created (Section 10.2.1).
+2. If the loop control variable is an identifier without an `As` clause, then the identifier is first resolved using the simple name resolution rules (see Section [Simple Name Expressions](expressions.md#simple-name-expressions)), excepting that this occurrence of the identifier would not in and of itself cause an implicit local variable to be created (Section [Implicit Local Declarations](statements.md#implicit-local-declarations)).
    1. If this resolution succeeds and the result is classified as a variable, then the loop control variable is that pre-existing variable.
    2. If resolution fails, or if resolution succeeds and the result is classified as a type, then:
       1. if local variable type inference is being used, the identifier defines a new local variable whose type is inferred from the bound and step expressions, scoped to the entire `For` loop;
-      2. if local variable type inference is not being used but implicit local declaration is, then an implicit local variable is created whose scope is the entire method (Section 10.2.1), and the loop control variable refers to this pre-existing variable;
+      2. if local variable type inference is not being used but implicit local declaration is, then an implicit local variable is created whose scope is the entire method (Section [Implicit Local Declarations](statements.md#implicit-local-declarations)), and the loop control variable refers to this pre-existing variable;
       3. if neither local variable type inference nor implicit local declarations are used, it is an error.
    3. If resolution succeeds with something classified as neither a type nor a variable, it is an error.
 3. If the loop control variable is an expression, the expression must be classified as a variable.
@@ -1259,7 +1259,7 @@ At the beginning of the loop, the three expressions are evaluated in textual ord
 
 At the beginning of each loop, the control variable is compared to see if it is greater than the end point if the step expression is positive, or less than the end point if the step expression is negative. If it is, the `For` loop terminates; otherwise the loop block executes. If the loop control variable is not a primitive type, the comparison operator is determined by whether the expression `step >= step -- step` is true or false. At the `Next` statement, the step value is added to the control variable and execution returns to the top of the loop.
 
-Note that a new copy of the loop control variable is *not* created on each iteration of the loop block. In this respect, the `For` statement differs from `For Each` (Section 10.9.3).
+Note that a new copy of the loop control variable is *not* created on each iteration of the loop block. In this respect, the `For` statement differs from `For Each` (Section [For Each...Next Statements](statements.md#for-eachnext-statements)).
 
 It is not valid to branch into a `For` loop from outside the loop.
 
@@ -1283,7 +1283,7 @@ NextExpressionList
 
 ### For Each...Next Statements
 
-A `For Each...Next` statement loops based on the elements in an expression. A `For Each` statement specifies a loop control variable and an enumerator expression. The loop control variable is specified either through an identifier followed by an optional `As` clause or an expression. Following the same rules as `For...Next` statements (10.9.2), the loop control variable refers either to a new local variable specific to this For Each...Next statement, or to a pre-existing variable, or to an expression.
+A `For Each...Next` statement loops based on the elements in an expression. A `For Each` statement specifies a loop control variable and an enumerator expression. The loop control variable is specified either through an identifier followed by an optional `As` clause or an expression. Following the same rules as `For...Next` statements (Section [For...Next Statements](statements.md#fornext-statements)), the loop control variable refers either to a new local variable specific to this For Each...Next statement, or to a pre-existing variable, or to an expression.
 
 The enumerator expression must be classified as a value and its type must be a collection type or `Object`. If the type of the enumerator expression is `Object`, then all processing is deferred until run-time. Otherwise, a conversion must exist from the element type of the collection to the type of the loop control variable.
 
@@ -1513,7 +1513,7 @@ If an exception occurs while processing the `Try` block, each `Catch` statement 
 
 A `Catch` clause with no identifier will catch all exceptions derived from `System.Exception`. A `Catch` clause with an identifier will only catch exceptions whose types are the same as or derived from the type of the identifier. The type must be `System.Exception`, or a type derived from `System.Exception`. When an exception is caught that derives from `System.Exception`, a reference to the exception object is stored in the object returned by the function `Microsoft.VisualBasic.Information.Err`.
 
-A `Catch` clause with a `When` clause will only catch exceptions when the expression evaluates to `True`; the type of the expression must be a Boolean expression as per Section 11.19. A `When` clause is only applied after checking the type of the exception, and the expression may refer to the identifier representing the exception, as this example demonstrates:
+A `Catch` clause with a `When` clause will only catch exceptions when the expression evaluates to `True`; the type of the expression must be a Boolean expression as per Section [Boolean Expressions](expressions.md#boolean-expressions). A `When` clause is only applied after checking the type of the exception, and the expression may refer to the identifier representing the exception, as this example demonstrates:
 
 ```vb
 Module Test
@@ -1746,7 +1746,7 @@ ResumeClause
 Branch statements modify the flow of execution in a method. There are six branch statements:
 
 1. A `GoTo` statement causes execution to transfer to the specified label in the method. It is not allowed to `GoTo` into a `Try`, `Using`, `SyncLock`, `With`, `For` or `For Each` block, nor into any loop block if a local variable of that block is captured in a lambda or LINQ expression.
-2. An `Exit` statement transfers execution to the next statement after the end of the immediately containing block statement of the specified kind. If the block is the method block, then control flow exits the method as described in Sections 10.1, 10.2, 10.3. If the `Exit` statement is not contained within the kind of block specified in the statement, a compile-time error occurs.
+2. An `Exit` statement transfers execution to the next statement after the end of the immediately containing block statement of the specified kind. If the block is the method block, then control flow exits the method as described in Section [Control Flow](statements.md#control-flow). If the `Exit` statement is not contained within the kind of block specified in the statement, a compile-time error occurs.
 3. A `Continue` statement transfers execution to the end of the immediately containing block loop statement of the specified kind. If the `Continue` statement is not contained within the kind of block specified in the statement, a compile-time error occurs.
 4. A `Stop` statement causes a debugger exception to occur.
 5. An `End` statement terminates the program. Finalizers are run before shutdown, but the finally blocks of any currently executing `Try` statements are not executed. This statement may not be used in programs that are not executable (for example, DLLs).
@@ -1974,7 +1974,7 @@ UsingResources
 
 ## Await Statements
 
-An await statement has the same syntax as an await operator expression (11.25), is allowed only in methods that also allow await expressions, and has the same behavior as an await operator expression.
+An await statement has the same syntax as an await operator expression (Section [Await Operator](expressions.md#await-operator)), is allowed only in methods that also allow await expressions, and has the same behavior as an await operator expression.
 
 However, it may be classified as either a value or void. Any value resulting from evaluation of the await operator expression is discarded.
 
@@ -1986,11 +1986,11 @@ AwaitStatement
 
 ## Yield Statements
 
-Yield statements are related to iterator methods, which are described in Section 10.1.2.
+Yield statements are related to iterator methods, which are described in Section [Iterator Methods](statements.md#iterator-methods).
 
 `Yield` is a reserved word if the immediately enclosing method or lambda expression in which it appears has an `Iterator` modifier, and if the `Yield` appears after that `Iterator` modifier; it is unreserved elsewhere. It is also unreserved in preprocessor directives. The yield statement is only allowed in the body of a method or lambda expression where it is a reserved word. Within the immediately enclosing method or lambda, the yield statement may not occur inside the body of a `Catch` or `Finally` block, nor inside the body of a `SyncLock` statement.
 
-The yield statement takes a single expression which must be classified as a value and whose type is implicitly convertible to the type of the *iterator current variable* (Section 10.1.2) of its enclosing iterator method.
+The yield statement takes a single expression which must be classified as a value and whose type is implicitly convertible to the type of the *iterator current variable* (Section [Iterator Methods](statements.md#iterator-methods)) of its enclosing iterator method.
 
 Control flow only ever reaches a `Yield` statement when the `MoveNext` method is invoked on an iterator object. (This is because an iterator method instance only ever executes its statements due to the `MoveNext` or `Dispose` methods being called on an iterator object; and the `Dispose` method will only ever execute code in `Finally` blocks, where `Yield` is not allowed).
 

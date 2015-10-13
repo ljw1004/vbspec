@@ -28,7 +28,7 @@ Class MarkdownSpec
 
     Private Sub Init()
         ' (1) Add sections into the dictionary
-        Dim h0 = 0, h1 = 0, h2 = 0, h3 = 0
+        Dim h1 = 0, h2 = 0, h3 = 0, h4 = 0
         Dim link = "", linkname = ""
 
         ' (2) Turn all the antlr code blocks into a grammar
@@ -40,19 +40,31 @@ Class MarkdownSpec
             For Each mdp In md.Paragraphs
                 If mdp.IsHeading Then
                     Dim mdh = CType(mdp, MarkdownParagraph.Heading), level = mdh.Item1, spans = mdh.Item2
-                    If spans.Length <> 1 OrElse Not spans.First.IsLiteral Then Throw New NotSupportedException("Heading must be a literal")
-                    Dim heading = CType(spans.First, MarkdownSpan.Literal).Item
-                    link = Path.GetFileName(src.Item1) & "#" & heading.ToLowerInvariant().Replace(" ", "-")
-                    linkname = heading
+                    If spans.Length = 1 AndAlso spans.First.IsLiteral Then
+                        linkname = CType(spans.First, MarkdownSpan.Literal).Item.Trim()
+                    ElseIf spans.Length = 1 AndAlso spans.First.IsInlineCode Then
+                        linkname = CType(spans.First, MarkdownSpan.InlineCode).Item.Trim()
+                    Else
+                        Throw New NotSupportedException("Heading must be a single literal/inlinecode")
+                    End If
+                    link = ""
+                    For Each c In linkname
+                        If c >= "a"c AndAlso c <= "z"c Then link &= c
+                        If c >= "A"c AndAlso c <= "Z"c Then link &= Char.ToLowerInvariant(c)
+                        If c >= "0"c AndAlso c <= "9"c Then link &= c
+                        If c = "-"c OrElse c = "_"c Then link &= c
+                        If c = " "c Then link &= "-"c
+                    Next
+                    link = Path.GetFileName(src.Item1) & "#" & link
                     Dim section = ""
-                    If level = 0 Then h0 += 1 : h1 = 0 : h2 = 0 : h3 = 0 : section = $"{h0}"
-                    If level = 1 Then h1 += 1 : h2 = 0 : h3 = 0 : section = $"{h0}.{h1}"
-                    If level = 2 Then h2 += 1 : h3 = 0 : section = $"{h0}.{h1}.{h2}"
-                    If level = 3 Then h3 += 1 : section = $"{h0}.{h1}.{h2}.{h3}"
-                    Sections(heading) = Tuple.Create(linkname, section)
+                    If level = 1 Then h1 += 1 : h2 = 0 : h3 = 0 : h4 = 0 : section = $"{h1}"
+                    If level = 2 Then h2 += 1 : h3 = 0 : h4 = 0 : section = $"{h1}.{h2}"
+                    If level = 3 Then h3 += 1 : h4 = 0 : section = $"{h1}.{h2}.{h3}"
+                    If level = 4 Then h4 += 1 : section = $"{h1}.{h2}.{h3}.{h4}"
+                    Sections(link) = Tuple.Create(linkname, section)
 
                 ElseIf mdp.IsCodeBlock Then
-                    Dim mdc = CType(mdp, MarkdownParagraph.CodeBlock), code = mdc.Item1, lang = mdc.Item2
+                        Dim mdc = CType(mdp, MarkdownParagraph.CodeBlock), code = mdc.Item1, lang = mdc.Item2
                     If lang <> "antlr" Then Continue For
                     Dim g = Antlr.ReadString(code)
                     For Each p In g.productions
@@ -85,7 +97,7 @@ Class MarkdownSpec
             body.RemoveAllChildren()
 
             For Each src In Sources()
-                For Each p In New MarkdownConverter(src.Item2, resultDoc).Paragraphs
+                For Each p In New MarkdownConverter(src.Item2, resultDoc, Sections).Paragraphs
                     body.AppendChild(p)
                 Next
             Next
@@ -96,10 +108,12 @@ Class MarkdownSpec
     Private Class MarkdownConverter
         Dim mddoc As MarkdownDocument
         Dim wdoc As WordprocessingDocument
+        Dim sections As Dictionary(Of String, Tuple(Of String, String))
 
-        Sub New(s As String, wdoc As WordprocessingDocument)
+        Sub New(s As String, wdoc As WordprocessingDocument, sections As Dictionary(Of String, Tuple(Of String, String)))
             Me.mddoc = Markdown.Parse(s)
             Me.wdoc = wdoc
+            Me.sections = sections
         End Sub
 
         Function Paragraphs() As IEnumerable(Of OpenXmlCompositeElement)
@@ -399,14 +413,34 @@ Class MarkdownSpec
                         alt = mddoc.DefinedLinks(id).Item2.Option()
                     End If
                 End If
-                Dim style = New RunStyle With {.Val = "Hyperlink"}
-                Dim hyperlink As New Hyperlink With {.DocLocation = url, .Tooltip = alt}
-                For Each element In Spans2Elements(spans)
-                    Dim run = TryCast(element, Run)
-                    If run IsNot Nothing Then run.InsertAt(New RunProperties(style), 0)
-                    hyperlink.AppendChild(run)
-                Next
-                Yield hyperlink
+
+                Dim anchor = ""
+                If spans.Count = 1 AndAlso spans.First.IsLiteral Then
+                    anchor = CType(spans.First, MarkdownSpan.Literal).Item
+                ElseIf spans.Count = 1 AndAlso spans.First.IsInlineCode Then
+                    anchor = CType(spans.First, MarkdownSpan.InlineCode).Item
+                Else
+                    Throw New NotImplementedException("Link anchor must be Literal or InlineCode, not " & md.ToString())
+                End If
+
+                If sections.ContainsKey(url) Then
+                    Dim tt = sections(url), heading = tt.Item1, section = tt.Item2
+                    If anchor <> heading Then Throw New Exception($"Mismatch: link anchor is '{anchor}', should be '{heading}'")
+                    Dim txt As New Text(section) With {.Space = SpaceProcessingModeValues.Preserve}
+                    Dim run As New Run(txt)
+                    Yield run
+
+                Else
+                    If Not url.StartsWith("http:") AndAlso Not url.StartsWith("https:") Then Throw New Exception("Absent hyperlink in " & md.ToString())
+                    Dim style = New RunStyle With {.Val = "Hyperlink"}
+                    Dim hyperlink As New Hyperlink With {.DocLocation = url, .Tooltip = alt}
+                    For Each element In Spans2Elements(spans)
+                        Dim run = TryCast(element, Run)
+                        If run IsNot Nothing Then run.InsertAt(New RunProperties(style), 0)
+                        hyperlink.AppendChild(run)
+                    Next
+                    Yield hyperlink
+                End If
                 Return
 
             ElseIf md.IsHardLineBreak

@@ -450,37 +450,60 @@ a:hover {text-decoration: underline;}
 var timer = undefined;
 var timerfor = undefined;
 
-document.onkeydown = function(e) {if (!e) e=window.event; if (e.keyCode==27) p();}
+document.onkeydown = function(e)
+{
+  if (!e) e=window.event;
+  if (e.keyCode==27) p();
+}
 
 document.onmouseout = function(e)
-{ if (!e) e=window.event;
-if (timerfor && (e.fromElement || e.target)==timerfor) {clearTimeout(timer); timer=undefined; timerfor=undefined;}
-var a = e.toElement || e.relatedTarget;
-if (!a || a.tagName.toLowerCase()!="a") return;
-if (!a.href || typeof(a.href)=='undefined')
-{ var acontent = a.firstChild.data;
-if (!a.className || a.className!="n") acontent="'"+acontent+"'";
-var t = acontent.replace(/([A-Z])/g,"-$1");
-t = t.replace(/\&lt;/g,'<').replace(/\&gt;/g,'>').replace(/\&amp;/g,'&');
-t = encodeURIComponent(t);
-if (document.getElementsByName(t).length == 0)
-{ t = acontent;
-  t = t.replace(/\&lt;/g,'<').replace(/\&gt;/g,'>').replace(/\&amp;/g,'&');
-  t = encodeURIComponent(t);
-}
-a.href = "#" + t;
-}
-var r = a;
-while (r.parentNode!=null && r.id!="popup") r=r.parentNode;
-if (r.id=="popup") return;
-if (!isvisible(document.getElementById("popup"))) {p(a); return;}
-if (timer) clearTimeout(timer);
-timerfor=a; timer = setTimeout(function() {p(a);},100);  
+{
+  // I honestly can't remember why this code is in "onMouseOut" rather than "onMouseOver".
+  // But it seems to work okay! ... 
+
+  if (!e) e=window.event;
+  if (timerfor && (e.fromElement || e.target)==timerfor) {clearTimeout(timer); timer=undefined; timerfor=undefined;}
+  var a = e.toElement || e.relatedTarget;
+  if (!a || a.tagName.toLowerCase()!="a") return;
+
+  // synthesize the href target if it wasn't there in the (minimized) html already:
+  if (!a.href || typeof(a.href)=='undefined')
+  {
+    var acontent = a.firstChild.data;
+    if (!a.className || a.className!="n") acontent="'"+acontent+"'";
+    var t = acontent.replace(/([A-Z])/g,"-$1");
+    t = t.replace(/\&lt;/g,'<').replace(/\&gt;/g,'>').replace(/\&amp;/g,'&');
+    t = encodeURIComponent(t);
+    if (document.getElementsByName(t).length == 0)
+    {
+      t = acontent;
+      t = t.replace(/\&lt;/g,'<').replace(/\&gt;/g,'>').replace(/\&amp;/g,'&');
+      t = encodeURIComponent(t);
+    }
+    a.href = "#" + t;
+  }
+
+  // Only show popup tooltips for grammar links within this page
+  if (a.href.charAt(0) != '#') return;
+
+  // Only show popup tooltips for "top-level" links (i.e. not for links within the popup tooltip itself)
+  var r = a;
+  while (r.parentNode!=null && r.id!="popup") r=r.parentNode;
+  if (r.id=="popup") return;
+
+  if (!isvisible(document.getElementById("popup"))) {p(a); return;}
+
+  // If you want to move the cursor from its current location to hover over something
+  // inside the popup tooltip, well, moving it shouldn't cause the popup tooltip to go away!
+  // The following logic gives it some little persistence.
+  if (timer) clearTimeout(timer);
+  timerfor=a; timer = setTimeout(function() {p(a);},100);  
 }
 
 
 function isvisible(pup)
-{ if (pup.style.visibility=="hidden") return false;
+{
+  if (pup.style.visibility=="hidden") return false;
   if (pup.style.display=="none") return false;
   var pl=pup.offsetLeft, pt=pup.offsetTop, pr=pl+pup.offsetWidth, pb=pt+pup.offsetHeight;
   var sl=window.pageXOffset || document.body.scrollLeft || document.documentElement.scrollLeft;
@@ -492,29 +515,32 @@ function isvisible(pup)
 }
 
 
-function p(a) {
-if (timer) clearTimeout(timer); timer=undefined; timerfor=undefined;
-var pup = document.getElementById("popup");
-while (pup.hasChildNodes()) pup.removeChild(pup.firstChild);
-if (typeof(a)=='undefined' || !a) {pup.style.visibility="hidden"; return;}
-var div = a; while (div.parentNode!=null && (typeof(div.tagName)=='undefined' || div.tagName.toLowerCase()!='div')) div=div.parentNode;
-var ref = a.href.split("#")[1];
-var src=null;
-var bb = document.getElementsByTagName("h2")
-for (var i=0; i<bb.length && src==null; i++)
-{ var cc = bb[i].getElementsByTagName("a");
-  for (var j=0; j<cc.length && src==null; j++)
-  { if (cc[j].id==ref || encodeURIComponent(cc[j].id)==ref) src=bb[i].parentNode.childNodes;
+function p(a)
+{
+  if (timer) clearTimeout(timer); timer=undefined; timerfor=undefined;
+  var pup = document.getElementById("popup");
+  while (pup.hasChildNodes()) pup.removeChild(pup.firstChild);
+  if (typeof(a)=='undefined' || !a) {pup.style.visibility="hidden"; return;}
+  var div = a; while (div.parentNode!=null && (typeof(div.tagName)=='undefined' || div.tagName.toLowerCase()!='div')) div=div.parentNode;
+  var ref = a.href.split("#")[1];
+  var src=null;
+  var bb = document.getElementsByTagName("h2")
+  for (var i=0; i<bb.length && src==null; i++)
+  {
+    var cc = bb[i].getElementsByTagName("a");
+    for (var j=0; j<cc.length && src==null; j++)
+    {
+      if (cc[j].id==ref || encodeURIComponent(cc[j].id)==ref) src=bb[i].parentNode.childNodes;
+    }
   }
-}
-for (var i=0; i<src.length; i++) pup.appendChild(src[i].cloneNode(true));
-var aa = pup.getElementsByTagName("a");
-for (var i=0; i<aa.length; i++) {if (aa[i].id) aa[i].id=""; if (aa[i].onmouseover) aa[i].onmouseover="";}
-var aa = pup.getElementsByTagName("li");
-for (var i=0; i<aa.length; i++) if (aa[i].style.display='none') aa[i].style.display='block';
-pup.style.visibility="visible";
-var top=div.offsetHeight; while (div) {top+=div.offsetTop; div=div.offsetParent;}
-pup.style.top = top + "px";
+  for (var i=0; i<src.length; i++) pup.appendChild(src[i].cloneNode(true));
+  var aa = pup.getElementsByTagName("a");
+  for (var i=0; i<aa.length; i++) {if (aa[i].id) aa[i].id=""; if (aa[i].onmouseover) aa[i].onmouseover="";}
+  var aa = pup.getElementsByTagName("li");
+  for (var i=0; i<aa.length; i++) if (aa[i].style.display='none') aa[i].style.display='block';
+  pup.style.visibility="visible";
+  var top=div.offsetHeight; while (div) {top+=div.offsetTop; div=div.offsetParent;}
+  pup.style.top = top + "px";
 }
                         --></script>
                     </head>
@@ -532,7 +558,7 @@ pup.style.top = top + "px";
                                     <%= Iterator Function()
                                             If Not ProductionReferences.ContainsKey(production.Key) Then Return
                                             Dim tt = ProductionReferences(production.Key)
-                                            Yield <li><a href=<%= tt.Item2 %>><%= tt.Item1 %></a></li>
+                                            Yield <li class="u">(Spec: <a class="n" href=<%= tt.Item1 %>><%= tt.Item2 %></a>)</li>
                                         End Function() %>
                                     <li class="u">(used in <%= From p In UsedBySet(production.Key) Select <xml>&#x20;<%= MakeNonterminal(p) %></xml>.Nodes %>)</li>
                                     <li class="t"><%= If(MayBeEmptySet(production.Key), "May be empty", "Never empty") %></li>
