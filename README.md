@@ -58,26 +58,24 @@ To put a code block inside an annotation, it needs a quoted but otherwise empty 
 > More annotation
 ```
 
-Grammar blocks are like this, and can be up to 105 characters wide:
+Grammar blocks are like this:
 ```
 ``antlr
-Start:  Left | Right;
-Left:   'hello';
-Right:  'world';
+Start
+    : Left
+    | Right
+    ;
 
-Multiline: 'Sub' Identifier Linebreak
-          Body
-          'End Sub'
-
-Longline:  Option1 | Option2 | Option3
-       |  Option4 | Option5
+Left
+    : 'hello'
+    ;
 ```
 
 ## Experiments and stuff
 
-The following is [link1](#conventions)
+The following is [link1](readme.md#conventions)
 
-The following is [link2](#experiments-and-stuff)
+The following is [link2](readme.md#experiments-and-stuff)
 
 The following experiment is about code blocks in quoted blocks. Both styles are fine.
 
