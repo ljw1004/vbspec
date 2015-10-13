@@ -73,9 +73,9 @@ Left
 
 ## Experiments and stuff
 
-The following is [link1](readme.md#conventions)
+The following is [link1](README.md#conventions)
 
-The following is [link2](readme.md#experiments-and-stuff)
+The following is [link2](README.md#experiments-and-stuff)
 
 The following experiment is about code blocks in quoted blocks. Both styles are fine.
 
