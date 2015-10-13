@@ -82,9 +82,13 @@ The following is [link1](README.md#conventions)
 
 The following is [link2](README.md#experiments-and-stuff)
 
-The following is a heading with inline code. Github gives it the link
+The following is a heading with inline code. Github gives it the link [link3](README.md#c)
 
 ### `<c>`
+
+The following is a heading with numbers. Github gives it the link
+
+### 123 hello 456 world
 
 The following experiment is about code blocks in quoted blocks. Both styles are fine.
 
