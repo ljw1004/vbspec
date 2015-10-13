@@ -80,7 +80,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />
-    <None Include="type-providers.md" />
     <None Include="vb-reference.docx" />
     <Content Include="vb-template.docx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

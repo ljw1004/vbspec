@@ -73,7 +73,11 @@ Longline:  Option1 | Option2 | Option3
        |  Option4 | Option5
 ```
 
--------------------------------------------------------------
+## Experiments and stuff
+
+The following is [link1](#Conventions)
+
+The following is [link2](##Experiments and stuff)
 
 The following experiment is about code blocks in quoted blocks. Both styles are fine.
 
