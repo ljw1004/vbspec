@@ -86,9 +86,11 @@ The following is a heading with inline code. Github gives it the link [link3](RE
 
 ### `<c>`
 
-The following is a heading with numbers. Github gives it the link
+The following is a heading with numbers. Github gives it the link [link4](README.md#123-hello-456-world)
 
 ### 123 hello 456 world
+
+### a!b@c#d$e%f^g&h*i(j)k_l-m+n=o[p{q|r\s;t:u'v"w,x.y?z/
 
 The following experiment is about code blocks in quoted blocks. Both styles are fine.
 
