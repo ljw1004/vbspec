@@ -71,7 +71,7 @@ Left
     ;
 ```
 
-Links are like this, which will render in github as a hyperlinked word "Conventions", and will render in Word as "5.2: Conventions". The thing that comes after the # is the section/subsection title, converted to lowercase, with spaces replaced by hyphens.
+Links are like this, which will render in github as a hyperlinked word "Conventions", and will render in Word as "5.2: Conventions". The thing that comes after the # is the section/subsection title, stripping everything other than alphanumerics and hyphen and underscore, and converting to lowercase.
 ```
 For more information see Section [Conventions](README.md#conventions)
 ```
@@ -89,6 +89,8 @@ The following is a heading with inline code. Github gives it the link [link3](RE
 The following is a heading with numbers. Github gives it the link [link4](README.md#123-hello-456-world)
 
 ### 123 hello 456 world
+
+The following is a heading with symbols. Github gives it the link [link5](README.md#abcdefghijk_l-mnopqrstuvwxyz). It preserves hyphen, underscore, numerics, alphas (converted to lowercase), and removes the rest.
 
 ### a!b@c#d$e%f^g&h*i(j)k_l-m+n=o[p{q|r\s;t:u'v"w,x.y?z/
 
