@@ -8,7 +8,6 @@ Imports DocumentFormat.OpenXml.Wordprocessing
 Imports FSharp.Markdown
 Imports Microsoft.FSharp.Core
 
-' TODO: missing space when grammar follows a table
 ' TODO: table of contents
 ' TODO: restore frontmatter
 
