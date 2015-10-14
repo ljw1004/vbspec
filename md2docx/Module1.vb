@@ -9,6 +9,10 @@ Imports FSharp.Markdown
 Imports Microsoft.FSharp.Core
 
 ' TODO: table of contents
+'   http://stackoverflow.com/questions/9762684/how-to-generate-table-of-contents-using-openxml-sdk-2-0
+'   http://stackoverflow.com/questions/8560753/update-toc-in-docx-document-using-documentformat-openxml-c
+'   http://stackoverflow.com/questions/2208640/update-word-docs-table-of-contents-part-automatically-using-net
+'   http://stackoverflow.com/questions/17486741/table-of-content-for-microsoft-interop-word-dll
 ' TODO: restore frontmatter
 
 Module Module1

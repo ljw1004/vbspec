@@ -94,13 +94,76 @@ Class MarkdownSpec
                 resultDoc.AddPart(part.OpenXmlPart, part.RelationshipId)
             Next
             Dim body = resultDoc.MainDocumentPart.Document.Body
-            body.RemoveAllChildren()
 
+            ' The body starts with frontmatter. (Note that section-properties are done at the tail
+            ' of a section and describe what preceded them).
+            'body.AppendChild(New Paragraph(New ParagraphProperties(New SectionProperties)))
+
+            ' "Table of Contents" starts on an odd page
+            'Dim tocHeaderPart = resultDoc.MainDocumentPart.AddNewPart(Of HeaderPart)("ridTOC123")
+            'Dim tocHeaderId = resultDoc.MainDocumentPart.GetIdOfPart(tocHeaderPart)
+            'tocHeaderPart.Header = New Header(New Paragraph(New Run(New Text("tocheader"))))
+            'tocHeaderPart.Header.Save()
+
+            'body.AppendChild(New Paragraph(New Run(New Text("Table of Contents"))) With {.ParagraphProperties = New ParagraphProperties(New ParagraphStyleId() With {.Val = "TOCHeading"})})
+            'body.AppendChild(New Paragraph(New ParagraphProperties(New SectionProperties(
+            '                     New SectionType With {.Val = SectionMarkValues.OddPage},
+            '                     New HeaderReference With {.Id = tocHeaderId, .Type = HeaderFooterValues.Default},
+            '                     New HeaderReference With {.Id = tocHeaderId, .Type = HeaderFooterValues.Even},
+            '                     New HeaderReference With {.Id = tocHeaderId, .Type = HeaderFooterValues.First}
+            '                ))))
+
+            ' "toc-field" section continues without a page-break and has two columns
+            ' Here's how TOC fields work: http://officeopenxml.com/WPtableOfContents.php
+
+            'Dim p1 As New Paragraph(
+            '    New Run(New FieldChar With {.FieldCharType = FieldCharValues.Begin}),
+            '    New Run(New FieldCode With {.Text = " TOC \\o \""1-3\"" \\n \\h \\z \\u ", .Space = SpaceProcessingModeValues.Preserve}),
+            '    New Run(New FieldChar With {.FieldCharType = FieldCharValues.Separate}),
+            '    New Run(New Text("Section1"))) With
+            '    {.ParagraphProperties = New ParagraphProperties(New ParagraphStyleId With {.Val = "TOC1"})}
+            'Dim p2 As New Paragraph(
+            '    New Run(New Text("Section1a"))) With
+            '    {.ParagraphProperties = New ParagraphProperties(New ParagraphStyleId With {.Val = "TOC2"})}
+            'Dim p3 As New Paragraph(
+            '    New Run(New Text("Section1b"))) With
+            '    {.ParagraphProperties = New ParagraphProperties(New ParagraphStyleId With {.Val = "TOC2"})}
+            'Dim p4 As New Paragraph(
+            '    New Run(New Text("Section2"))) With
+            '    {.ParagraphProperties = New ParagraphProperties(New ParagraphStyleId With {.Val = "TOC1"})}
+            'Dim p5 As New Paragraph(
+            '    New Run(New Text("Section2x"))) With
+            '    {.ParagraphProperties = New ParagraphProperties(New ParagraphStyleId With {.Val = "TOC2"})}
+            'Dim p6 As New Paragraph(
+            '    New Run(New Text("Section2y"))) With
+            '    {.ParagraphProperties = New ParagraphProperties(New ParagraphStyleId With {.Val = "TOC2"})}
+            'Dim p7 As New Paragraph(
+            '    New Run(New FieldChar With {.FieldCharType = FieldCharValues.End}))
+            'body.Append(p1, p2, p3, p4, p5, p6, p7)
+            'body.AppendChild(New Paragraph(New ParagraphProperties(New SectionProperties(
+            '                New SectionType With {.Val = SectionMarkValues.Continuous}),
+            '                New Columns With {.ColumnCount = 2, .Separator = True}
+            '                )))
+
+
+
+            ' The main body of the document comes next. It is the final section and starts on an odd page.
+            ' The final section's section-properties go directly on the body.
             For Each src In Sources()
                 For Each p In New MarkdownConverter(src.Item2, resultDoc, Sections).Paragraphs
                     body.AppendChild(p)
                 Next
             Next
+            'body.Append(New Paragraph(New Run(New Text("body"))))
+            'Dim bodyHeaderPart = resultDoc.MainDocumentPart.AddNewPart(Of HeaderPart)("ridBody456")
+            'Dim bodyHeaderId = resultDoc.MainDocumentPart.GetIdOfPart(bodyHeaderPart)
+            'bodyHeaderPart.Header = New Header(New Paragraph(New Run(New Text("bodyHeader"))))
+            'bodyHeaderPart.Header.Save()
+            'body.AppendChild(New SectionProperties(New SectionType With {.Val = SectionMarkValues.OddPage},
+            '                                       New HeaderReference With {.Id = bodyHeaderId, .Type = HeaderFooterValues.Default},
+            '                                       New HeaderReference With {.Id = bodyHeaderId, .Type = HeaderFooterValues.Even},
+            '                                       New HeaderReference With {.Id = bodyHeaderId, .Type = HeaderFooterValues.First}))
+
 
         End Using
     End Sub
