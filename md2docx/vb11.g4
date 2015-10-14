@@ -1716,11 +1716,11 @@ UsingResources
     | Expression
     ;
 
-AwaitStatement 
+AwaitStatement
     : AwaitOperatorExpression StatementTerminator
     ;
 
-YieldStatement 
+YieldStatement
     : 'Yield' Expression StatementTerminator
     ;
 
@@ -2063,7 +2063,7 @@ MultiLineSubLambda
       'End' 'Sub'
     ;
 
-LambdaModifier 
+LambdaModifier
     : 'Async' | 'Iterator'
     ;
 
@@ -2512,7 +2512,7 @@ XMLMemberAccessExpression
     | Expression '.' '.' '.' LineTerminator? '<' XMLQualifiedName '>'
     ;
 
-AwaitOperatorExpression 
+AwaitOperatorExpression
     : 'Await' Expression
     ;
 

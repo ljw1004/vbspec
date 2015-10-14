@@ -3665,7 +3665,7 @@ MultiLineSubLambda
       'End' 'Sub'
     ;
 
-LambdaModifier 
+LambdaModifier
     : 'Async' | 'Iterator'
     ;
 ```
@@ -5595,7 +5595,7 @@ If the await operand has type Object, then this behavior is deferred until runti
 The resumption delegate passed in 3.1 may only be invoked once. If it is invoked more than once, the behavior is undefined.
 
 ```antlr
-AwaitOperatorExpression 
+AwaitOperatorExpression
     : 'Await' Expression
     ;
 ```

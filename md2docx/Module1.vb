@@ -8,13 +8,9 @@ Imports DocumentFormat.OpenXml.Wordprocessing
 Imports FSharp.Markdown
 Imports Microsoft.FSharp.Core
 
-' TODO: clean up within-document links.
-' TODO: ensure that every within-document-link points to something valid
-' TODO: restore frontmatter
-' TODO: table of contents
-' TODO: at end of statements.md, why does Yield grammar have a leading blank line? and Await at end of expressions.md?
 ' TODO: missing space when grammar follows a table
-' TODO: spec references in html grammar
+' TODO: table of contents
+' TODO: restore frontmatter
 
 Module Module1
 

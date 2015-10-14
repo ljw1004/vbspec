@@ -128,7 +128,7 @@ Class MarkdownSpec
             Next
         End Function
 
-        Dim re_grammar As New Regex("^\s*([a-zA-Z]+):\s")
+        Dim re_grammar As New Regex("^([a-zA-Z]+):?$")
 
         Iterator Function Paragraph2Paragraphs(md As MarkdownParagraph) As IEnumerable(Of OpenXmlCompositeElement)
             If md.IsHeading Then
@@ -193,6 +193,7 @@ Class MarkdownSpec
                 Dim mdc = CType(md, MarkdownParagraph.CodeBlock), code = mdc.Item1, lang = mdc.Item2, ignoredAfterLang = mdc.Item3
                 Dim lines = code.Split({vbCrLf, vbCr, vbLf}, StringSplitOptions.None).ToList()
                 If String.IsNullOrWhiteSpace(lines.Last) Then lines.RemoveAt(lines.Count - 1)
+                If String.IsNullOrWhiteSpace(lines.First) Then lines.RemoveAt(0)
                 If lang = "antlr" Then
                     Dim run As Run = Nothing
                     For Each line In lines

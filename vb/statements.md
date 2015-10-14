@@ -1979,7 +1979,7 @@ An await statement has the same syntax as an await operator expression (Section 
 However, it may be classified as either a value or void. Any value resulting from evaluation of the await operator expression is discarded.
 
 ```antlr
-AwaitStatement 
+AwaitStatement
     : AwaitOperatorExpression StatementTerminator
     ;
 ```
@@ -1997,7 +1997,7 @@ Control flow only ever reaches a `Yield` statement when the `MoveNext` method is
 When a `Yield` statement is executed, its expression is evaluated and stored in the *iterator current variable* of the iterator method instance associated with that iterator object. The value `True` is returned to the invoker of `MoveNext`, and the control point of this instance stops advancing until the next invocation of `MoveNext` on the iterator object.
 
 ```antlr
-YieldStatement 
+YieldStatement
     : 'Yield' Expression StatementTerminator
     ;
 ```
