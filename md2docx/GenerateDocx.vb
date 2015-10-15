@@ -15,18 +15,19 @@ Class MarkdownSpec
     Public Sections As New List(Of SectionRef)
 
     Class SectionRef
-        Public Number As String ' "10.1.2"
-        Public Title As String  ' "Goto Statement"
-        Public Level As Integer ' 1-based level, e.g. 3
-        Public Url As String    ' statements.md#goto-statement
-        Public BookmarkName As String ' _Toc_statements_md_goto_statement
+        Public Number As String       ' "10.1.2"
+        Public Title As String        ' "Goto Statement"
+        Public Level As Integer       ' 1-based level, e.g. 3
+        Public Url As String          ' statements.md#goto-statement
+        Public BookmarkName As String ' _Toc00023
         Public Shared count As Integer = 1
 
         Sub New(mdh As MarkdownParagraph.Heading, filename As String)
             Level = mdh.Item1
             Dim spans = mdh.Item2
             If spans.Length = 1 AndAlso spans.First.IsLiteral Then
-                Title = CType(spans.First, MarkdownSpan.Literal).Item.Trim()
+                Title = mdunescape(CType(spans.First, MarkdownSpan.Literal)).Trim()
+                If Title.Contains("&amp;") Then Stop
             ElseIf spans.Length = 1 AndAlso spans.First.IsInlineCode Then
                 Title = CType(spans.First, MarkdownSpan.InlineCode).Item.Trim()
             Else
@@ -153,13 +154,6 @@ Class MarkdownSpec
             Next
             Dim body = resultDoc.MainDocumentPart.Document.Body
 
-            'body.RemoveAllChildren()
-            'body.AppendChild(New Paragraph(New Hyperlink(New Run(New Text("link"))) With {.Anchor = "_Toc1"}))
-            'body.AppendChild(New Paragraph(New Run(New Text("hello"))))
-            'body.AppendChild(New Paragraph(New BookmarkStart With {.Name = "_Toc1", .Id = "1"},
-            '                               New Run(New Text("Section1")),
-            '                               New BookmarkEnd With {.Id = "1"}))
-
             ' We have to find the TOC, if one exists, and replace it...
             Dim tocFirst = -1, tocLast = -1, tocInstr = "", tocSec As Paragraph = Nothing
 
@@ -199,6 +193,16 @@ Class MarkdownSpec
 
         End Using
     End Sub
+
+    Shared Function mdunescape(literal As MarkdownSpan.Literal) As String
+        Dim s = literal.Item
+        s = s.Replace("&amp;", "&")
+        s = s.Replace("&lt;", "<")
+        s = s.Replace("&gt;", ">")
+        s = s.Replace("&reg;", "®")
+        Return s
+    End Function
+
 
     Private Class MarkdownConverter
         Dim mddoc As MarkdownDocument
@@ -333,12 +337,12 @@ Class MarkdownSpec
                         If spans.FirstOrDefault?.IsStrong Then
                             Dim strong = CType(spans.First, MarkdownSpan.Strong).Item
                             If strong.FirstOrDefault?.IsLiteral Then
-                                Dim literal = CType(strong.First, MarkdownSpan.Literal).Item
+                                Dim literal = mdunescape(CType(strong.First, MarkdownSpan.Literal))
                                 If literal = "Annotation" Then
                                     kind = "Annotation"
                                     Yield New Paragraph(Span2Elements(spans.Head)) With {.ParagraphProperties = New ParagraphProperties(New ParagraphStyleId With {.Val = kind})}
                                     If spans.Tail.FirstOrDefault?.IsLiteral Then
-                                        Dim s = CType(spans.Tail.First, MarkdownSpan.Literal).Item
+                                        Dim s = mdunescape(CType(spans.Tail.First, MarkdownSpan.Literal))
                                         quoted = MarkdownParagraph.NewParagraph(
                                             New Microsoft.FSharp.Collections.FSharpList(Of MarkdownSpan)(
                                                 MarkdownSpan.NewLiteral(s.TrimStart()),
@@ -482,7 +486,7 @@ Class MarkdownSpec
 
         Iterator Function Span2Elements(md As MarkdownSpan) As IEnumerable(Of OpenXmlElement)
             If md.IsLiteral Then
-                Dim mdl = CType(md, MarkdownSpan.Literal), s = mdl.Item
+                Dim mdl = CType(md, MarkdownSpan.Literal), s = mdunescape(mdl)
                 Yield New Run(New Text(s) With {.Space = SpaceProcessingModeValues.Preserve})
 
             ElseIf md.IsStrong OrElse md.IsEmphasis Then
@@ -522,7 +526,7 @@ Class MarkdownSpec
 
                 Dim anchor = ""
                 If spans.Count = 1 AndAlso spans.First.IsLiteral Then
-                    anchor = CType(spans.First, MarkdownSpan.Literal).Item
+                    anchor = mdunescape(CType(spans.First, MarkdownSpan.Literal))
                 ElseIf spans.Count = 1 AndAlso spans.First.IsInlineCode Then
                     anchor = CType(spans.First, MarkdownSpan.InlineCode).Item
                 Else

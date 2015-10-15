@@ -1,21 +1,4 @@
-﻿Imports System.IO
-Imports System.Runtime.CompilerServices
-Imports System.Text
-Imports System.Text.RegularExpressions
-Imports DocumentFormat.OpenXml
-Imports DocumentFormat.OpenXml.Packaging
-Imports DocumentFormat.OpenXml.Wordprocessing
-Imports FSharp.Markdown
-Imports Microsoft.FSharp.Core
-
-' TODO: table of contents
-'   http://stackoverflow.com/questions/9762684/how-to-generate-table-of-contents-using-openxml-sdk-2-0
-'   http://stackoverflow.com/questions/8560753/update-toc-in-docx-document-using-documentformat-openxml-c
-'   http://stackoverflow.com/questions/2208640/update-word-docs-table-of-contents-part-automatically-using-net
-'   http://stackoverflow.com/questions/17486741/table-of-content-for-microsoft-interop-word-dll
-' TODO: restore frontmatter
-
-Module Module1
+﻿Module Module1
 
     Sub Main()
         Dim fn = PickUniqueFilename("webmd.docx")
@@ -37,15 +20,15 @@ Module Module1
 
 
     Function PickUniqueFilename(suggestion As String) As String
-        Dim base = Path.GetFileNameWithoutExtension(suggestion)
-        Dim ext = Path.GetExtension(suggestion)
+        Dim base = IO.Path.GetFileNameWithoutExtension(suggestion)
+        Dim ext = IO.Path.GetExtension(suggestion)
 
         Dim ifn = 0
         Do
             Dim fn = base & If(ifn = 0, "", CStr(ifn)) & ext
-            If Not File.Exists(fn) Then Return fn
+            If Not IO.File.Exists(fn) Then Return fn
             Try
-                File.Delete(fn) : Return fn
+                IO.File.Delete(fn) : Return fn
             Catch ex As Exception
             End Try
             ifn += 1

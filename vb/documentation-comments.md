@@ -71,7 +71,7 @@ The documentation generator must accept and process any tag that is valid accord
 
 `<value>` Describes a property
 
-### <c>
+### &lt;c&gt;
 
 This tag specifies that a fragment of text within a description should use a font like that used for a block of code. (For lines of actual code, use `<code>`.)
 
