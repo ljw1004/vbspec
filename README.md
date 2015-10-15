@@ -84,11 +84,19 @@ The following is [link2](README.md#experiments-and-stuff)
 
 The following is a heading with inline code. Github gives it the link [link3](README.md#c)
 
+First try a heading with a codeblock:
+
 ### `<c>`
+
+Next try a heading with ampersand-escapes for the lt/gt characters:
 
 ### &lt;c&gt;
 
+Next try a heading with just lt/gt characters:
+
 ### <c>
+
+Next, that was the end of my heading experiments. Back to links.
 
 The following is a heading with numbers. Github gives it the link [link4](README.md#123-hello-456-world)
 
