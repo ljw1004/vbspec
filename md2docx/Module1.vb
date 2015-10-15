@@ -25,12 +25,14 @@ Module Module1
                      "documentation-comments.md"}
         Dim md = MarkdownSpec.ReadFiles(From file In files Select $"..\..\..\vb\{file}")
 
-        Dim grammar = Antlr.ReadFile("vb11.g4")
-        If Not grammar.IsSameAs(md.Grammar) Then Throw New Exception("Grammar mismatch")
-        Html.WriteFile(md.Grammar, "vb11", "vb11.html")
+        Dim grammar = Antlr.ReadFile("vb.g4")
+        If Not grammar.AreProductionsSameAs(md.Grammar) Then Throw New Exception("Grammar mismatch")
+        md.Grammar.Name = grammar.Name
+        Html.WriteFile(md.Grammar, "vb.html")
 
         md.WriteFile("vb-template.docx", fn)
         Process.Start(fn)
+        Process.Start("vb.html")
     End Sub
 
 

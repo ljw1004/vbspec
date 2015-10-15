@@ -71,7 +71,7 @@ The documentation generator must accept and process any tag that is valid accord
 
 `<value>` Describes a property
 
-### `<c>`
+### &lt;c&gt;
 
 This tag specifies that a fragment of text within a description should use a font like that used for a block of code. (For lines of actual code, use `<code>`.)
 
@@ -91,7 +91,7 @@ Public Class Point
 End Class
 ```
 
-### `<code>`
+### &lt;code&gt;
 
 This tag specifies that one or more lines of source code or program output should use a fixed-width font. (For small code fragments, use `<c>`.)
 
@@ -122,7 +122,7 @@ Public Sub Translate(x As Integer, y As Integer)
 End Sub
 ```
 
-### `<example>`
+### &lt;example&gt;
 
 This tag allows example code within a comment to show how an element can be used. Ordinarily, this will involve use of the tag `<code>` as well.
 
@@ -136,7 +136,7 @@ __Example:__
 
 See `<code>` for an example.
 
-### `<exception>`
+### &lt;exception&gt;
 
 This tag provides a way to document the exceptions a method can throw.
 
@@ -163,7 +163,7 @@ Public Module DataBaseOperations
 End Module
 ```
 
-### `<include>`
+### &lt;include&gt;
 
 This tag is used to include information from an external well-formed XML document. An XPath expression is applied to the XML document to specify what XML should be included from the document. The `<include>` tag is then replaced with the selected XML from the external document.
 
@@ -207,7 +207,7 @@ then the same documentation is output as if the source code contained:
 ''' </summary>
 ```
 
-### `<list>`
+### &lt;list&gt;
 
 This tag is used to create a list or table of items. It may contain a `<listheader>` block to define the heading row of either a table or definition list. (When defining a table, only an entry for term in the heading need be supplied.)
 
@@ -253,7 +253,7 @@ Public Class TestClass
 End Class
 ```
 
-### `<para>`
+### &lt;para&gt;
 
 This tag is for use inside other tags, such as `<remarks>` or `<returns>`, and permits structure to be added to text.
 
@@ -276,7 +276,7 @@ Public Shared Sub Main()
 End Sub
 ```
 
-### `<param>`
+### &lt;param&gt;
 
 This tag describes a parameter for a method, constructor, or indexed property.
 
@@ -301,7 +301,7 @@ Public Sub Move(x As Integer, y As Integer)
 End Sub
 ```
 
-### `<paramref>`
+### &lt;paramref&gt;
 
 This tag indicates that a word is a parameter. The documentation file can be processed to format this parameter in some distinct way.
 
@@ -326,7 +326,7 @@ Public Sub New(x As Integer, y As Integer)
 End Sub
 ```
 
-### `<permission>`
+### &lt;permission&gt;
 
 This tag documents the security accessibility of a member
 
@@ -345,7 +345,7 @@ Public Shared Sub Test()
 End Sub
 ```
 
-### `<remarks>`
+### &lt;remarks&gt;
 
 This tag specifies overview information about a type. (Use `<summary>` to describe the members of a type.)
 
@@ -365,7 +365,7 @@ Public Class Point
 End Class
 ```
 
-### `<returns>`
+### &lt;returns&gt;
 
 This tag describes the return value of a method.
 
@@ -390,7 +390,7 @@ Public Overrides Function ToString() As String
 End Sub
 ```
 
-### `<see>`
+### &lt;see&gt;
 
 This tag allows a link to be specified within text. (Use `<seealso>` to indicate text that is to appear in a See Also section.)
 
@@ -424,7 +424,7 @@ Public Sub Translate(x As Integer, y As Integer)
 End Sub
 ```
 
-### `<seealso>`
+### &lt;seealso&gt;
 
 This tag generates an entry for the See Also section. (Use `<see>` to specify a link from within text.)
 
@@ -447,7 +447,7 @@ Public Overrides Function Equals(o As Object) As Boolean
 End Function
 ```
 
-### `<summary>`
+### &lt;summary&gt;
 
 This tag describes a type member. (Use `<remarks>` to describe a type itself.)
 
@@ -468,7 +468,7 @@ Public Sub New()
 End Sub
 ```
 
-### `<typeparam>`
+### &lt;typeparam&gt;
 
 This tag describes a type parameter.
 
@@ -488,7 +488,7 @@ Public Class ItemManager(Of T As IComparable)
 End Class
 ```
 
-### `<value>`
+### &lt;value&gt;
 
 This tag describes a property.
 

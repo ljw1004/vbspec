@@ -12,7 +12,37 @@ Class MarkdownSpec
     Private s As String
     Private files As IEnumerable(Of String)
     Public Grammar As New Grammar
-    Public Sections As New Dictionary(Of String, Tuple(Of String, String)) ' statements.md#goto-statement => ("Goto Statement", "10.1.2")
+    Public Sections As New List(Of SectionRef)
+
+    Class SectionRef
+        Public Number As String ' "10.1.2"
+        Public Title As String  ' "Goto Statement"
+        Public Level As Integer ' 1-based level, e.g. 3
+        Public Url As String    ' statements.md#goto-statement
+        Public BookmarkName As String ' _Toc_statements_md_goto_statement
+        Public Shared count As Integer = 1
+
+        Sub New(mdh As MarkdownParagraph.Heading, filename As String)
+            Level = mdh.Item1
+            Dim spans = mdh.Item2
+            If spans.Length = 1 AndAlso spans.First.IsLiteral Then
+                Title = CType(spans.First, MarkdownSpan.Literal).Item.Trim()
+            ElseIf spans.Length = 1 AndAlso spans.First.IsInlineCode Then
+                Title = CType(spans.First, MarkdownSpan.InlineCode).Item.Trim()
+            Else
+                Throw New NotSupportedException("Heading must be a single literal/inlinecode")
+            End If
+            For Each c In Title
+                If c >= "a"c AndAlso c <= "z"c Then Url &= c
+                If c >= "A"c AndAlso c <= "Z"c Then Url &= Char.ToLowerInvariant(c)
+                If c >= "0"c AndAlso c <= "9"c Then Url &= c
+                If c = "-"c OrElse c = "_"c Then Url &= c
+                If c = " "c Then Url &= "-"c
+            Next
+            Url = filename & "#" & Url
+            BookmarkName = $"_Toc{count:00000}" : count += 1
+        End Sub
+    End Class
 
     Public Shared Function ReadString(s As String) As MarkdownSpec
         Dim md As New MarkdownSpec With {.s = s}
@@ -29,47 +59,32 @@ Class MarkdownSpec
     Private Sub Init()
         ' (1) Add sections into the dictionary
         Dim h1 = 0, h2 = 0, h3 = 0, h4 = 0
-        Dim link = "", linkname = ""
+        Dim url = "", title = ""
 
         ' (2) Turn all the antlr code blocks into a grammar
         Dim sbantlr As New StringBuilder
 
         For Each src In Sources()
-            Dim md = Markdown.Parse(src.Item2)
+            Dim filename = Path.GetFileName(src.Item1), md = Markdown.Parse(src.Item2)
 
             For Each mdp In md.Paragraphs
                 If mdp.IsHeading Then
-                    Dim mdh = CType(mdp, MarkdownParagraph.Heading), level = mdh.Item1, spans = mdh.Item2
-                    If spans.Length = 1 AndAlso spans.First.IsLiteral Then
-                        linkname = CType(spans.First, MarkdownSpan.Literal).Item.Trim()
-                    ElseIf spans.Length = 1 AndAlso spans.First.IsInlineCode Then
-                        linkname = CType(spans.First, MarkdownSpan.InlineCode).Item.Trim()
-                    Else
-                        Throw New NotSupportedException("Heading must be a single literal/inlinecode")
-                    End If
-                    link = ""
-                    For Each c In linkname
-                        If c >= "a"c AndAlso c <= "z"c Then link &= c
-                        If c >= "A"c AndAlso c <= "Z"c Then link &= Char.ToLowerInvariant(c)
-                        If c >= "0"c AndAlso c <= "9"c Then link &= c
-                        If c = "-"c OrElse c = "_"c Then link &= c
-                        If c = " "c Then link &= "-"c
-                    Next
-                    link = Path.GetFileName(src.Item1) & "#" & link
-                    Dim section = ""
-                    If level = 1 Then h1 += 1 : h2 = 0 : h3 = 0 : h4 = 0 : section = $"{h1}"
-                    If level = 2 Then h2 += 1 : h3 = 0 : h4 = 0 : section = $"{h1}.{h2}"
-                    If level = 3 Then h3 += 1 : h4 = 0 : section = $"{h1}.{h2}.{h3}"
-                    If level = 4 Then h4 += 1 : section = $"{h1}.{h2}.{h3}.{h4}"
-                    Sections(link) = Tuple.Create(linkname, section)
+                    Dim sr = New SectionRef(CType(mdp, MarkdownParagraph.Heading), filename)
+                    If sr.Level = 1 Then h1 += 1 : h2 = 0 : h3 = 0 : h4 = 0 : sr.Number = $"{h1}"
+                    If sr.Level = 2 Then h2 += 1 : h3 = 0 : h4 = 0 : sr.Number = $"{h1}.{h2}"
+                    If sr.Level = 3 Then h3 += 1 : h4 = 0 : sr.Number = $"{h1}.{h2}.{h3}"
+                    If sr.Level = 4 Then h4 += 1 : sr.Number = $"{h1}.{h2}.{h3}.{h4}"
+                    Sections.Add(sr)
+                    url = sr.Url
+                    title = sr.Title
 
                 ElseIf mdp.IsCodeBlock Then
-                        Dim mdc = CType(mdp, MarkdownParagraph.CodeBlock), code = mdc.Item1, lang = mdc.Item2
+                    Dim mdc = CType(mdp, MarkdownParagraph.CodeBlock), code = mdc.Item1, lang = mdc.Item2
                     If lang <> "antlr" Then Continue For
-                    Dim g = Antlr.ReadString(code)
-                    For Each p In g.productions
-                        p.Link = link : p.LinkName = linkname
-                        Grammar.productions.Add(p)
+                    Dim g = Antlr.ReadString(code, "")
+                    For Each p In g.Productions
+                        p.Link = url : p.LinkName = title
+                        Grammar.Productions.Add(p)
                     Next
                 End If
             Next
@@ -86,6 +101,49 @@ Class MarkdownSpec
         End If
     End Function
 
+    Function FindToc(body As Body, ByRef iFirst As Integer, ByRef iLast As Integer, ByRef instr As String, ByRef secBreak As Paragraph) As Boolean
+        iFirst = -1 : iLast = -1 : instr = Nothing : secBreak = Nothing
+
+        For i = 0 To body.ChildElements.Count - 1
+            Dim p = TryCast(body.ChildElements.GetItem(i), Paragraph)
+            If p Is Nothing Then Continue For
+
+            If iFirst = -1 Then
+                ' The TOC might be a simple field
+                Dim sf = p.OfType(Of SimpleField).FirstOrDefault
+                If sf IsNot Nothing AndAlso sf.Instruction.Value.Contains("TOC") Then iFirst = i : iLast = i : instr = sf.Instruction.Value : Exit For
+
+                ' or it might be the start of a complex field
+                Dim fields = (From r In p.OfType(Of Run)
+                              From f In r
+                              Where TypeOf f Is FieldChar OrElse TypeOf f Is FieldCode
+                              Select f).ToList
+                Dim f1 = If(fields.Count < 1, Nothing, TryCast(fields(0), FieldChar))
+                Dim f2 = If(fields.Count < 2, Nothing, TryCast(fields(1), FieldCode))
+                Dim f3 = If(fields.Count < 3, Nothing, TryCast(fields(2), FieldChar))
+                If f1 IsNot Nothing AndAlso f2 IsNot Nothing AndAlso f3 IsNot Nothing AndAlso
+                        f1.FieldCharType.Value = FieldCharValues.Begin AndAlso f3.FieldCharType.Value = FieldCharValues.Separate AndAlso
+                        f2.Text.Contains("TOC") Then iFirst = i : instr = f2.Text
+            ElseIf iLast = -1 Then
+                Dim fields = (From r In p.OfType(Of Run) From f In r.OfType(Of FieldChar) Select f).ToList()
+                Dim f1 = fields.FirstOrDefault
+                If f1 IsNot Nothing AndAlso f1.FieldCharType.Value = FieldCharValues.End Then iLast = i : Exit For
+            End If
+        Next
+
+        If iFirst = -1 Then Return False
+        If iLast = -1 Then Throw New Exception("Found start of TOC field, but not end")
+        For i = iFirst To iLast
+            Dim p = TryCast(body.ChildElements.GetItem(i), Paragraph)
+            If p Is Nothing Then Continue For
+            Dim sp = p.ParagraphProperties.OfType(Of SectionProperties).FirstOrDefault
+            If sp Is Nothing Then Continue For
+            If i <> iLast Then Throw New Exception("Found section break within TOC field")
+            secBreak = New Paragraph(New Run(New Text(""))) With {.ParagraphProperties = New ParagraphProperties(sp.CloneNode(True))}
+        Next
+        Return True
+    End Function
+
     Public Sub WriteFile(basedOn As String, fn As String)
         Using templateDoc = WordprocessingDocument.Open(basedOn, False),
                 resultDoc = WordprocessingDocument.Create(fn, WordprocessingDocumentType.Document)
@@ -95,74 +153,48 @@ Class MarkdownSpec
             Next
             Dim body = resultDoc.MainDocumentPart.Document.Body
 
-            ' The body starts with frontmatter. (Note that section-properties are done at the tail
-            ' of a section and describe what preceded them).
-            'body.AppendChild(New Paragraph(New ParagraphProperties(New SectionProperties)))
+            'body.RemoveAllChildren()
+            'body.AppendChild(New Paragraph(New Hyperlink(New Run(New Text("link"))) With {.Anchor = "_Toc1"}))
+            'body.AppendChild(New Paragraph(New Run(New Text("hello"))))
+            'body.AppendChild(New Paragraph(New BookmarkStart With {.Name = "_Toc1", .Id = "1"},
+            '                               New Run(New Text("Section1")),
+            '                               New BookmarkEnd With {.Id = "1"}))
 
-            ' "Table of Contents" starts on an odd page
-            'Dim tocHeaderPart = resultDoc.MainDocumentPart.AddNewPart(Of HeaderPart)("ridTOC123")
-            'Dim tocHeaderId = resultDoc.MainDocumentPart.GetIdOfPart(tocHeaderPart)
-            'tocHeaderPart.Header = New Header(New Paragraph(New Run(New Text("tocheader"))))
-            'tocHeaderPart.Header.Save()
+            ' We have to find the TOC, if one exists, and replace it...
+            Dim tocFirst = -1, tocLast = -1, tocInstr = "", tocSec As Paragraph = Nothing
 
-            'body.AppendChild(New Paragraph(New Run(New Text("Table of Contents"))) With {.ParagraphProperties = New ParagraphProperties(New ParagraphStyleId() With {.Val = "TOCHeading"})})
-            'body.AppendChild(New Paragraph(New ParagraphProperties(New SectionProperties(
-            '                     New SectionType With {.Val = SectionMarkValues.OddPage},
-            '                     New HeaderReference With {.Id = tocHeaderId, .Type = HeaderFooterValues.Default},
-            '                     New HeaderReference With {.Id = tocHeaderId, .Type = HeaderFooterValues.Even},
-            '                     New HeaderReference With {.Id = tocHeaderId, .Type = HeaderFooterValues.First}
-            '                ))))
+            If FindToc(body, tocFirst, tocLast, tocInstr, tocSec) Then
+                Dim tocRunFirst As New Run(New FieldChar With {.FieldCharType = FieldCharValues.Begin},
+                                       New FieldCode With {.Text = tocInstr, .Space = SpaceProcessingModeValues.Preserve},
+                                       New FieldChar With {.FieldCharType = FieldCharValues.Separate})
+                Dim tocRunLast As New Run(New FieldChar With {.FieldCharType = FieldCharValues.End})
+                '
+                For i = tocLast To tocFirst Step -1
+                    body.RemoveChild(body.ChildElements(i))
+                Next
+                Dim afterToc = body.ChildElements(tocFirst)
+                '
+                For i = 0 To Sections.Count - 1
+                    Dim section = Sections(i)
+                    If section.Level > 3 Then Continue For
+                    Dim p As New Paragraph
+                    If i = 0 Then p.AppendChild(tocRunFirst)
+                    p.AppendChild(New Hyperlink(New Run(New Text(section.Number & " " & section.Title))) With {.Anchor = section.BookmarkName})
+                    If i = Sections.Count - 1 Then p.AppendChild(tocRunLast)
+                    p.ParagraphProperties = New ParagraphProperties(New ParagraphStyleId With {.Val = $"TOC{section.Level}"})
+                    body.InsertBefore(p, afterToc)
+                Next
+                If tocSec IsNot Nothing Then body.InsertBefore(tocSec, afterToc)
+            End If
 
-            ' "toc-field" section continues without a page-break and has two columns
-            ' Here's how TOC fields work: http://officeopenxml.com/WPtableOfContents.php
-
-            'Dim p1 As New Paragraph(
-            '    New Run(New FieldChar With {.FieldCharType = FieldCharValues.Begin}),
-            '    New Run(New FieldCode With {.Text = " TOC \\o \""1-3\"" \\n \\h \\z \\u ", .Space = SpaceProcessingModeValues.Preserve}),
-            '    New Run(New FieldChar With {.FieldCharType = FieldCharValues.Separate}),
-            '    New Run(New Text("Section1"))) With
-            '    {.ParagraphProperties = New ParagraphProperties(New ParagraphStyleId With {.Val = "TOC1"})}
-            'Dim p2 As New Paragraph(
-            '    New Run(New Text("Section1a"))) With
-            '    {.ParagraphProperties = New ParagraphProperties(New ParagraphStyleId With {.Val = "TOC2"})}
-            'Dim p3 As New Paragraph(
-            '    New Run(New Text("Section1b"))) With
-            '    {.ParagraphProperties = New ParagraphProperties(New ParagraphStyleId With {.Val = "TOC2"})}
-            'Dim p4 As New Paragraph(
-            '    New Run(New Text("Section2"))) With
-            '    {.ParagraphProperties = New ParagraphProperties(New ParagraphStyleId With {.Val = "TOC1"})}
-            'Dim p5 As New Paragraph(
-            '    New Run(New Text("Section2x"))) With
-            '    {.ParagraphProperties = New ParagraphProperties(New ParagraphStyleId With {.Val = "TOC2"})}
-            'Dim p6 As New Paragraph(
-            '    New Run(New Text("Section2y"))) With
-            '    {.ParagraphProperties = New ParagraphProperties(New ParagraphStyleId With {.Val = "TOC2"})}
-            'Dim p7 As New Paragraph(
-            '    New Run(New FieldChar With {.FieldCharType = FieldCharValues.End}))
-            'body.Append(p1, p2, p3, p4, p5, p6, p7)
-            'body.AppendChild(New Paragraph(New ParagraphProperties(New SectionProperties(
-            '                New SectionType With {.Val = SectionMarkValues.Continuous}),
-            '                New Columns With {.ColumnCount = 2, .Separator = True}
-            '                )))
-
-
-
-            ' The main body of the document comes next. It is the final section and starts on an odd page.
-            ' The final section's section-properties go directly on the body.
+            Dim sectionDictionary = Sections.ToDictionary(Function(sr) sr.Url)
+            Dim maxBookmarkId = New StrongBox(Of Integer)(1 + Aggregate bookmark In body.Descendants(Of BookmarkStart)
+                                                           Select CInt(bookmark.Id) Into Max)
             For Each src In Sources()
-                For Each p In New MarkdownConverter(src.Item2, resultDoc, Sections).Paragraphs
+                For Each p In New MarkdownConverter(src.Item2, Path.GetFileName(src.Item1), resultDoc, sectionDictionary, maxBookmarkId).Paragraphs
                     body.AppendChild(p)
                 Next
             Next
-            'body.Append(New Paragraph(New Run(New Text("body"))))
-            'Dim bodyHeaderPart = resultDoc.MainDocumentPart.AddNewPart(Of HeaderPart)("ridBody456")
-            'Dim bodyHeaderId = resultDoc.MainDocumentPart.GetIdOfPart(bodyHeaderPart)
-            'bodyHeaderPart.Header = New Header(New Paragraph(New Run(New Text("bodyHeader"))))
-            'bodyHeaderPart.Header.Save()
-            'body.AppendChild(New SectionProperties(New SectionType With {.Val = SectionMarkValues.OddPage},
-            '                                       New HeaderReference With {.Id = bodyHeaderId, .Type = HeaderFooterValues.Default},
-            '                                       New HeaderReference With {.Id = bodyHeaderId, .Type = HeaderFooterValues.Even},
-            '                                       New HeaderReference With {.Id = bodyHeaderId, .Type = HeaderFooterValues.First}))
 
 
         End Using
@@ -171,12 +203,16 @@ Class MarkdownSpec
     Private Class MarkdownConverter
         Dim mddoc As MarkdownDocument
         Dim wdoc As WordprocessingDocument
-        Dim sections As Dictionary(Of String, Tuple(Of String, String))
+        Dim sections As Dictionary(Of String, SectionRef)
+        Dim maxBookmarkId As StrongBox(Of Integer)
+        Dim filename As String
 
-        Sub New(s As String, wdoc As WordprocessingDocument, sections As Dictionary(Of String, Tuple(Of String, String)))
+        Sub New(s As String, filename As String, wdoc As WordprocessingDocument, sections As Dictionary(Of String, SectionRef), maxBookmarkId As StrongBox(Of Integer))
             Me.mddoc = Markdown.Parse(s)
             Me.wdoc = wdoc
             Me.sections = sections
+            Me.maxBookmarkId = maxBookmarkId
+            Me.filename = filename
         End Sub
 
         Function Paragraphs() As IEnumerable(Of OpenXmlCompositeElement)
@@ -196,8 +232,14 @@ Class MarkdownSpec
         Iterator Function Paragraph2Paragraphs(md As MarkdownParagraph) As IEnumerable(Of OpenXmlCompositeElement)
             If md.IsHeading Then
                 Dim mdh = CType(md, MarkdownParagraph.Heading), level = mdh.Item1, spans = mdh.Item2
+                Dim sr = sections(New SectionRef(mdh, filename).Url)
                 Dim props As New ParagraphProperties(New ParagraphStyleId() With {.Val = $"Heading{level}"})
-                Yield New Paragraph(Spans2Elements(spans)) With {.ParagraphProperties = props}
+                Dim p As New Paragraph With {.ParagraphProperties = props}
+                maxBookmarkId.Value += 1
+                p.AppendChild(New BookmarkStart With {.Name = sr.BookmarkName, .Id = CStr(maxBookmarkId.Value)})
+                p.Append(Spans2Elements(spans))
+                p.AppendChild(New BookmarkEnd With {.Id = CStr(maxBookmarkId.Value)})
+                Yield p
                 Return
 
             ElseIf md.IsParagraph Then
@@ -488,10 +530,10 @@ Class MarkdownSpec
                 End If
 
                 If sections.ContainsKey(url) Then
-                    Dim tt = sections(url), heading = tt.Item1, section = tt.Item2
-                    If anchor <> heading Then Throw New Exception($"Mismatch: link anchor is '{anchor}', should be '{heading}'")
-                    Dim txt As New Text(section) With {.Space = SpaceProcessingModeValues.Preserve}
-                    Dim run As New Run(txt)
+                    Dim section = sections(url)
+                    If anchor <> section.Title Then Throw New Exception($"Mismatch: link anchor is '{anchor}', should be '{section.Title}'")
+                    Dim txt As New Text(section.Number) With {.Space = SpaceProcessingModeValues.Preserve}
+                    Dim run As New Hyperlink(New Run(txt)) With {.Anchor = section.BookmarkName}
                     Yield run
 
                 Else

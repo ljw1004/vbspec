@@ -1,4 +1,4 @@
-grammar vb11;
+grammar vb;
 start: Start;
 
 

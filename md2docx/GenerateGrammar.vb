@@ -36,13 +36,14 @@ End Enum
 
 
 Class Grammar
-    Public productions As New List(Of Production)
+    Public Productions As New List(Of Production)
+    Public Name As String
 
-    Public Function IsSameAs(copy As Grammar) As Boolean
+    Public Function AreProductionsSameAs(copy As Grammar) As Boolean
 
         Dim ToDictionary = Function(g As Grammar)
                                Dim d As New Dictionary(Of String, Production)
-                               For Each p In g.productions
+                               For Each p In g.Productions
                                    If p.ProductionName IsNot Nothing Then d.Add(p.ProductionName, p)
                                Next
                                Return d
@@ -77,7 +78,8 @@ End Class
 
 
 Class ISO14977
-    Public Shared Shadows Function ToString(productions As LinkedList(Of Production), grammarName As String) As String
+    Public Shared Shadows Function ToString(grammar As Grammar) As String
+        Dim productions = grammar.Productions, grammarName = grammar.Name
         Dim r = ""
         r &= "(* Grammar " & grammarName & " *)" & vbCrLf
         For Each p In productions
@@ -359,6 +361,7 @@ Class Html
     ' "Productions" stores plain-strings of production names.
     ' "Terminals" stores plain-strings of terminals, and stores extended terminals normalized as <extendedterminal>
     ' All other data-structures apart from CaseEscapedNames are keyed off strings like "production" or "'terminal'" or "'<extendedterminal>'"
+    Dim GrammarName As String
     Dim Productions As New Dictionary(Of String, IEnumerable(Of EBNF)) ' String ::= EBNF0 | EBNF1 | ...
     Dim ProductionReferences As New Dictionary(Of String, Tuple(Of String, String))
     Dim Terminals As New HashSet(Of String) ' The list of [extended]terminals.
@@ -379,18 +382,19 @@ Class Html
         Return $"'{t}'"
     End Function
 
-    Public Shared Shadows Function ToString(grammar As Grammar, grammarName As String) As String
-        Dim html As New Html(grammar, grammarName)
+    Public Shared Shadows Function ToString(grammar As Grammar) As String
+        Dim html As New Html(grammar)
         html.Analyze()
-        Return html.ToString(grammarName)
+        Return html.ToString()
     End Function
 
-    Public Shared Sub WriteFile(grammar As Grammar, grammarName As String, fn As String)
-        IO.File.WriteAllText(fn, ToString(grammar, grammarName), Encoding.UTF8)
+    Public Shared Sub WriteFile(grammar As Grammar, fn As String)
+        IO.File.WriteAllText(fn, ToString(grammar), Encoding.UTF8)
     End Sub
 
-    Sub New(grammar As Grammar, grammarName As String)
-        For Each p In grammar.productions
+    Sub New(grammar As Grammar)
+        GrammarName = grammar.Name
+        For Each p In grammar.Productions
             If p.EBNF Is Nothing Then Continue For
             Dim choices = If(p.EBNF.Kind = EBNFKind.Choice, CType(p.EBNF.Children, IEnumerable(Of EBNF)), {p.EBNF})
             If flatten(choices).Where(Function(e) e.Kind = EBNFKind.Choice).Count > 0 Then Throw New Exception("nested choice not implemented")
@@ -410,10 +414,10 @@ Class Html
 
     End Sub
 
-    Public Shadows Function ToString(grammarName As String) As String
+    Public Shadows Function ToString() As String
         ' We'll pick colors based on the grammarName...
         Dim perms = {({2, 0, 1}), ({0, 2, 1}), ({1, 0, 2}), ({1, 2, 0}), ({0, 1, 2}), ({2, 1, 0})}
-        Dim perm = perms(Asc(grammarName(0)) Mod 6)
+        Dim perm = perms(Asc(GrammarName(0)) Mod 6)
         Dim permf = Function(c As Integer()) String.Join(",", New Integer() {c(perm(0)), c(perm(1)), c(perm(2))})
         Dim rgb_background = permf({210, 220, 240})
         Dim rgb_popup = permf({225, 215, 255})
@@ -423,7 +427,7 @@ Class Html
                     <!-- saved from url=(0014)about:internet -->
                     <head>
                         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-                        <title>Grammar <%= grammarName %></title>
+                        <title>Grammar <%= GrammarName %></title>
                         <style type="text/css">
 body {font-family:calibri; color:black; background-color:rgb(<%= rgb_background %>);}
 #popup {background-color: rgb(<%= rgb_popup %>); padding: 2ex; border: solid thick black; font-size: 80%;}
@@ -546,7 +550,7 @@ function p(a)
                     </head>
                     <body onclick="p()">
                         <div id="popup" style="visibility:hidden; position:absolute; right:0; width: auto; top:0; height:auto;"></div>
-                        <h1>Grammar <%= grammarName %></h1>
+                        <h1>Grammar <%= GrammarName %></h1>
                         <%= From production In Productions Select
                             <div class="p">
                                 <h2><a id=<%= CaseEscapedNames(production.Key) %>><%= MakeNonterminal(production.Key) %></a> ::=</h2>
@@ -812,7 +816,7 @@ End Class
 Class Antlr
 
     Public Shared Shadows Function ToString(grammar As Grammar, grammarName As String) As String
-        Dim productions = grammar.productions
+        Dim productions = grammar.Productions
         Dim r = ""
         r &= "grammar " & grammarName & ";" & vbCrLf
         For Each p In productions
@@ -873,11 +877,11 @@ Class Antlr
     End Function
 
     Public Shared Function ReadFile(fn As String) As Grammar
-        Return ReadString(IO.File.ReadAllText(fn))
+        Return ReadString(IO.File.ReadAllText(fn), IO.Path.GetFileNameWithoutExtension(fn))
     End Function
 
-    Public Shared Function ReadString(src As String) As Grammar
-        Return New Grammar With {.productions = ReadInternal(src).ToList()}
+    Public Shared Function ReadString(src As String, grammarName As String) As Grammar
+        Return New Grammar With {.Productions = ReadInternal(src).ToList(), .Name = grammarName}
     End Function
 
     Private Shared Iterator Function ReadInternal(src As String) As IEnumerable(Of Production)
