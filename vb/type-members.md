@@ -967,7 +967,7 @@ Imports System.Runtime.CompilerServices
 Module IEnumerableComparableExtensions
     <Extension> _
     Public Function Sort(Of T As IComparable(Of T))(i As IEnumerable(Of T)) _
-        As IEnumerable(Of T) 
+        As IEnumerable(Of T)
         ...
     End Function
 End Module
@@ -986,7 +986,7 @@ Class C1
 End Class
 
 Module C1Extensions
-    <Extension> _
+    <Extension>
     Sub M2(c As C1)
         ...
     End Sub
@@ -1198,7 +1198,7 @@ ConstructorModifier
 
 *Instance constructors* initialize instances of a type and are run by the .NET Framework when an instance is created. The parameter list of a constructor is subject to the same rules as the parameter list of a method. Instance constructors may be overloaded.
 
-All constructors in reference types must invoke another constructor. If the invocation is explicit, it must be the first statement in the constructor method body. The statement can either invoke another of the type's instance constructors - for example, `Me.New(...)` or `MyClass.New(...)` - or if it is not a structure it can invoke an instance constructor of the type's base type - for example, `MyBase.New(...)`. It is invalid for a constructor to invoke itself. If a constructor omits a call to another constructor, `MyBase.New()` is implicit. If there is no parameterless base type constructor, a compile-time error occurs. Because `Me` is not considered to be constructed until after the call to a base class constructor, the parameters to a constructor invocation statement cannot reference `Me`, `MyClass`, or `MyBase` implicitly or explicitly.
+All constructors in reference types must invoke another constructor. If the invocation is explicit, it must be the first statement in the constructor method body. The statement can either invoke another of the type's instance constructors -- for example, `Me.New(...)` or `MyClass.New(...)` -- or if it is not a structure it can invoke an instance constructor of the type's base type -- for example, `MyBase.New(...)`. It is invalid for a constructor to invoke itself. If a constructor omits a call to another constructor, `MyBase.New()` is implicit. If there is no parameterless base type constructor, a compile-time error occurs. Because `Me` is not considered to be constructed until after the call to a base class constructor, the parameters to a constructor invocation statement cannot reference `Me`, `MyClass`, or `MyBase` implicitly or explicitly.
 
 When a constructor's first statement is of the form `MyBase.New(...)`, the constructor implicitly performs the initializations specified by the variable initializers of the instance variables declared in the type. This corresponds to a sequence of assignments that are executed immediately after invoking the direct base type constructor. Such ordering ensures that all base instance variables are initialized by their variable initializers before any statements that have access to the instance are executed. For example:
 
@@ -1603,27 +1603,28 @@ Note that `AddHandler`, `RemoveHandler` and `RaiseEvent` declarations have the s
 > Imports System.Runtime.InteropServices.WindowsRuntime
 >
 > Public NotInheritable Class ClassInWinMD
->    Private XEvent As EventRegistrationTokenTable(Of EventHandler(Of Integer)
+>     Private XEvent As EventRegistrationTokenTable(Of EventHandler(Of Integer))
+>
 >     Public Custom Event X As EventHandler(Of Integer)
->        AddHandler(handler As EventHandler(Of Integer))
->            Return EventRegistrationTokenTable(Of EventHandler(Of Integer)).
->                GetOrCreateEventRegistrationTokenTable(XEvent).
->                AddEventHandler(handler)
->        End AddHandler
+>         AddHandler(handler As EventHandler(Of Integer))
+>             Return EventRegistrationTokenTable(Of EventHandler(Of Integer)).
+>                    GetOrCreateEventRegistrationTokenTable(XEvent).
+>                    AddEventHandler(handler)
+>         End AddHandler
 >
 >         RemoveHandler(token As EventRegistrationToken)
->            EventRegistrationTokenTable(Of EventHandler(Of Integer)).
->                GetOrCreateEventRegistrationTokenTable(XEvent).
->                RemoveEventHandler(token)
->        End RemoveHandler
+>             EventRegistrationTokenTable(Of EventHandler(Of Integer)).
+>                 GetOrCreateEventRegistrationTokenTable(XEvent).
+>                 RemoveEventHandler(token)
+>         End RemoveHandler
 >
->`        RaiseEvent(sender As Object, i As Integer)
->            Dim table = EventRegistrationTokenTable(Of EventHandler(Of Integer)).
->                GetOrCreateEventRegistrationTokenTable(XEvent).
->                InvocationList
->            If table IsNot Nothing Then table(sender, i)
->        End RaiseEvent
->    End Event
+>         RaiseEvent(sender As Object, i As Integer)
+>             Dim table = EventRegistrationTokenTable(Of EventHandler(Of Integer)).
+>                 GetOrCreateEventRegistrationTokenTable(XEvent).
+>                 InvocationList
+>             If table IsNot Nothing Then table(sender, i)
+>         End RaiseEvent
+>     End Event
 > End Class
 > ```
 
@@ -2456,7 +2457,7 @@ Class B
 End Class
 ```
 
-Here, the declarations of properties `X`,`Y`, and `Z` override the base properties. Each property declaration exactly matches the accessibility modifiers, type, and name of the corresponding inherited property. The `Get` accessor of property `X` and the `Set` accessor of property `Y` use the `MyBase` keyword to access the inherited properties. The declaration of property `Z` overrides the `MustOverride` property - thus, there are no outstanding `MustOverride` members in class `B`, and `B` is permitted to be a regular class.
+Here, the declarations of properties `X`,`Y`, and `Z` override the base properties. Each property declaration exactly matches the accessibility modifiers, type, and name of the corresponding inherited property. The `Get` accessor of property `X` and the `Set` accessor of property `Y` use the `MyBase` keyword to access the inherited properties. The declaration of property `Z` overrides the `MustOverride` property -- thus, there are no outstanding `MustOverride` members in class `B`, and `B` is permitted to be a regular class.
 
 Properties can be used to delay initialization of a resource until the moment it is first referenced. For example:
 
@@ -2604,7 +2605,7 @@ ReadOnly Property F(i As Integer) As Integer()
         If i = 0 Then
             F = new Integer(2) { 1, 2, 3 }
         Else
-            F = F(i -- 1) ' Recursive call, not index.
+            F = F(i - 1) ' Recursive call, not index.
         End If
     End Get
 End Property
@@ -2802,7 +2803,7 @@ Property x4(5) As Short
 
 ### Iterator Properties
 
-An *iterator property* is a property with the `Iterator` modifier. It is used for the same reason an iterator method (Section [Iterator Methods](statements.md#iterator-methods)) is used - as a convenient way to generate a sequence, one which can be consumed by the `For Each` statement. The `Get` accessor of an iterator property is interpreted in the same way as an iterator method.
+An *iterator property* is a property with the `Iterator` modifier. It is used for the same reason an iterator method (Section [Iterator Methods](statements.md#iterator-methods)) is used -- as a convenient way to generate a sequence, one which can be consumed by the `For Each` statement. The `Get` accessor of an iterator property is interpreted in the same way as an iterator method.
 
 An iterator property must have an explicit `Get` accessor, and its type must be `IEnumerator`, or `IEnumerable`, or `IEnumerator(Of T)` or `IEnumerable(Of T)` for some `T`.
 

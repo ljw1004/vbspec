@@ -1373,6 +1373,8 @@ Statement
     | BranchStatement
     | ArrayHandlingStatement
     | UsingStatement
+	| AwaitStatement
+	| YieldStatement
     ;
 
 Block

@@ -86,6 +86,10 @@ The following is a heading with inline code. Github gives it the link [link3](RE
 
 ### `<c>`
 
+### &lt;c&gt;
+
+### <c>
+
 The following is a heading with numbers. Github gives it the link [link4](README.md#123-hello-456-world)
 
 ### 123 hello 456 world

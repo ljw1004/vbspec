@@ -148,7 +148,7 @@ CCConstantDeclaration
 
 Conditional compilation directives control conditional compilation and can only reference constant expressions and conditional compilation constants. Each of the constant expressions within a single conditional compilation group is evaluated and converted to the `Boolean` type in textual order from first to last until one of the conditional expressions evaluates to `True`. If an expression is not convertible to `Boolean`, a compile-time error results. Permissive semantics and binary string comparisons are always used when evaluating conditional compilation constant expressions, regardless of any `Option` directives or compilation environment settings.
 
-All lines enclosed by the group, including nested conditional compilation directives, are disabled except for lines between the statement containing the `True` expression and the next conditional statement of the group, or lines between the `Else` statement and the `End``If` statement if an `Else` appears in the group and all of the expressions evaluate to `False`.
+All lines enclosed by the group, including nested conditional compilation directives, are disabled except for lines between the statement containing the `True` expression and the next conditional statement of the group, or lines between the `Else` statement and the `End If` statement if an `Else` appears in the group and all of the expressions evaluate to `False`.
 
 In this example, the call to `WriteToLog` in the `Trace` conditional compilation directive is not processed because the surrounding `Debug` conditional compilation directive evaluates to `False`.
 
@@ -223,7 +223,7 @@ Region directives group lines of source code but have no other effect on compila
 
 ```vb
 Module Test
-#Region "Startup code -- do not edit"
+#Region "Startup code - do not edit"
     Sub Main()
     End Sub
 #End Region

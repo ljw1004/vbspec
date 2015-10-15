@@ -59,7 +59,7 @@ Note that expressions whose type is a type parameter can be used in statements a
 
 ### Expression Reclassification
 
-Normally, when an expression is used in a context that requires a classification different from that of the expression, a compile-time error occurs - for example, attempting to assign a value to a literal. However, in many cases it is possible to change an expression's classification through the process of *reclassification*.
+Normally, when an expression is used in a context that requires a classification different from that of the expression, a compile-time error occurs -- for example, attempting to assign a value to a literal. However, in many cases it is possible to change an expression's classification through the process of *reclassification*.
 
 If reclassification succeeds, then the reclassification is judged as widening or narrowing. Unless otherwise noted, all the reclassifications in this list are widening.
 
@@ -97,12 +97,12 @@ If conversion from any of the delegate's parameter types to the corresponding la
 > __Annotation__
 > The exact translation between lambda methods and expression trees may not be fixed between versions of the compiler and is beyond the scope of this specification. For Microsoft Visual Basic 11.0, all lambda expressions may be converted to expression trees subject to the following restrictions:
 >
-> 1.  Only single-line lambda expressions without ByRef parameters may be converted to expression trees- Of the single-line `Sub` lambdas, only invocation statements may be converted to expression trees.
-> 2.  Anonymous type expressions cannot be converted to expression trees if an earlier field initializer is used to initialize a subsequent field initializer, e.g- `New With {.a=1, .b=.a}`
-> 3.  Object initializer expressions cannot be converted to expression trees if a member of the current object being initialized is used in one of the field initializers, e.g- `New C1 With {.a=1, .b=.Method1()}`
+> 1.  Only single-line lambda expressions without ByRef parameters may be converted to expression trees. Of the single-line `Sub` lambdas, only invocation statements may be converted to expression trees.
+> 2.  Anonymous type expressions cannot be converted to expression trees if an earlier field initializer is used to initialize a subsequent field initializer, e.g. `New With {.a=1, .b=.a}`
+> 3.  Object initializer expressions cannot be converted to expression trees if a member of the current object being initialized is used in one of the field initializers, e.g. `New C1 With {.a=1, .b=.Method1()}`
 > 4.  Multi-dimensional array creation expressions can only be converted to expression trees if they declare their element type explicitly.
 > 5.  Late-binding expressions cannot be converted to expression trees.
-> 6.  When a variable or field is passed ByRef to an invocation expression but does not have exactly the same type as the ByRef parameter, or when a property is passed ByRef, normal VB semantics are that a copy of the argument is passed ByRef and its final value is then copied back into the variable or field or property- In expression trees, the copy-back does not happen.
+> 6.  When a variable or field is passed ByRef to an invocation expression but does not have exactly the same type as the ByRef parameter, or when a property is passed ByRef, normal VB semantics are that a copy of the argument is passed ByRef and its final value is then copied back into the variable or field or property. In expression trees, the copy-back does not happen.
 >
 > All these restrictions apply to nested lambda expressions as well.
 
@@ -197,9 +197,9 @@ Parenthesized subexpressions.
 
 Coercion expressions, provided the target type is one of the types listed above. Coercions to and from `String` are an exception to this rule and are only allowed on null values because `String` conversions are always done in the current culture of the execution environment at run time. Note that constant coercion expressions can only ever use intrinsic conversions.
 
-The `+`, `?` and `Not` unary operators, provided the operand and result is of a type listed above.
+The `+`, `-` and `Not` unary operators, provided the operand and result is of a type listed above.
 
-The `+`, `?`, `*`, `^`, `Mod`, `/`, `\`, `<<`, `>>`, `&`, `And`, `Or`, `Xor`, `AndAlso`, `OrElse`, `=`, `<`, `>`, `<>`, `<=`, and `=>` binary operators, provided each operand and result is of a type listed above.
+The `+`, `-`, `*`, `^`, `Mod`, `/`, `\`, `<<`, `>>`, `&`, `And`, `Or`, `Xor`, `AndAlso`, `OrElse`, `=`, `<`, `>`, `<>`, `<=`, and `=>` binary operators, provided each operand and result is of a type listed above.
 
 The conditional operator If, provided each operand and result is of a type listed above.
 
@@ -442,7 +442,7 @@ Module Test
             GetType(String), GetType(Double()) }
         Dim i As Integer
 
-        For i = 0 To t.Length ? 1
+        For i = 0 To t.Length - 1
             Console.WriteLine(t(i).Name)
         Next i
     End Sub
@@ -1182,21 +1182,19 @@ Given a method group, the most applicable method in the group for an argument li
 
 2.  Next, eliminate all members from the set that are inaccessible or not applicable (Section [Applicability To Argument List](expressions.md#applicability-to-argument-list)) to the argument list
 
-3.  Next, if one or more arguments are `AddressOf` or lambda expressions, then calculate the *delegate relaxation levels* for each such argument as below. If the worst (lowest) delegate relaxation level in `N` is worse than the lowest delegate relaxation level in `M`, then eliminate `N` from the set.
+3.  Next, if one or more arguments are `AddressOf` or lambda expressions, then calculate the *delegate relaxation levels* for each such argument as below. If the worst (lowest) delegate relaxation level in `N` is worse than the lowest delegate relaxation level in `M`, then eliminate `N` from the set. The delegate relaxation levels are as follows:
 
-4.  The delegate relaxation levels are as follows:
-
-    41. Error delegate relaxation level* - if the `AddressOf` or lambda cannot be converted to the delegate type.
+    31. *Error delegate relaxation level* -- if the `AddressOf` or lambda cannot be converted to the delegate type.
   
-    42. Narrowing delegate relaxation of return type or parameters* - if the argument is `AddressOf` or a lambda with a declared type and the conversion from its return type to the delegate return type is narrowing; or if the argument is a regular lambda and the conversion from any of its return expressions to the delegate return type is narrowing, or if the argument is an async lambda and the delegate return type is `Task(Of T)` and the conversion from any of its return expressions to `T` is narrowing; or if the argument is an iterator lambda and the delegate return type `IEnumerator(Of T)` or `IEnumerable(Of T)` and the conversion from any of its yield operands to `T` is narrowing.
+    32. *Narrowing delegate relaxation of return type or parameters* -- if the argument is `AddressOf` or a lambda with a declared type and the conversion from its return type to the delegate return type is narrowing; or if the argument is a regular lambda and the conversion from any of its return expressions to the delegate return type is narrowing, or if the argument is an async lambda and the delegate return type is `Task(Of T)` and the conversion from any of its return expressions to `T` is narrowing; or if the argument is an iterator lambda and the delegate return type `IEnumerator(Of T)` or `IEnumerable(Of T)` and the conversion from any of its yield operands to `T` is narrowing.
 
-    43. Widening delegate relaxation to delegate without signature* - if delegate type is `System.Delegate` or `System.MultiCastDelegate` or `System.Object`.
+    33. *Widening delegate relaxation to delegate without signature* -- if delegate type is `System.Delegate` or `System.MultiCastDelegate` or `System.Object`.
 
-    44. Drop return or arguments delegate relaxation* - if the argument is `AddressOf` or a lambda with a declared return type and the delegate type lacks a return type; or if the argument is a lambda with one or more return expressions and the delegate type lacks a return type; or if the argument is `AddressOf` or lambda with no parameters and the delegate type has parameters.
+    34. *Drop return or arguments delegate relaxation* -- if the argument is `AddressOf` or a lambda with a declared return type and the delegate type lacks a return type; or if the argument is a lambda with one or more return expressions and the delegate type lacks a return type; or if the argument is `AddressOf` or lambda with no parameters and the delegate type has parameters.
 
-    45. Widening delegate relaxation of return type* - if the argument is `AddressOf` or a lambda with a declared return type, and there is a widening conversion from its return type to that of the delegate; or if the argument is a regular lambda where the conversion from all return expressions to the delegate return type is widening or identity with at least one widening; or if the argument is an async lambda and the delegate is `Task(Of T)` or `Task` and the conversion from all return expressions to `T`/`Object` respectively is widening or identity with at least one widening; or if the argument is an iterator lambda and the delegate is `IEnumerator(Of T)` or `IEnumerable(Of T)` or `IEnumerator` or `IEnumerable` and the conversion from all return expressions to `T`/`Object` is widening or identity with at least one widening.
+    35. *Widening delegate relaxation of return type* -- if the argument is `AddressOf` or a lambda with a declared return type, and there is a widening conversion from its return type to that of the delegate; or if the argument is a regular lambda where the conversion from all return expressions to the delegate return type is widening or identity with at least one widening; or if the argument is an async lambda and the delegate is `Task(Of T)` or `Task` and the conversion from all return expressions to `T`/`Object` respectively is widening or identity with at least one widening; or if the argument is an iterator lambda and the delegate is `IEnumerator(Of T)` or `IEnumerable(Of T)` or `IEnumerator` or `IEnumerable` and the conversion from all return expressions to `T`/`Object` is widening or identity with at least one widening.
 
-    46. Identity delegate relaxation* - if the argument is an `AddressOf` or a lambda which matches the delegate exactly, with no widening or narrowing or dropping of parameters or returns or yields.Next, if some members of the set do not requiring narrowing conversions to be applicable to any of the arguments, then eliminate all members that do. For example:
+    36. *Identity delegate relaxation* -- if the argument is an `AddressOf` or a lambda which matches the delegate exactly, with no widening or narrowing or dropping of parameters or returns or yields.Next, if some members of the set do not requiring narrowing conversions to be applicable to any of the arguments, then eliminate all members that do. For example:
 
     ```vb
     Sub f(x As Object)
@@ -1215,11 +1213,11 @@ Given a method group, the most applicable method in the group for an argument li
 
     ```
 
-5.  Next, elimination is done based on narrowing as follows. (Note that, if Option Strict is On, then all members that require narrowing have already been judged inapplicable (Section [Applicability To Argument List](expressions.md#applicability-to-argument-list)) and removed by Step 2.)
+4.  Next, elimination is done based on narrowing as follows. (Note that, if Option Strict is On, then all members that require narrowing have already been judged inapplicable (Section [Applicability To Argument List](expressions.md#applicability-to-argument-list)) and removed by Step 2.)
 
-    51. If some instance members of the set only require narrowing conversions where the argument expression type is `Object`, then eliminate all other members.
-    52. If the set contains more than one member which requires narrowing only from `Object`, then the invocation target expression is reclassified as a late-bound method access (and an error is given if the type containing the method group is an interface, or if any of the applicable members were extension members).
-    53. If there are any candidates that only require narrowing from numeric literals, then chose the most specific among all remaining candidates by the steps below. If the winner requires only narrowing from numeric literals, then it is picked as the result of overload resolution; otherwise it is an error.
+    41. If some instance members of the set only require narrowing conversions where the argument expression type is `Object`, then eliminate all other members.
+    42. If the set contains more than one member which requires narrowing only from `Object`, then the invocation target expression is reclassified as a late-bound method access (and an error is given if the type containing the method group is an interface, or if any of the applicable members were extension members).
+    43. If there are any candidates that only require narrowing from numeric literals, then chose the most specific among all remaining candidates by the steps below. If the winner requires only narrowing from numeric literals, then it is picked as the result of overload resolution; otherwise it is an error.
 
     > __Annotation__
     > The justification for this rule is that if a program is loosely-typed (that is, most or all variables are declared as `Object`), overload resolution can be difficult when many conversions from `Object` are narrowing. Rather than have the overload resolution fail in many situations (requiring strong typing of the arguments to the method call), resolution the appropriate overloaded method to call is deferred until run time. This allows the loosely-typed call to succeed without additional casts.
@@ -1228,7 +1226,7 @@ Given a method group, the most applicable method in the group for an argument li
     >
     > Interfaces are excluded from this special rule because late binding always resolves against the members of the runtime class or structure type, which may have different names than the members of the interfaces they implement.
 
-6.  Next, if any instance methods remain in the set which do not require narrowing, then eliminate all extension methods from the set. For example:
+5.  Next, if any instance methods remain in the set which do not require narrowing, then eliminate all extension methods from the set. For example:
 
     ```vb
     Imports System.Runtime.CompilerServices
@@ -1266,11 +1264,11 @@ Given a method group, the most applicable method in the group for an argument li
     > __Annotation__
     > Extension methods are ignored if there are applicable instance methods to guarantee that adding an import (that might bring new extension methods into scope) will not cause a call on an existing instance method to rebind to an extension method. Given the broad scope of some extension methods (i.e. those defined on interfaces and/or type parameters), this is a safer approach to binding to extension methods.
 
-7.  Next, if, given any two members of the set `M` and `N`, `M` is more *specific* (Section [Specificity of members/types given an argument list](expressions.md#specificity-of-memberstypes-given-an-argument-list)) than `N` given the argument list, eliminate `N` from the set. If more than one member remains in the set and the remaining members are not equally specific given the argument list, a compile-time error results.
+6.  Next, if, given any two members of the set `M` and `N`, `M` is more *specific* (Section [Specificity of members/types given an argument list](expressions.md#specificity-of-memberstypes-given-an-argument-list)) than `N` given the argument list, eliminate `N` from the set. If more than one member remains in the set and the remaining members are not equally specific given the argument list, a compile-time error results.
 
-8.  Otherwise, given any two members of the set, `M` and `N`, apply the following tie-breaking rules, in order:
+7.  Otherwise, given any two members of the set, `M` and `N`, apply the following tie-breaking rules, in order:
 
-    81. If `M` does not have a ParamArray parameter but `N` does, or if both do but `M` passes fewer arguments into the ParamArray parameter than `N` does, then eliminate `N` from the set. For example:
+    71. If `M` does not have a ParamArray parameter but `N` does, or if both do but `M` passes fewer arguments into the ParamArray parameter than `N` does, then eliminate `N` from the set. For example:
 
         ```vb
         Module Test
@@ -1309,7 +1307,7 @@ Given a method group, the most applicable method in the group for an argument li
         > __Annotation__
         > When a class declares a method with a paramarray parameter, it is not uncommon to also include some of the expanded forms as regular methods. By doing so it is possible to avoid the allocation of an array instance that occurs when an expanded form of a method with a paramarray parameter is invoked.
 
-    82. If `M` is defined in a more derived type than `N`, eliminate `N` from the set. For example:
+    72. If `M` is defined in a more derived type than `N`, eliminate `N` from the set. For example:
 
         ```vb
         Class Base
@@ -1372,7 +1370,7 @@ Given a method group, the most applicable method in the group for an argument li
         End Module
         ```
 
-    83. If `M` and `N` are extension methods and the target type of `M` is a class or structure and the target type of `N` is an interface, eliminate `N` from the set. For example:
+    73. If `M` and `N` are extension methods and the target type of `M` is a class or structure and the target type of `N` is an interface, eliminate `N` from the set. For example:
 
         ```vb
         Imports System.Runtime.CompilerServices
@@ -1410,7 +1408,7 @@ Given a method group, the most applicable method in the group for an argument li
         End Module
         ```
 
-    84. If `M` and `N` are extension methods, and the target type of `M` and `N` are identical after type parameter substitution, and the target type of `M` before type parameter substitution does not contain type parameters but the target type of `N` does, then has fewer type parameters than the target type of `N`, eliminate `N` from the set. For example:
+    74. If `M` and `N` are extension methods, and the target type of `M` and `N` are identical after type parameter substitution, and the target type of `M` before type parameter substitution does not contain type parameters but the target type of `N` does, then has fewer type parameters than the target type of `N`, eliminate `N` from the set. For example:
 
         ```vb
         Imports System.Runtime.CompilerServices
@@ -1438,11 +1436,11 @@ Given a method group, the most applicable method in the group for an argument li
         End Module
         ```
 
-    85. Before type arguments have been substituted, if `M` is *less generic* (Section [Genericity](expressions.md#genericity)) than `N`, eliminate `N` from the set.
+    75. Before type arguments have been substituted, if `M` is *less generic* (Section [Genericity](expressions.md#genericity)) than `N`, eliminate `N` from the set.
 
-    86. If `M` is not an extension method and `N` is, eliminate `N` from the set.
+    76. If `M` is not an extension method and `N` is, eliminate `N` from the set.
 
-    87. If `M` and `N` are extension methods and `M` was found before `N` (Section [Extension Method Collection](expressions.md#extension-method-collection)), eliminate `N` from the set. For example:
+    77. If `M` and `N` are extension methods and `M` was found before `N` (Section [Extension Method Collection](expressions.md#extension-method-collection)), eliminate `N` from the set. For example:
 
         ```vb
         Imports System.Runtime.CompilerServices
@@ -1509,18 +1507,18 @@ Given a method group, the most applicable method in the group for an argument li
         End Module
         ```
 
-    88. If `M` and `N` both required type inference to produce type arguments, and `M` did not require determining the dominant type for any of its type arguments (i.e. each the type arguments inferred to a single type), but `N` did, eliminate `N` from the set.
+    78. If `M` and `N` both required type inference to produce type arguments, and `M` did not require determining the dominant type for any of its type arguments (i.e. each the type arguments inferred to a single type), but `N` did, eliminate `N` from the set.
 
         > __Annotation__
         > This rule ensures that overload resolution that succeeded in previous versions (where inferring multiple types for a type argument would cause an error), continue to produce the same results.
 
-    89. If overload resolution is being done to resolve the target of a delegate-creation expression from an `AddressOf` expression, and both the delegate and `M` are functions while `N` is a subroutine, eliminate `N` from the set. Likewise, if both the delegate and `M` are subroutines, while `N` is a function, eliminate `N` from the set.
+    79. If overload resolution is being done to resolve the target of a delegate-creation expression from an `AddressOf` expression, and both the delegate and `M` are functions while `N` is a subroutine, eliminate `N` from the set. Likewise, if both the delegate and `M` are subroutines, while `N` is a function, eliminate `N` from the set.
 
-    810. If `M` did not use any optional parameter defaults in place of explicit arguments, but `N` did, then eliminate `N` from the set.
+    710. If `M` did not use any optional parameter defaults in place of explicit arguments, but `N` did, then eliminate `N` from the set.
 
-    811. Before type arguments have been substituted, if `M` has *greater depth of genericity* (Section [Genericity](expressions.md#genericity)) than `N`, then eliminate `N` from the set.
+    711. Before type arguments have been substituted, if `M` has *greater depth of genericity* (Section [Genericity](expressions.md#genericity)) than `N`, then eliminate `N` from the set.
 
-9. Otherwise, the call is ambiguous and a compile-time error occurs.
+8. Otherwise, the call is ambiguous and a compile-time error occurs.
 
 #### Specificity of members/types given an argument list
 
@@ -1534,7 +1532,7 @@ A member `M` is considered *more specific* than `N` if their signatures are diff
 - There exists a widening conversion from the type of `Mj` to the type `Nj`, or
 
 > __Annotation__
-> that because parameters types are being compared without regard to the actual argument in this case, the widening conversion from constant expressions to a numeric type the value fits into is not considered in this case.
+> Because parameters types are being compared without regard to the actual argument in this case, the widening conversion from constant expressions to a numeric type the value fits into is not considered in this case.
 
 - `Aj` is the literal `0`, `Mj` is a numeric type and `Nj` is an enumerated type, or
 
@@ -1748,7 +1746,7 @@ If none of the above apply, then the optional parameter's default value is used 
 >
 > In addition to the optional parameters above, Microsoft Visual Basic also recognizes some additional optional parameters if they are imported from metadata (i.e. from a DLL reference). Upon importing from metadata, Visual Basic also treats the parameter `<Optional>` as indicative that the parameter is optional: in this way it is possible to import a declaration which has an optional parameter but no default value, even though this can't be expressed using the `Optional` keyword.
 >
-> If the optional parameter has the attribute `Microsoft.VisualBasic.CompilerServices.OptionCompareAttribute`, and the numeric literal 1 or 0 has a conversion to the parameter type, then the compiler uses as argument either the literal 1 if `Option Compare Text` is in effect, or the literal 0 if `Optional Compare Binary`is in effect.
+> If the optional parameter has the attribute `Microsoft.VisualBasic.CompilerServices.OptionCompareAttribute`, and the numeric literal 1 or 0 has a conversion to the parameter type, then the compiler uses as argument either the literal 1 if `Option Compare Text` is in effect, or the literal 0 if `Optional Compare Binary` is in effect.
 >
 > If the optional parameter has the attribute `System.Runtime.CompilerServices.IDispatchConstantAttribute`, and it has type `Object`, and it does not specify a default value, then the compiler uses the argument New System.Runtime.InteropServices.DispatchWrapper(Nothing).
 >
@@ -2289,7 +2287,7 @@ End Module
 
 If the argument to the delegate-creation expression is a lambda method, the lambda method must be applicable to the signature of the delegate type. A lambda method `L` is applicable to a delegate type `D` if:
 
-If` L` has parameters, `D` has the same number of parameters. (If `L` has no parameters, the parameters of `D` are ignored.)
+If `L` has parameters, `D` has the same number of parameters. (If `L` has no parameters, the parameters of `D` are ignored.)
 
 The parameter types of `L` each have a conversion to the type of the corresponding parameter type of `D`, and their modifiers (i.e. `ByRef`, `ByVal`) match.
 
@@ -2582,7 +2580,7 @@ When an expression contains two operators with the same precedence, the *associa
 
 ### Object Operands
 
-In addition to the regular types supported by each operator, all operators support operands of type `Object`. Operators applied to `Object` operands are handled similarly to method calls made on `Object` values: a late-bound method call might be chosen, in which case the run-time type of the operands, rather than the compile-time type, determines the validity and type of the operation. If strict semantics are specified by the compilation environment or by `Option Strict`, any operators with operands of type `Object` cause a compile-time error, except for the `TypeOf...Is`, `Is` and `Is Not` operators.
+In addition to the regular types supported by each operator, all operators support operands of type `Object`. Operators applied to `Object` operands are handled similarly to method calls made on `Object` values: a late-bound method call might be chosen, in which case the run-time type of the operands, rather than the compile-time type, determines the validity and type of the operation. If strict semantics are specified by the compilation environment or by `Option Strict`, any operators with operands of type `Object` cause a compile-time error, except for the `TypeOf...Is`, `Is` and `IsNot` operators.
 
 When operator resolution determines that an operation should be performed late-bound, the outcome of the operation is the result of applying the operator to the operand types if the run-time types of the operands are types that are supported by the operator. The value `Nothing` is treated as the default value of the type of the other operand in a binary operator expression. In a unary operator expression, or if both operands are `Nothing` in a binary operator expression, the type of the operation is `Integer` or the only result type of the operator, if the operator does not result in `Integer`. The result of the operation is always then cast back to `Object`. If the operand types have no valid operator, a `System.InvalidCastException` exception is thrown. Conversions at run time are done without regard to whether they are implicit or explicit.
 
@@ -2717,7 +2715,7 @@ Despite these general rules, however, there are a number of special cases called
 
 ## Arithmetic Operators
 
-The `*`, `/`, `\`, `^`, `Mod`, `+`, and `?` operators are the *arithmetic operators*.
+The `*`, `/`, `\`, `^`, `Mod`, `+`, and `-` operators are the *arithmetic operators*.
 
 Floating-point arithmetic operations may be performed with higher precision than the result type of the operation. For example, some hardware architectures support an "extended" or "long double" floating-point type with greater range and precision than the `Double` type, and implicitly perform all floating-point operations using this higher-precision type. Hardware architectures can be made to perform floating-point operations with less precision only at excessive cost in performance; rather than require an implementation to forfeit both performance and precision, Visual Basic allows the higher-precision type to be used for all floating-point operations. Other than delivering more precise results, this rarely has any measurable effects. However, in expressions of the form `x * y / z`, where the multiplication produces a result that is outside the `Double` range, but the subsequent division brings the temporary result back into the `Double` range, the fact that the expression is evaluated in a higher-range format may cause a finite result to be produced instead of infinity.
 
@@ -2926,7 +2924,7 @@ __Operation Type:__
 | __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | Do  | Ob  | 
 | __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     |     | Ob  | 
 
-The integer division operator is defined for `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, and `Long`. If the value of the right operand is zero, a `System.DivideByZeroException` exception is thrown. The division rounds the result towards zero, and the absolute value of the result is the largest possible integer that is less than the absolute value of the quotient of the two operands. The result is zero or positive when the two operands have the same sign, and zero or negative when the two operands have opposite signs. If the left operand is the maximum negative `SByte`, `Short`, `Integer`, or `Long`, and the right operand is ?1`,` an overflow occurs; if integer overflow checking is on, a `System.OverflowException` exception is thrown. Otherwise, the overflow is not reported and the result is instead the value of the left operand.
+The integer division operator is defined for `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, and `Long`. If the value of the right operand is zero, a `System.DivideByZeroException` exception is thrown. The division rounds the result towards zero, and the absolute value of the result is the largest possible integer that is less than the absolute value of the quotient of the two operands. The result is zero or positive when the two operands have the same sign, and zero or negative when the two operands have opposite signs. If the left operand is the maximum negative `SByte`, `Short`, `Integer`, or `Long`, and the right operand is `-1`, an overflow occurs; if integer overflow checking is on, a `System.OverflowException` exception is thrown. Otherwise, the overflow is not reported and the result is instead the value of the left operand.
 
 > __Annotation__
 > As the two operands for unsigned types will always be zero or positive, the result is always zero or positive.  As the result of the expression will always be less than or equal to the largest of the two operands, it is not possible for an overflow to occur.  As such integer overflow checking is not performed for integer divide with two unsigned integers. The result is the type as that of the left operand.
@@ -2972,7 +2970,7 @@ IntegerDivisionOperatorExpression
 
 The `Mod` (modulo) operator computes the remainder of the division between two operands. The `Mod` operator is defined for the following types:
 
-`Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong` and `Long`. The result of` x Mod y` is the value produced by `x ? (x \ y) * y`. If `y` is zero, a `System.DivideByZeroException` exception is thrown. The modulo operator never causes an overflow.
+`Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong` and `Long`. The result of `x Mod y` is the value produced by `x - (x \ y) * y`. If `y` is zero, a `System.DivideByZeroException` exception is thrown. The modulo operator never causes an overflow.
 
 `Single` and `Double`. The remainder is computed according to the rules of IEEE 754 arithmetic.
 
@@ -3076,16 +3074,16 @@ __Operation Type:__
 |--------|----|----|----|----|----|----|----|----|----|----|----|----|-----|-----|----|----|
 | __Bo__ | Bo | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Bo | Ob | 
 | __SB__ |    | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
-| __By__ |    |    | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do |    | 
-| __Sh__ |    |    |    | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do |    | 
-| __US__ |    |    |    |    | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do |    | 
-| __In__ |    |    |    |    |    | In | Lo | Lo | De | De | Si | Do | Err | Err | Do |    | 
+| __By__ |    |    | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
+| __Sh__ |    |    |    | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
+| __US__ |    |    |    |    | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
+| __In__ |    |    |    |    |    | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
 | __UI__ |    |    |    |    |    |    | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
 | __Lo__ |    |    |    |    |    |    |    | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
 | __UL__ |    |    |    |    |    |    |    |    | UL | De | Si | Do | Err | Err | Do | Ob | 
 | __De__ |    |    |    |    |    |    |    |    |    | De | Si | Do | Err | Err | Do | Ob | 
 | __Si__ |    |    |    |    |    |    |    |    |    |    | Si | Do | Err | Err | Do | Ob | 
-| __Do__ |    |    |    |    |    |    |    |    |    |    |    | Do | Err | Err | Do |    | 
+| __Do__ |    |    |    |    |    |    |    |    |    |    |    | Do | Err | Err | Do | Ob | 
 | __Da__ |    |    |    |    |    |    |    |    |    |    |    |    | Da  | Err | Da | Ob | 
 | __Ch__ |    |    |    |    |    |    |    |    |    |    |    |    |     | Ch  | St | Ob | 
 | __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | St | Ob | 
@@ -3110,7 +3108,7 @@ The character `?` matches any single character.
 
 The character `*` matches zero or more characters.
 
-The character `#` matches any single digit (0?9).
+The character `#` matches any single digit (0-9).
 
 A list of characters surrounded by brackets (`[ab...]`) matches any single character in the list.
 
@@ -3123,7 +3121,7 @@ Two characters in a character list separated by a hyphen (`-`) specify a range o
 
 Also note that character comparisons and ordering for character lists are dependent on the type of comparisons being used. If binary comparisons are being used, character comparisons and ordering are based on the numeric Unicode values. If text comparisons are being used, character comparisons and ordering are based on the current locale being used on the .NET Framework.
 
-In some languages, special characters in the alphabet represent two separate characters and vice versa. For example, several languages use the character `æ` to represent the characters `a` and `e` when they appear together, while the characters `?` and `O` can be used to represent the character `Ô`. When using text comparisons, the `Like` operator recognizes such cultural equivalences. In that case, an occurrence of the single special character in either pattern or string matches the equivalent two-character sequence in the other string. Similarly, a single special character in pattern enclosed in brackets (by itself, in a list, or in a range) matches the equivalent two-character sequence in the string and vice versa.
+In some languages, special characters in the alphabet represent two separate characters and vice versa. For example, several languages use the character `æ` to represent the characters `a` and `e` when they appear together, while the characters `^` and `O` can be used to represent the character `Ô`. When using text comparisons, the `Like` operator recognizes such cultural equivalences. In that case, an occurrence of the single special character in either pattern or string matches the equivalent two-character sequence in the other string. Similarly, a single special character in pattern enclosed in brackets (by itself, in a list, or in a range) matches the equivalent two-character sequence in the string and vice versa.
 
 In a `Like` expression where both operands are `Nothing` or one operand has an intrinsic conversion to `String` and the other operand is `Nothing`, `Nothing` is treated as if it were the empty string literal `""`.
 
@@ -3201,7 +3199,7 @@ A logical `Or` operation is performed on its two operands.
 
 A logical exclusive-`Or` operation is performed on its two operands.
 
-For `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`,` ULong`, `Long`, and all enumerated types, the specified operation is performed on each bit of the binary representation of the two operand(s):
+For `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, `Long`, and all enumerated types, the specified operation is performed on each bit of the binary representation of the two operand(s):
 
 `And`: The result bit is 1 if both bits are 1; otherwise the result bit is 0.
 
@@ -3378,7 +3376,7 @@ ShortCircuitLogicalOperatorExpression
 
 ## Shift Operators
 
-The binary operators `<<` and `>>` perform bit shifting operations. The operators are defined for the `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`,` ULong` and `Long` types. Unlike the other binary operators, the result type of a shift operation is determined as if the operator was a unary operator with just the left operand. The type of the right operand must be implicitly convertible to `Integer` and is not used in determining the result type of the operation.
+The binary operators `<<` and `>>` perform bit shifting operations. The operators are defined for the `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong` and `Long` types. Unlike the other binary operators, the result type of a shift operation is determined as if the operator was a unary operator with just the left operand. The type of the right operand must be implicitly convertible to `Integer` and is not used in determining the result type of the operation.
 
 The `<<` operator causes the bits in the first operand to be shifted left the number of places specified by the shift amount. The high-order bits outside the range of the result type are discarded and the low-order vacated bit positions are zero-filled.
 
@@ -3909,7 +3907,7 @@ ExpressionRangeVariableDeclaration
 Query expressions are implemented by translating the expression into calls to well-known methods on a collection type. These well-defined methods define the element type of the queryable collection as well as the result types of query operators executed on the collection. Each query operator specifies the method or methods that the query operator is generally translated into, although the specific translation is implementation dependent. The methods are given in the specification using a general format that looks like:
 
 ```vb
-Function Select(selector As Func(Of T, R)) As CR</sub>
+Function Select(selector As Func(Of T, R)) As CR
 ```
 
 The following applies to the methods:
@@ -3961,6 +3959,7 @@ A queryable collection type must satisfy one of the following conditions, in ord
 It must define a conforming `Select` method.
 
 It must have have one of the following methods
+
 ```vb
 Function AsEnumerable() As CT
 Function AsQueryable() As CT
@@ -4423,13 +4422,13 @@ A `Skip` query operator is supported only if the collection type contains a meth
 Function Skip(count As N) As CT
 ```
 
-A `TakeWhile` query operator is supported only if the collection type contains a method:
+A `Take While` query operator is supported only if the collection type contains a method:
 
 ```vb
 Function TakeWhile(predicate As Func(Of T, B)) As CT
 ```
 
-A `SkipWhile` query operator is supported only if the collection type contains a method:
+A `Skip While` query operator is supported only if the collection type contains a method:
 
 ```vb
 Function SkipWhile(predicate As Func(Of T, B)) As CT
@@ -4748,7 +4747,7 @@ AggregateQueryOperator
 
 ### Group Join Query Operator
 
-The `Group Join` query operator combines the functions of the `Join` and `Group By` query operators into a single operator. `Group``Join` joins two collections based on matching keys extracted from the elements, grouping together all of the elements on the right side of the join that match a particular element on the left side of the join. Thus, the operator produces a set of hierarchical results. For example, the following query produces elements that contain a single customer's name, a group of all of their orders, and the total amount of all of those orders:
+The `Group Join` query operator combines the functions of the `Join` and `Group By` query operators into a single operator. `Group Join` joins two collections based on matching keys extracted from the elements, grouping together all of the elements on the right side of the join that match a particular element on the left side of the join. Thus, the operator produces a set of hierarchical results. For example, the following query produces elements that contain a single customer's name, a group of all of their orders, and the total amount of all of those orders:
 
 ```vb
 Dim custsWithOrders = _

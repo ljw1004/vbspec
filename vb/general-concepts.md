@@ -736,7 +736,7 @@ Class TestDerived
 End Class
 ```
 
-A type may choose to re-implement an interface that its base type implements. To re-implement the interface, the type must explicitly state that it implements the interface. A type re-implementing an interface may choose to re-implement only some, but not all, of the members of the interface  any members not re-implemented continue to use the base type's implementation. For example:
+A type may choose to re-implement an interface that its base type implements. To re-implement the interface, the type must explicitly state that it implements the interface. A type re-implementing an interface may choose to re-implement only some, but not all, of the members of the interface -- any members not re-implemented continue to use the base type's implementation. For example:
 
 ```vb
 Class TestBase
@@ -1964,7 +1964,7 @@ In the case where a type must be valid be contravariantly and covariantly (such 
 
 > __Annotation__
 > Co- and contra-variance give rise to a "diamond ambiguity problem". Consider the following code:
-
+>
 >     Class C
 >        Implements IEnumerable(Of String)
 >        Implements IEnumerable(Of Exception)
@@ -1982,5 +1982,5 @@ In the case where a type must be valid be contravariantly and covariantly (such 
 >     
 >     Dim c As IEnumerable(Of Object) = New C
 >     c.GetEnumerator()
-
+>
 > The class `C` can be converted to `IEnumerable(Of Object)` in two ways, both through covariant conversion from `IEnumerable(Of String)` and through covariant conversion from `IEnumerable(Of Exception)`. The CLR does not specify which of the two methods will be called by `c.GetEnumerator()`. In general, whenever a class is declared to implement a covariant interface with two different generic arguments that have a common supertype (e.g. in this case `String` and `Exception` have the common supertype `Object`), or a class is declared to implement a contravariant interface with two different generic arguments that have a common subtype, then ambiguity is likely to arise. The compiler gives a warning on such declarations.

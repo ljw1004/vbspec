@@ -336,7 +336,7 @@ Enum Color
 End Enum
 ```
 
-The example shows an enumeration that has two enumeration members - `Blue` and `Max` - that have the same associated value.
+The example shows an enumeration that has two enumeration members -- `Blue` and `Max` -- that have the same associated value.
 
 If the first enumerator value definition in the enumeration has no initializer, the value of the corresponding constant is `0`. An enumeration value definition without an initializer gives the enumerator the value obtained by increasing the value of the previous enumeration value by `1`. This increased value must be within the range of values that can be represented by the underlying type.
 
@@ -727,7 +727,7 @@ ModuleMemberDeclaration
 
 ## Interfaces
 
-*Interfaces* are reference types that other types implement to guarantee that they support certain methods. An interface is never directly created and has no actual representation - other types must be converted to an interface type. An interface defines a contract. A class or structure that implements an interface must adhere to its contract.
+*Interfaces* are reference types that other types implement to guarantee that they support certain methods. An interface is never directly created and has no actual representation -- other types must be converted to an interface type. An interface defines a contract. A class or structure that implements an interface must adhere to its contract.
 
 The following example shows an interface that contains a default property `Item`, an event `E`, a method `F`, and a property `P`:
 
@@ -800,7 +800,7 @@ InterfaceDeclaration
 
 ### Interface Inheritance
 
-The base interfaces of an interface are the explicit base interfaces and their base interfaces. In other words, the set of base interfaces is the complete transitive closure of the explicit base interfaces, their explicit base interfaces, and so on. If an interface declaration has no explicit interface base, then there is no base interface for the type  interfaces do not inherit from `Object` (although they do have a widening conversion to `Object`). In the following example, the base interfaces of `IComboBox` are `IControl`, `ITextBox`, and `IListBox`.
+The base interfaces of an interface are the explicit base interfaces and their base interfaces. In other words, the set of base interfaces is the complete transitive closure of the explicit base interfaces, their explicit base interfaces, and so on. If an interface declaration has no explicit interface base, then there is no base interface for the type -- interfaces do not inherit from `Object` (although they do have a widening conversion to `Object`). In the following example, the base interfaces of `IComboBox` are `IControl`, `ITextBox`, and `IListBox`.
 
 ```vb
 Interface IControl
@@ -940,7 +940,7 @@ arr(4) = 16
 arr(5) = 25
 ```
 
-Each dimension of an array has an associated length. Dimension lengths are not part of the type of the array, but rather are established when an instance of the array type is created at run time. The length of a dimension determines the valid range of indices for that dimension: for a dimension of length `N`, indices can range from zero to `N  1`. If a dimension is of length zero, there are no valid indices for that dimension. The total number of elements in an array is the product of the lengths of each dimension in the array. If any of the dimensions of an array has a length of zero, the array is said to be empty. The element type of an array can be any type.
+Each dimension of an array has an associated length. Dimension lengths are not part of the type of the array, but rather are established when an instance of the array type is created at run time. The length of a dimension determines the valid range of indices for that dimension: for a dimension of length `N`, indices can range from zero to `N-1`. If a dimension is of length zero, there are no valid indices for that dimension. The total number of elements in an array is the product of the lengths of each dimension in the array. If any of the dimensions of an array has a length of zero, the array is said to be empty. The element type of an array can be any type.
 
 Array types are specified by adding a modifier to an existing type name. The modifier consists of a left parenthesis, a set of zero or more commas, and a right parenthesis. The type modified is the element type of the array, and the number of dimensions is the number of commas plus one. If more than one modifier is specified, then the element type of the array is an array. The modifiers are read left to right, with the leftmost modifier being the outermost array. In the example
 

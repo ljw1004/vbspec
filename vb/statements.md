@@ -17,6 +17,8 @@ Statement
     | BranchStatement
     | ArrayHandlingStatement
     | UsingStatement
+	| AwaitStatement
+	| YieldStatement
     ;
 ```
 
@@ -140,7 +142,7 @@ As detailed in Section [Await Operator](expressions.md#await-operator), executio
 > If Not temp.IsCompleted Then
 >        temp.OnCompleted(resumptionDelegate)
 >        Return [task]
->        CONT:   ' invocation of *resumptionDelegate* will resume here
+>        CONT:   ' invocation of 'resumptionDelegate' will resume here
 > End If
 > Dim x = temp.GetResult()
 > ```
@@ -1084,7 +1086,7 @@ Although `Case 10` and `Case 20 - 10` select for the same value, `Case 10` is ex
 
 A `Case` clause may take two forms. One form is an optional `Is` keyword, a comparison operator, and an expression. The expression is converted to the type of the `Select` expression; if the expression is not implicitly convertible to the type of the `Select` expression, a compile-time error occurs. If the `Select` expression is *E*, the comparison operator is *Op*, and the `Case` expression is *E1*, the case is evaluated as *E OP E1*. The operator must be valid for the types of the two expressions; otherwise a compile-time error occurs.
 
-The other form is an expression optionally followed by the keyword `To` and a second expression. Both expressions are converted to the type of the `Select` expression; if either expression is not implicitly convertible to the type of the `Select` expression, a compile-time error occurs. If the `Select` expression is *E,* the first `Case` expression is *E1*, and the second `Case` expression is *E2*, the `Case` is evaluated either as *E = E1* (if no *E2* is specified) or *(E >= E1) And (E <= E2)*. The operators must be valid for the types of the two expressions; otherwise a compile-time error occurs.
+The other form is an expression optionally followed by the keyword `To` and a second expression. Both expressions are converted to the type of the `Select` expression; if either expression is not implicitly convertible to the type of the `Select` expression, a compile-time error occurs. If the `Select` expression is `E`, the first `Case` expression is `E1`, and the second `Case` expression is `E2`, the `Case` is evaluated either as `E = E1` (if no `E2` is specified) or `(E >= E1) And (E <= E2)`. The operators must be valid for the types of the two expressions; otherwise a compile-time error occurs.
 
 ```antlr
 SelectStatement
@@ -1257,7 +1259,7 @@ A `For` statement must be closed by a matching `Next` statement. A `Next` statem
 
 At the beginning of the loop, the three expressions are evaluated in textual order and the lower bound expression is assigned to the loop control variable. If the step value is omitted, it is implicitly the literal `1`, converted to the type of the loop control variable. The three expressions are only ever evaluated at the beginning of the loop.
 
-At the beginning of each loop, the control variable is compared to see if it is greater than the end point if the step expression is positive, or less than the end point if the step expression is negative. If it is, the `For` loop terminates; otherwise the loop block executes. If the loop control variable is not a primitive type, the comparison operator is determined by whether the expression `step >= step -- step` is true or false. At the `Next` statement, the step value is added to the control variable and execution returns to the top of the loop.
+At the beginning of each loop, the control variable is compared to see if it is greater than the end point if the step expression is positive, or less than the end point if the step expression is negative. If it is, the `For` loop terminates; otherwise the loop block executes. If the loop control variable is not a primitive type, the comparison operator is determined by whether the expression `step >= step - step` is true or false. At the `Next` statement, the step value is added to the control variable and execution returns to the top of the loop.
 
 Note that a new copy of the loop control variable is *not* created on each iteration of the loop block. In this respect, the `For` statement differs from `For Each` (Section [For Each...Next Statements](statements.md#for-eachnext-statements)).
 
@@ -1666,7 +1668,7 @@ An `On Error` statement modifies the most recent exception-handling state. It ma
 
 `On Error GoTo` *LabelName* establishes the label as the most recent exception-handler location. This statement cannot be used in a method that contains a lambda or query expression.
 
-`On Error  ``Next`, establishes the `Resume Next` behavior as the most recent exception-handler location.
+`On Error Resume Next`, establishes the `Resume Next` behavior as the most recent exception-handler location.
 
 ```antlr
 OnErrorStatement

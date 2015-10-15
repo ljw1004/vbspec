@@ -597,8 +597,6 @@ Module Test
 End Module
 ```
 
-Here is the grammar:
-
 ```antlr
 StringLiteral
     : DoubleQuoteCharacter StringCharacter* DoubleQuoteCharacter

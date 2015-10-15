@@ -346,7 +346,7 @@ Values: 123, 123
 This is because the inner boxed value is not copied when the value is copied. Thus, both `val1.Value` and `val2.Value` have a reference to the same boxed value type.
 
 > __Annotation__
-> The fact that inner boxed value types are not copied is a limitation of the .NET type system - to ensure that all inner boxed value types were copied whenever a value of type `Object` was copied would be prohibitively expensive.
+> The fact that inner boxed value types are not copied is a limitation of the .NET type system -- to ensure that all inner boxed value types were copied whenever a value of type `Object` was copied would be prohibitively expensive.
 
 As previously described, boxed value types can only be unboxed to their original type. Boxed primitive types, however, are treated specially when typed as `Object`. They can be converted to any other primitive type that they have a conversion to. For example:
 
@@ -741,9 +741,9 @@ The following sections cover how the most specific conversions are determined. T
 
 If an intrinsic widening conversion exists from a type `A` to a type `B`, and if neither `A` nor `B` are interfaces, then `A` is *encompassed* by `B`, and `B` *encompasses* `A`.
 
-The *most encompassing* type in a set of types is the one type that encompasses all other types in the set. If no single type encompasses all other types, then the set has no most encompassing type. In intuitive terms, the most encompassing type is the "largest" type in the set&mdash;the one type to which each of the other types can be converted through a widening conversion.
+The *most encompassing* type in a set of types is the one type that encompasses all other types in the set. If no single type encompasses all other types, then the set has no most encompassing type. In intuitive terms, the most encompassing type is the "largest" type in the set -- the one type to which each of the other types can be converted through a widening conversion.
 
-The *most encompassed* type in a set of types is the one type that is encompassed by all other types in the set. If no single type is encompassed by all other types, then the set has no most encompassed type. In intuitive terms, the most encompassed type is the "smallest" type in the set&mdash;the one type that can be converted to each of the other types through a narrowing conversion.
+The *most encompassed* type in a set of types is the one type that is encompassed by all other types in the set. If no single type is encompassed by all other types, then the set has no most encompassed type. In intuitive terms, the most encompassed type is the "smallest" type in the set -- the one type that can be converted to each of the other types through a narrowing conversion.
 
 When collecting the candidate user-defined conversions for a type `T?`, the user-defined conversion operators defined by `T` are used instead. If the type being converted to is also a nullable value type, then any of `T`'s user-defined conversions operators that involve only non-nullable value types are lifted. A conversion operator from `T` to `S` is lifted to be a conversion from `T?` to `S?` and is evaluated by converting `T?` to `T`, if necessary, then evaluating the user-defined conversion operator from `T` to `S` and then converting `S` to `S?`, if necessary. If the value being converted is `Nothing`, however, a lifted conversion operator converts directly into a value of `Nothing` typed as `S?`. For example:
 
