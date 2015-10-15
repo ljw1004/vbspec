@@ -1,21 +1,35 @@
 ﻿Module Module1
 
     Sub Main()
-        Dim fn = PickUniqueFilename("webmd.docx")
-        Dim files = {"introduction.md", "lexical-grammar.md", "preprocessing-directives.md",
-                     "general-concepts.md", "attributes.md", "source-files-And-namespaces.md", "types.md",
-                     "conversions.md", "type-members.md", "statements.md", "expressions.md",
-                     "documentation-comments.md"}
-        Dim md = MarkdownSpec.ReadFiles(From file In files Select $"..\..\..\vb\{file}")
+        ' Read readme.md to find a list of files, and read them in
+        Dim readme = FSharp.Markdown.Markdown.Parse(IO.File.ReadAllText("readme.md"))
+        Dim files = (From list In readme.Paragraphs.OfType(Of FSharp.Markdown.MarkdownParagraph.ListBlock)
+                     Let items = list.Item2
+                     From par In items
+                     From spanpar In par.OfType(Of FSharp.Markdown.MarkdownParagraph.Span)
+                     Let spans = spanpar.Item
+                     From link In spans.OfType(Of FSharp.Markdown.MarkdownSpan.DirectLink)
+                     Let url = link.Item2.Item1
+                     Select url).ToList.Distinct
+        Dim md = MarkdownSpec.ReadFiles(files)
 
-        Dim grammar = Antlr.ReadFile("vb.g4")
+        ' Now md.Gramar contains the grammar as extracted out of the *.md files, and moreover has
+        ' correct references to within the spec. We'll check that it has the same productions as
+        ' in the corresponding ANTLR file
+        Dim antlrfn = IO.Directory.GetFiles(".", "*.g4").First
+        Dim htmlfn = IO.Path.ChangeExtension(antlrfn, ".html")
+        Dim grammar = Antlr.ReadFile(antlrfn)
         If Not grammar.AreProductionsSameAs(md.Grammar) Then Throw New Exception("Grammar mismatch")
         md.Grammar.Name = grammar.Name
-        Html.WriteFile(md.Grammar, "vb.html")
 
-        md.WriteFile("vb-template.docx", fn)
+        ' Generate the Specification.docx file
+        Dim fn = PickUniqueFilename("Specification.docx")
+        md.WriteFile("template.docx", fn)
         Process.Start(fn)
-        Process.Start("vb.html")
+
+        ' Generate the grammar.html file
+        Html.WriteFile(md.Grammar, htmlfn)
+        Process.Start(htmlfn)
     End Sub
 
 
