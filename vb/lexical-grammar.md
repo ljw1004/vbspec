@@ -368,7 +368,7 @@ Keyword
     ;
 ```
 
-|-----------------|----------------|-------------|---------------|
+| --------------- | -------------- | ----------- | ------------- |
 | AddHandler      | AddressOf      | Alias       | And           | 
 | AndAlso         | As             | Boolean     | ByRef         | 
 | Byte            | ByVal          | Call        | Case          | 

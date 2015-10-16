@@ -125,11 +125,17 @@ The following types of expressions can be reclassified:
     ```
 
 5. A property group can be reclassified as a property access. The property group expression is interpreted as an index expression with empty parentheses (that is, `f` is interpreted as `f()`).
+
 6. A property access can be reclassified as a value. The property access expression is interpreted as an invocation expression of the `Get` accessor of the property. If the property has no getter, then a compile-time error occurs.
+
 7. A late-bound access can be reclassified as a late-bound method or late-bound property access. In a situation where a late-bound access can be reclassified both as a method access and as a property access, reclassification to a property access is preferred.
+
 8. A late-bound access can be reclassified as a value.
+
 9. An array literal can be reclassified as a value. The type of the value is determined as follows:
+
     91. If the reclassification occurs in the context of a conversion where the target type is known and the target type is an array type, then the array literal is reclassified as a value of type T(). If the target type is `System.Collections.Generic.IList(Of T)`, `IReadOnlyList(Of T)`, `ICollection(Of T)`, `IReadOnlyCollection(Of T)`, or `IEnumerable(Of T)`, and the array literal has one level of nesting, then the array literal is reclassified as a value of type `T()`.
+
     92. Otherwise, the array literal is reclassified to a value whose type is an array of rank equal to the level of nesting is used, with element type determined by the dominant type of the elements in the initializer; if no dominant type can be determined, `Object` is used. For example:
 
         ```vb
@@ -239,38 +245,25 @@ The arguments to a late-bound member access are evaluated in the order they appe
 
 ```vb
 Class C
-
     Public Sub f(ByVal x As Integer, ByVal y As Integer)
-
     End Sub
-
 End Class
 
 Module Module1
     Sub Main()
-
         Console.Write("Early-bound: ")
-
         Dim c As C = New C
-
         c.f(y:=t("y"), x:=t("x"))
 
         Console.Write(vbCrLf & "Late-bound: ")
-
         Dim o As Object = New C
-
         o.f(y:=t("y"), x:=t("x"))
-
     End Sub
 
     Function t(ByVal s As String) As Integer
-
         Console.Write(s)
-
         Return 0
-
     End Function
-
 End Module
 ```
 
@@ -278,7 +271,6 @@ This code displays:
 
 ```vb
 Early-bound: xy
-
 Late-bound: yx
 ```
 
@@ -575,8 +567,11 @@ GetXmlNamespaceExpression
 A member access expression is used to access a member of an entity. A member access of the form `E.I(Of A)`, where `E` is an expression, a non-array type name, the keyword `Global`, or omitted and `I` is an identifier with an optional type argument list `A`, is evaluated and classified as follows:
 
 1. If `E` is omitted, then the expression from the immediately containing `With` statement is substituted for `E` and the member access is performed. If there is no containing `With` statement, a compile-time error occurs.
+
 2. If `E` is classified as a namespace or `E` is the keyword `Global`, then the member lookup is done in the context of the specified namespace. If `I` is the name of an accessible member of that namespace with the same number of type parameters as was supplied in the type argument list, if any, then the result is that member. The result is classified as a namespace or a type depending on the member. Otherwise, a compile-time error occurs.
+
 3. If `E` is a type or an expression classified as a type, then the member lookup is done in the context of the specified type. If `I` is the name of an accessible member of `E`, then `E.I` is evaluated and classified as follows:
+
     31. If `I` is the keyword `New` and `E` is not an enumeration then a compile-time error occurs.
     32. If `I` identifies a type with the same number of type parameters as was supplied in the type argument list, if any, then the result is that type.
     33. If `I` identifies one or more methods, then the result is a method group with the associated type argument list and no associated target expression.
@@ -586,7 +581,9 @@ A member access expression is used to access a member of an entity. A member acc
     37. If `I` identifies a constant and no type argument list was supplied, then the result is the value of that constant.
     38. If `I` identifies an enumeration member and no type argument list was supplied, then the result is the value of that enumeration member.
     39. Otherwise, `E.I` is an invalid member reference, and a compile-time error occurs.
+
 4. If `E` is classified as a variable or value, the type of which is `T`, then the member lookup is done in the context of `T`. If `I` is the name of an accessible member of `T`, then `E.I` is evaluated and classified as follows:
+
     41. If `I` is the keyword `New`, `E` is  `Me`, `MyBase`, or `MyClass`, and no type arguments were supplied, then the result is a method group representing the instance constructors of the type of `E` with an associated target expression of `E` and no type argument list. Otherwise, a compile-time error occurs.
     42. If `I` identifies one or more methods, including extension methods if `T` is not `Object`, then the result is a method group with the associated type argument list and an associated target expression of `E`.
     43. If `I` identifies one or more properties and no type arguments were supplied, then the result is a property group with an associated target expression of `E`.
@@ -595,6 +592,7 @@ A member access expression is used to access a member of an entity. A member acc
     46. If `I` identifies a constant and no type arguments were supplied, then the result is the value of that constant.
     47. If `I` identifies an enumeration member and no type arguments were supplied, then the result is the value of that enumeration member.
     48. If `T` is `Object`, then the result is a late-bound member lookup classified as a late-bound access with the associated type argument list and an associated target expression of `E`.
+
 5. Otherwise, `E.I` is an invalid member reference, and a compile-time error occurs.
 
 A member access of the form `MyClass.I(Of A)` is equivalent to `Me.I(Of A)`, but all members accessed on it are treated as if the members are non-overridable. Thus, the member accessed will not be affected by the run-time type of the value on which the member is being accessed.
@@ -5534,8 +5532,11 @@ The await operator is related to async methods, which are described in Section [
 The await operator takes a single expression which must be classified as a value and whose type must be an *awaitable* type, or `Object`. If its type is `Object` then all processing is deferred until run-time. A type `C` is said to be awaitable if all of the following are true:
 
 1. `C` contains an accessible instance or extension method named `GetAwaiter` which has no arguments and which returns some type `E`;
+
 2. `E` contains a readable instance or extension property named `IsCompleted` which takes no arguments and has type Boolean;
+
 3. `E` contains an accessible instance or extension method named `GetResult` which takes no arguments;
+
 4. `E` implements either `System.Runtime.CompilerServices.INotifyCompletion` or `ICriticalNotifyCompletion`.
 
 If `GetResult` was a `Sub`, then the await expression is classified as void. Otherwise, the await expression is classified as a value and its type is the return type of the `GetResult` method.
@@ -5586,12 +5587,19 @@ End Structure
 When control flow reaches an `Await` operator, behavior is as follows.
 
 1.  The `GetAwaiter` method of the await operand is invoked. The result of this invocation is termed the *awaiter*.
+
 2.  The awaiter's `IsCompleted` property is retrieved. If the result is true then:
+
     21. The `GetResult` method of the awaiter is invoked. If `GetResult` was a function, then the value of the await expression is the return value of this function.
+
 3.  If the IsCompleted property isn't true then:
+
     31. Either `ICriticalNotifyCompletion.UnsafeOnCompleted` is invoked on the awaiter (if the awaiter's type `E` implements `ICriticalNotifyCompletion`) or `INotifyCompletion.OnCompleted` (otherwise). In both cases it passes a *resumption delegate* associated with the current instance of the async method.
+
     32. The control point of the current async method instance is suspended, and control flow resumes in the *current caller* (defined in Section [Async Methods](statements.md#async-methods)).
+
     33. If later the resumption delegate is invoked,
+
         331. the resumption delegate first restores `System.Threading.Thread.CurrentThread.ExecutionContext` to what it was at the time `OnCompleted` was called,
         332. then it resumes control flow at the control point of the async method instance (see Section [Async Methods](statements.md#async-methods)),
         333. where it calls the `GetResult` method of the awaiter, as in 2.1 above.

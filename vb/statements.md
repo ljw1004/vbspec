@@ -1667,9 +1667,9 @@ An `On Error` statement modifies the most recent exception-handling state. It ma
 
 `On Error GoTo 0` resets the most recent exception-handler location to `Nothing`.
 
-`On Error GoTo` *LabelName* establishes the label as the most recent exception-handler location. This statement cannot be used in a method that contains a lambda or query expression.
+`On Error GoTo LabelName` establishes the label as the most recent exception-handler location. This statement cannot be used in a method that contains a lambda or query expression.
 
-`On Error Resume Next`, establishes the `Resume Next` behavior as the most recent exception-handler location.
+`On Error Resume Next` establishes the `Resume Next` behavior as the most recent exception-handler location.
 
 ```antlr
 OnErrorStatement
