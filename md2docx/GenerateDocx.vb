@@ -109,27 +109,31 @@ Class MarkdownSpec
             Dim p = TryCast(body.ChildElements.GetItem(i), Paragraph)
             If p Is Nothing Then Continue For
 
-            If iFirst = -1 Then
-                ' The TOC might be a simple field
-                Dim sf = p.OfType(Of SimpleField).FirstOrDefault
-                If sf IsNot Nothing AndAlso sf.Instruction.Value.Contains("TOC") Then iFirst = i : iLast = i : instr = sf.Instruction.Value : Exit For
-
-                ' or it might be the start of a complex field
-                Dim fields = (From r In p.OfType(Of Run)
-                              From f In r
-                              Where TypeOf f Is FieldChar OrElse TypeOf f Is FieldCode
-                              Select f).ToList
-                Dim f1 = If(fields.Count < 1, Nothing, TryCast(fields(0), FieldChar))
-                Dim f2 = If(fields.Count < 2, Nothing, TryCast(fields(1), FieldCode))
-                Dim f3 = If(fields.Count < 3, Nothing, TryCast(fields(2), FieldChar))
-                If f1 IsNot Nothing AndAlso f2 IsNot Nothing AndAlso f3 IsNot Nothing AndAlso
-                        f1.FieldCharType.Value = FieldCharValues.Begin AndAlso f3.FieldCharType.Value = FieldCharValues.Separate AndAlso
-                        f2.Text.Contains("TOC") Then iFirst = i : instr = f2.Text
-            ElseIf iLast = -1 Then
-                Dim fields = (From r In p.OfType(Of Run) From f In r.OfType(Of FieldChar) Select f).ToList()
-                Dim f1 = fields.FirstOrDefault
-                If f1 IsNot Nothing AndAlso f1.FieldCharType.Value = FieldCharValues.End Then iLast = i : Exit For
+            ' The TOC might be a simple field
+            Dim sf = p.OfType(Of SimpleField).FirstOrDefault
+            If sf IsNot Nothing AndAlso sf.Instruction.Value.Contains("TOC") Then
+                If iFirst <> -1 Then Throw New Exception("Found start of TOC and then another simple TOC")
+                iFirst = i : iLast = i : instr = sf.Instruction.Value
+                Exit For
             End If
+
+            ' or it might be a complex field
+            Dim runElements = (From r In p.OfType(Of Run) From e In r Select e).ToList
+            Dim f1 = runElements.FindIndex(Function(f) TypeOf f Is FieldChar AndAlso CType(f, FieldChar).FieldCharType.Value = FieldCharValues.Begin)
+            Dim f2 = runElements.FindIndex(Function(f) TypeOf f Is FieldCode AndAlso CType(f, FieldCode).Text.Contains("TOC"))
+            Dim f3 = runElements.FindIndex(Function(f) TypeOf f Is FieldChar AndAlso CType(f, FieldChar).FieldCharType.Value = FieldCharValues.Separate)
+            Dim f4 = runElements.FindIndex(Function(f) TypeOf f Is FieldChar AndAlso CType(f, FieldChar).FieldCharType.Value = FieldCharValues.End)
+
+            If f1 <> -1 AndAlso f2 <> -1 AndAlso f3 <> -1 AndAlso f2 > f1 AndAlso f3 > f2 Then
+                If iFirst <> -1 Then Throw New Exception("Found start of TOC and then another start of TOC")
+                iFirst = i : instr = CType(runElements(f2), FieldCode).Text
+            End If
+            If f4 <> -1 AndAlso f4 > f1 AndAlso f4 > f2 AndAlso f4 > f3 Then
+                iLast = i
+                If iFirst <> -1 Then Exit For
+            End If
+
+
         Next
 
         If iFirst = -1 Then Return False
