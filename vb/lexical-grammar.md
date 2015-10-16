@@ -60,7 +60,7 @@ A *line continuation* consists of at least one white-space character that immedi
 
 The following program shows some line continuations:
 
-```vb.net
+```vb
 Module Test
     Sub Print( _
         Param1 As Integer, _
@@ -96,7 +96,7 @@ after assignment operators (`=`, `:=`, `+=`, `-=`, etc.) in any context.
 
 the line terminator is treated as if it was a line continuation. For example, the previous example could also be written as:
 
-```vb.net
+```vb
 Module Test
     Sub Print(
         Param1 As Integer,
