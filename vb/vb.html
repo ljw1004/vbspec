@@ -53,7 +53,8 @@ var a = e.toElement || e.relatedTarget;
 if (!a || a.tagName.toLowerCase()!="a") return;
 if (a.className!="s") return;
 if (!a.href || typeof(a.href)=='undefined') return;
-if (a.href.indexOf(".github.io")==0) return;
+var href = a.getAttribute("href");
+if (href.indexOf("http")==0) return; // has already been processed
 if (window.location.protocol.indexOf("http")!=0) return;
 if (window.location.host.indexOf(".github.io") == -1) return;
 
@@ -62,9 +63,9 @@ var dirs = window.location.pathname.split("/"); dirs.splice(0,1);
 var repository = dirs[0];                                 // "vbspec"
 dirs.splice(0,1); dirs.splice(dirs.length-1,1);
 var dir = dirs.join("/");                                 // "dir1/dir2"
-var target = a.href;                                      // "statements.md#section"
-a.href = "https://github.com/"+user+"/"+repository+"/blob/gh-pages/"+dir+"/"+target;
-alert(a.href);
+var target = href;                                        // "statements.md#section"
+var url = "https://github.com/"+user+"/"+repository+"/blob/gh-pages/"+dir+"/"+target;
+a.setAttribute("href",url); a.href = url; // I'm not sure which of these to change, so I'm doing both
 }
 
 document.onmouseout = function(e)
