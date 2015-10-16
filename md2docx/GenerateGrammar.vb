@@ -433,6 +433,7 @@ body {font-family:calibri; color:black; background-color:rgb(<%= rgb_background 
 #popup {background-color: rgb(<%= rgb_popup %>); padding: 2ex; border: solid thick black; font-size: 80%;}
 a {background-color: yellow; font-family:"courier new"; font-size: 80%;}
 a.n {background-color:transparent; font-family:calibri; font-size: 100%;}
+a.s {background-color:transparent; font-family:calibri; font-size: 100%; text-decoration: underline;}
 ul {margin-top:0; margin-bottom:0;}
 h1 {margin-bottom:2ex;}
 h2 {margin-bottom:0; padding:0.5ex;
@@ -446,7 +447,9 @@ border-top: dotted 1px rgb(<%= rgb_divider %>);}
 li {list-style-type: circle;}
 li.r {padding-left:2em; list-style-type:square;}
 li a.n {font-weight:bold;}
+li a.s {font-weight:bold;}
 li.u a.n {font-weight:normal;}
+li.u a.s {font-weight:normal;}
 a {color: black; text-decoration:none;}
 a:hover {text-decoration: underline;}
                         </style>
@@ -458,6 +461,15 @@ document.onkeydown = function(e)
 {
   if (!e) e=window.event;
   if (e.keyCode==27) p();
+}
+
+document.onmouseover = function(e)
+{
+if (!e) e=window.event;
+var a = e.toElement || e.relatedTarget;
+if (!a || a.tagName.toLowerCase()!="a") return;
+alert(a.className);
+if (a.className!="s") return;
 }
 
 document.onmouseout = function(e)
@@ -562,7 +574,7 @@ function p(a)
                                     <%= Iterator Function()
                                             If Not ProductionReferences.ContainsKey(production.Key) Then Return
                                             Dim tt = ProductionReferences(production.Key)
-                                            Yield <li class="u">(Spec: <a class="n" href=<%= tt.Item1 %>><%= tt.Item2 %></a>)</li>
+                                            Yield <li class="u">(Spec: <a class="s" href=<%= tt.Item1 %>><%= tt.Item2 %></a>)</li>
                                         End Function() %>
                                     <li class="u">(used in <%= From p In UsedBySet(production.Key) Select <xml>&#x20;<%= MakeNonterminal(p) %></xml>.Nodes %>)</li>
                                     <li class="t"><%= If(MayBeEmptySet(production.Key), "May be empty", "Never empty") %></li>
