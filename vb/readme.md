@@ -2,8 +2,8 @@ Visual Basic Language Reference
 =================================
 
 * [Introduction](introduction.md)
-    * [Grammar Notation](introduction.md)
-    * [Compatibility](introduction.md)
+    * [Grammar Notation](introduction.md#grammar-notation)
+    * [Compatibility](introduction.md#compatibility)
 * [Lexical Grammar](lexical-grammar.md)
     * [Characters and Lines](lexical-grammar.md)
     * [Identifiers](lexical-grammar.md)
