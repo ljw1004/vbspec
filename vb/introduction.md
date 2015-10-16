@@ -11,7 +11,7 @@ This document describes the Visual Basic language. It is meant to be a complete 
 This specification describes two grammars: a lexical grammar and a syntactic grammar. The lexical grammar defines how characters can be combined to form tokens; the syntactic grammar defines how the tokens can be combined to form Visual Basic programs. There are also several secondary grammars used for preprocessing operations like conditional compilation.
 
 > __Note__
-> The grammars in this specification are designed to be human readable, not formal (that is, usable by LEX or YACC).
+> The grammars in this specification are written in ANTLR format.
 
 All of the grammars use a modified BNF notation, which consists of a set of productions made up of terminal and nonterminal names. A terminal name represents one or more Unicode characters. Each nonterminal name is defined by one or more productions. In a production, nonterminal names are shown in *italic type*, and terminal names are shown in a `fixed-width type`. Text in normal type and surrounded by angle-bracket metasymbols are informal terminals (for example, "< all Unicode characters >"). Each grammar starts with the nonterminal *Start*.
 
