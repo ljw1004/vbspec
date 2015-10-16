@@ -1975,7 +1975,7 @@ UsingResources
     ;
 ```
 
-## Await Statements
+## Await Statement
 
 An await statement has the same syntax as an await operator expression (Section [Await Operator](expressions.md#await-operator)), is allowed only in methods that also allow await expressions, and has the same behavior as an await operator expression.
 
@@ -1987,7 +1987,7 @@ AwaitStatement
     ;
 ```
 
-## Yield Statements
+## Yield Statement
 
 Yield statements are related to iterator methods, which are described in Section [Iterator Methods](statements.md#iterator-methods).
 
