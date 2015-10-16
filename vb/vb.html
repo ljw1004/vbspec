@@ -43,9 +43,9 @@ if (e.keyCode==27) p();
 document.onmouseover = function(e)
 {
 // Typically we'll be viewing this document at something like
-// https://raw.githubusercontent.com/ljw1004/vbspec/master/vb/vb.html
+// http://ljw1004.github.io/vbspec/dir1/dir2/vb.html
 // but hrefs to "statements.md#section" must point to
-// https://github.com/ljw1004/vbspec/blob/master/vb/statements.md#section
+// https://github.com/ljw1004/vbspec/blob/gh-pages/dir1/dir2/statements.md#section
 // The raw HTML won't know where it's going to be sitting.
 // So instead we'll do the appropriate patching-up when you mouse over a link.
 if (!e) e=window.event;
@@ -54,15 +54,17 @@ if (!a || a.tagName.toLowerCase()!="a") return;
 if (a.className!="s") return;
 if (!a.href || typeof(a.href)=='undefined') return;
 if (a.href.indexOf("http")==0 || a.href.indexOf("file")==0) return;
-var dir = window.location.pathname;
-var n = dir.lastIndexOf("/");
-if (n == -1) return;
-dir = dir.substring(0,n);   // "ljw1004/vbspec/master/vb"
-var dirs = dir.split("/");
-if (dirs.length<3) return;
-dirs.splice(2,0,"blob");
-dir = dirs.join("/");
-a.href = window.location.protocol + "//" + window.location.host + "/" + dir + "/" + a.href;
+if (window.location.protocol.indexOf("http")!=0) return;
+if (window.location.host.indexof(".github.io")!=0) return;
+
+var user = window.location.host.replace(".github.io",""); // "ljw1004"
+var dirs = window.location.pathname.split("/");
+var repository = dirs[0];                                 // "vbspec"
+dirs.splice(0,1); dirs.splice(dirs.length-1,1);
+var dir = dirs.join("/");                                 // "dir1/dir2"
+var target = a.href;                                      // "statements.md#section"
+a.href = "https://github.com/"+user+"/"+repository+"/blob/gh-pages/"+dir+"/"+target;
+alert(a.href);
 }
 
 document.onmouseout = function(e)
