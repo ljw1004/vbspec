@@ -65,103 +65,107 @@ If reclassification succeeds, then the reclassification is judged as widening or
 
 The following types of expressions can be reclassified:
 
-- A variable can be reclassified as a value. The value stored in the variable is fetched.
-- A method group can be reclassified as a value. The method group expression is interpreted as an invocation expression with the associated target expression and type parameter list, and empty parentheses (that is, `f` is interpreted as `f()` and `f(Of Integer)` is interpreted as `f(Of Integer)()`). This reclassification may result in the expression being further reclassified as void.
-- A method pointer can be reclassified as a value. This reclassification can only occur in the context of a conversion where the target type is known. The method pointer expression is interpreted as the argument to a delegate instantiation expression of the appropriate type with the associated type argument list. For example:
+1.  A variable can be reclassified as a value. The value stored in the variable is fetched.
 
-```vb
-Delegate Sub D(i As Integer)
+2.  A method group can be reclassified as a value. The method group expression is interpreted as an invocation expression with the associated target expression and type parameter list, and empty parentheses (that is, `f` is interpreted as `f()` and `f(Of Integer)` is interpreted as `f(Of Integer)()`). This reclassification may result in the expression being further reclassified as void.
 
-Module Test
-    Sub F(i As Integer)
-    End Sub
+3.  A method pointer can be reclassified as a value. This reclassification can only occur in the context of a conversion where the target type is known. The method pointer expression is interpreted as the argument to a delegate instantiation expression of the appropriate type with the associated type argument list. For example:
+    
+    ```vb
+    Delegate Sub D(i As Integer)
+    
+    Module Test
+        Sub F(i As Integer)
+        End Sub
+    
+        Sub Main()
+            Dim del As D
+    
+            ' The next two lines are equivalent.
+            del = AddressOf F
+            del = New D(AddressOf F)
+        End Sub
+    End Module
+    ```
 
-    Sub Main()
-        Dim del As D
+4.  A lambda method can be reclassified as a value. If the reclassification occurs in the context of a conversion where the target type is known, then one of two reclassifications can occur:
+    
+    (a) If the target type is a delegate type, the lambda method is interpreted as the argument to a delegate-construction expression of the appropriate type.
+    
+    (b) If the target type is `System.Linq.Expressions.Expression(Of T)`, and `T` is a delegate type, then the lambda method is interpreted as if it was being used in delegate-construction expression for `T` and then converted to an expression tree.
+    
+    An async or iterator lambda method may only be interpreted as the argument to a delegate-construction expression, if the delegate has no ByRef parameters.
+    
+    If conversion from any of the delegate's parameter types to the corresponding lambda parameter types is a narrowing conversion, then the reclassification is judged as narrowing; otherwise it is widening.
+    
+    > __Annotation__
+    > The exact translation between lambda methods and expression trees may not be fixed between versions of the compiler and is beyond the scope of this specification. For Microsoft Visual Basic 11.0, all lambda expressions may be converted to expression trees subject to the following restrictions:
+    >
+    > 1.  Only single-line lambda expressions without ByRef parameters may be converted to expression trees. Of the single-line `Sub` lambdas, only invocation statements may be converted to expression trees.
+    > 2.  Anonymous type expressions cannot be converted to expression trees if an earlier field initializer is used to initialize a subsequent field initializer, e.g. `New With {.a=1, .b=.a}`
+    > 3.  Object initializer expressions cannot be converted to expression trees if a member of the current object being initialized is used in one of the field initializers, e.g. `New C1 With {.a=1, .b=.Method1()}`
+    > 4.  Multi-dimensional array creation expressions can only be converted to expression trees if they declare their element type explicitly.
+    > 5.  Late-binding expressions cannot be converted to expression trees.
+    > 6.  When a variable or field is passed ByRef to an invocation expression but does not have exactly the same type as the ByRef parameter, or when a property is passed ByRef, normal VB semantics are that a copy of the argument is passed ByRef and its final value is then copied back into the variable or field or property. In expression trees, the copy-back does not happen.
+    >
+    > All these restrictions apply to nested lambda expressions as well.
+    
+    If the target type is not known, then the lambda method is interpreted as the argument to a delegate instantiation expression of an anonymous delegate type with the same signature of the lambda method. If strict semantics are being used and the type of any of the parameters are omitted, a compile-time error occurs; otherwise, `Object` is substituted for any missing parameter type. For example:
+    
+    ```vb
+    Module Test
+        Sub Main()
+            ' Type of x will be equivalent to Func(Of Object, Object, Object)
+            Dim x = Function(a, b) a + b
+    
+            ' Type of y will be equivalent to Action(Of Object, Object)
+            Dim y = Sub(a, b) Console.WriteLine(a + b)
+        End Sub
+    End Module
+    ```
 
-        ' The next two lines are equivalent.
-        del = AddressOf F
-        del = New D(AddressOf F)
-    End Sub
-End Module
-```
+5. A property group can be reclassified as a property access. The property group expression is interpreted as an index expression with empty parentheses (that is, `f` is interpreted as `f()`).
+6. A property access can be reclassified as a value. The property access expression is interpreted as an invocation expression of the `Get` accessor of the property. If the property has no getter, then a compile-time error occurs.
+7. A late-bound access can be reclassified as a late-bound method or late-bound property access. In a situation where a late-bound access can be reclassified both as a method access and as a property access, reclassification to a property access is preferred.
+8. A late-bound access can be reclassified as a value.
+9. An array literal can be reclassified as a value. The type of the value is determined as follows:
+    91. If the reclassification occurs in the context of a conversion where the target type is known and the target type is an array type, then the array literal is reclassified as a value of type T(). If the target type is `System.Collections.Generic.IList(Of T)`, `IReadOnlyList(Of T)`, `ICollection(Of T)`, `IReadOnlyCollection(Of T)`, or `IEnumerable(Of T)`, and the array literal has one level of nesting, then the array literal is reclassified as a value of type `T()`.
+    92. Otherwise, the array literal is reclassified to a value whose type is an array of rank equal to the level of nesting is used, with element type determined by the dominant type of the elements in the initializer; if no dominant type can be determined, `Object` is used. For example:
 
-- A lambda method can be reclassified as a value. If the reclassification occurs in the context of a conversion where the target type is known, then one of two reclassifications can occur:
-- If the target type is a delegate type, the lambda method is interpreted as the argument to a delegate-construction expression of the appropriate type.
-- If the target type is `System.Linq.Expressions.Expression(Of T)`, and `T` is a delegate type, then the lambda method is interpreted as if it was being used in delegate-construction expression for `T` and then converted to an expression tree.
+        ```vb
+        ' x Is GetType(Double(,,))
+        Dim x = { { { 1, 2.0 }, { 3, 4 } }, { { 5, 6 }, { 7, 8 } } }.GetType()
+        
+        ' y Is GetType(Integer())
+        Dim y = { 1, 2, 3 }.GetType()
+        
+        ' z Is GetType(Object())
+        Dim z = { 1, "2" }.GetType()
+        
+        ' Error: Inconsistent nesting
+        Dim a = { { 10 }, { 20, 30 } }.GetType()
+        ```
 
-An async or iterator lambda method may only be interpreted as the argument to a delegate-construction expression, if the delegate has no ByRef parameters.
+    > __Annotation__
+    > There is a slight change in behavior between version 9.0 and version 10.0 of the language. Prior to 10.0, array element initializers did not affect local variable type inference and now they do. So `Dim a() = { 1, 2, 3 }` would have inferred `Object()` as the type of `a` in version 9.0 of the language and `Integer()` in version 10.0.
 
-If conversion from any of the delegate's parameter types to the corresponding lambda parameter types is a narrowing conversion, then the reclassification is judged as narrowing; otherwise it is widening.
+    The reclassification then reinterprets the array literal as an array-creation expression. So the examples:
 
-> __Annotation__
-> The exact translation between lambda methods and expression trees may not be fixed between versions of the compiler and is beyond the scope of this specification. For Microsoft Visual Basic 11.0, all lambda expressions may be converted to expression trees subject to the following restrictions:
->
-> 1.  Only single-line lambda expressions without ByRef parameters may be converted to expression trees. Of the single-line `Sub` lambdas, only invocation statements may be converted to expression trees.
-> 2.  Anonymous type expressions cannot be converted to expression trees if an earlier field initializer is used to initialize a subsequent field initializer, e.g. `New With {.a=1, .b=.a}`
-> 3.  Object initializer expressions cannot be converted to expression trees if a member of the current object being initialized is used in one of the field initializers, e.g. `New C1 With {.a=1, .b=.Method1()}`
-> 4.  Multi-dimensional array creation expressions can only be converted to expression trees if they declare their element type explicitly.
-> 5.  Late-binding expressions cannot be converted to expression trees.
-> 6.  When a variable or field is passed ByRef to an invocation expression but does not have exactly the same type as the ByRef parameter, or when a property is passed ByRef, normal VB semantics are that a copy of the argument is passed ByRef and its final value is then copied back into the variable or field or property. In expression trees, the copy-back does not happen.
->
-> All these restrictions apply to nested lambda expressions as well.
+    ```vb
+    Dim x As Double = { 1, 2, 3, 4 }
+    Dim y = { "a", "b" }
+    ```
 
-If the target type is not known, then the lambda method is interpreted as the argument to a delegate instantiation expression of an anonymous delegate type with the same signature of the lambda method. If strict semantics are being used and the type of any of the parameters are omitted, a compile-time error occurs; otherwise, `Object` is substituted for any missing parameter type. For example:
+    are equivalent to:
 
-```vb
-Module Test
-    Sub Main()
-        ' Type of x will be equivalent to Func(Of Object, Object, Object)
-        Dim x = Function(a, b) a + b
+    ```vb
+    Dim x As Double = New Double() { 1, 2, 3, 4 }
+    Dim y = New String() { "a", "b" }
+    ```
 
-        ' Type of y will be equivalent to Action(Of Object, Object)
-        Dim y = Sub(a, b) Console.WriteLine(a + b)
-    End Sub
-End Module
-```
+    The reclassification is judged as narrowing if any conversion from an element expression to the array element type is narrowing; otherwise it is judged as widening.
 
-- A property group can be reclassified as a property access. The property group expression is interpreted as an index expression with empty parentheses (that is, `f` is interpreted as `f()`).
-- A property access can be reclassified as a value. The property access expression is interpreted as an invocation expression of the `Get` accessor of the property. If the property has no getter, then a compile-time error occurs.
-- A late-bound access can be reclassified as a late-bound method or late-bound property access. In a situation where a late-bound access can be reclassified both as a method access and as a property access, reclassification to a property access is preferred.
-- A late-bound access can be reclassified as a value.
-- An array literal can be reclassified as a value. The type of the value is determined as follows:
-- If the reclassification occurs in the context of a conversion where the target type is known and the target type is an array type, then the array literal is reclassified as a value of type T(). If the target type is `System.Collections.Generic.IList(Of T)`, `IReadOnlyList(Of T)`, `ICollection(Of T)`, `IReadOnlyCollection(Of T)`, or `IEnumerable(Of T)`, and the array literal has one level of nesting, then the array literal is reclassified as a value of type `T()`.
-- Otherwise, the array literal is reclassified to a value whose type is an array of rank equal to the level of nesting is used, with element type determined by the dominant type of the elements in the initializer; if no dominant type can be determined, `Object` is used. For example:
-
-```vb
-' x Is GetType(Double(,,))
-Dim x = { { { 1, 2.0 }, { 3, 4 } }, { { 5, 6 }, { 7, 8 } } }.GetType()
-
-' y Is GetType(Integer())
-Dim y = { 1, 2, 3 }.GetType()
-
-' z Is GetType(Object())
-Dim z = { 1, "2" }.GetType()
-
-' Error: Inconsistent nesting
-Dim a = { { 10 }, { 20, 30 } }.GetType()
-```
-
-> __Annotation__
-> There is a slight change in behavior between version 9.0 and version 10.0 of the language. Prior to 10.0, array element initializers did not affect local variable type inference and now they do. So `Dim a() = { 1, 2, 3 }` would have inferred `Object()` as the type of `a` in version 9.0 of the language and `Integer()` in version 10.0.
-
-The reclassification then reinterprets the array literal as an array-creation expression. So the examples:
-
-```vb
-Dim x As Double = { 1, 2, 3, 4 }
-Dim y = { "a", "b" }
-```
-
-are equivalent to:
-
-```vb
-Dim x As Double = New Double() { 1, 2, 3, 4 }
-Dim y = New String() { "a", "b" }
-```
-
-The reclassification is judged as narrowing if any conversion from an element expression to the array element type is narrowing; otherwise it is judged as widening.
-
-- The default value `Nothing` can be reclassified as a value. In a context where the target type is known, the result is the default value of the target type. In a context where the target type is not known, the result is a null value of type `Object`.
+10. The default value `Nothing` can be reclassified as a value. In a context where the target type is known, the result is the default value of the target type. In a context where the target type is not known, the result is a null value of type `Object`.
 
 A namespace expression, type expression, event access expression, or void expression cannot be reclassified. Multiple reclassifications can be done at the same time. For example:
 
@@ -560,28 +564,28 @@ GetXmlNamespaceExpression
 
 A member access expression is used to access a member of an entity. A member access of the form `E.I(Of A)`, where `E` is an expression, a non-array type name, the keyword `Global`, or omitted and `I` is an identifier with an optional type argument list `A`, is evaluated and classified as follows:
 
-- If `E` is omitted, then the expression from the immediately containing `With` statement is substituted for `E` and the member access is performed. If there is no containing `With` statement, a compile-time error occurs.
-- If `E` is classified as a namespace or `E` is the keyword `Global`, then the member lookup is done in the context of the specified namespace. If `I` is the name of an accessible member of that namespace with the same number of type parameters as was supplied in the type argument list, if any, then the result is that member. The result is classified as a namespace or a type depending on the member. Otherwise, a compile-time error occurs.
-- If `E` is a type or an expression classified as a type, then the member lookup is done in the context of the specified type. If `I` is the name of an accessible member of `E`, then `E.I` is evaluated and classified as follows:
-- If `I` is the keyword `New` and `E` is not an enumeration then a compile-time error occurs.
-- If `I` identifies a type with the same number of type parameters as was supplied in the type argument list, if any, then the result is that type.
-- If `I` identifies one or more methods, then the result is a method group with the associated type argument list and no associated target expression.
-- If `I` identifies one or more properties and no type argument list was supplied, then the result is a property group with no associated target expression.
-- If `I` identifies a shared variable and no type argument list was supplied, then the result is either a variable or a value. If the variable is read-only, and the reference occurs outside the shared constructor of the type in which the variable is declared, then the result is the value of the shared variable `I` in `E`. Otherwise, the result is the shared variable `I` in `E`.
-- If `I` identifies a shared event and no type argument list was supplied, the result is an event access with no associated target expression.
-- If `I` identifies a constant and no type argument list was supplied, then the result is the value of that constant.
-- If `I` identifies an enumeration member and no type argument list was supplied, then the result is the value of that enumeration member.
-- Otherwise, `E.I` is an invalid member reference, and a compile-time error occurs.
-- If `E` is classified as a variable or value, the type of which is `T`, then the member lookup is done in the context of `T`. If `I` is the name of an accessible member of `T`, then `E.I` is evaluated and classified as follows:
-- If `I` is the keyword `New`, `E` is  `Me`, `MyBase`, or `MyClass`, and no type arguments were supplied, then the result is a method group representing the instance constructors of the type of `E` with an associated target expression of `E` and no type argument list. Otherwise, a compile-time error occurs.
-- If `I` identifies one or more methods, including extension methods if `T` is not `Object`, then the result is a method group with the associated type argument list and an associated target expression of `E`.
-- If `I` identifies one or more properties and no type arguments were supplied, then the result is a property group with an associated target expression of `E`.
-- If `I` identifies a shared variable or an instance variable and no type arguments were supplied, then the result is either a variable or a value. If the variable is read-only, and the reference occurs outside a constructor of the class in which the variable is declared appropriate for the kind of variable (shared or instance), then the result is the value of the variable `I` in the object referenced by `E`. If `T` is a reference type, then the result is the variable `I` in the object referenced by `E`. Otherwise, if `T` is a value type and the expression `E` is classified as a variable, the result is a variable; otherwise the result is a value.
-- If `I` identifies an event and no type arguments were supplied, the result is an event access with an associated target expression of `E`.
-- If `I` identifies a constant and no type arguments were supplied, then the result is the value of that constant.
-- If `I` identifies an enumeration member and no type arguments were supplied, then the result is the value of that enumeration member.
-- If `T` is `Object`, then the result is a late-bound member lookup classified as a late-bound access with the associated type argument list and an associated target expression of `E`.
-- Otherwise, `E.I` is an invalid member reference, and a compile-time error occurs.
+1. If `E` is omitted, then the expression from the immediately containing `With` statement is substituted for `E` and the member access is performed. If there is no containing `With` statement, a compile-time error occurs.
+2. If `E` is classified as a namespace or `E` is the keyword `Global`, then the member lookup is done in the context of the specified namespace. If `I` is the name of an accessible member of that namespace with the same number of type parameters as was supplied in the type argument list, if any, then the result is that member. The result is classified as a namespace or a type depending on the member. Otherwise, a compile-time error occurs.
+3. If `E` is a type or an expression classified as a type, then the member lookup is done in the context of the specified type. If `I` is the name of an accessible member of `E`, then `E.I` is evaluated and classified as follows:
+    31. If `I` is the keyword `New` and `E` is not an enumeration then a compile-time error occurs.
+    32. If `I` identifies a type with the same number of type parameters as was supplied in the type argument list, if any, then the result is that type.
+    33. If `I` identifies one or more methods, then the result is a method group with the associated type argument list and no associated target expression.
+    34. If `I` identifies one or more properties and no type argument list was supplied, then the result is a property group with no associated target expression.
+    35. If `I` identifies a shared variable and no type argument list was supplied, then the result is either a variable or a value. If the variable is read-only, and the reference occurs outside the shared constructor of the type in which the variable is declared, then the result is the value of the shared variable `I` in `E`. Otherwise, the result is the shared variable `I` in `E`.
+    36. If `I` identifies a shared event and no type argument list was supplied, the result is an event access with no associated target expression.
+    37. If `I` identifies a constant and no type argument list was supplied, then the result is the value of that constant.
+    38. If `I` identifies an enumeration member and no type argument list was supplied, then the result is the value of that enumeration member.
+    39. Otherwise, `E.I` is an invalid member reference, and a compile-time error occurs.
+4. If `E` is classified as a variable or value, the type of which is `T`, then the member lookup is done in the context of `T`. If `I` is the name of an accessible member of `T`, then `E.I` is evaluated and classified as follows:
+    41. If `I` is the keyword `New`, `E` is  `Me`, `MyBase`, or `MyClass`, and no type arguments were supplied, then the result is a method group representing the instance constructors of the type of `E` with an associated target expression of `E` and no type argument list. Otherwise, a compile-time error occurs.
+    42. If `I` identifies one or more methods, including extension methods if `T` is not `Object`, then the result is a method group with the associated type argument list and an associated target expression of `E`.
+    43. If `I` identifies one or more properties and no type arguments were supplied, then the result is a property group with an associated target expression of `E`.
+    44. If `I` identifies a shared variable or an instance variable and no type arguments were supplied, then the result is either a variable or a value. If the variable is read-only, and the reference occurs outside a constructor of the class in which the variable is declared appropriate for the kind of variable (shared or instance), then the result is the value of the variable `I` in the object referenced by `E`. If `T` is a reference type, then the result is the variable `I` in the object referenced by `E`. Otherwise, if `T` is a value type and the expression `E` is classified as a variable, the result is a variable; otherwise the result is a value.
+    45. If `I` identifies an event and no type arguments were supplied, the result is an event access with an associated target expression of `E`.
+    46. If `I` identifies a constant and no type arguments were supplied, then the result is the value of that constant.
+    47. If `I` identifies an enumeration member and no type arguments were supplied, then the result is the value of that enumeration member.
+    48. If `T` is `Object`, then the result is a late-bound member lookup classified as a late-bound access with the associated type argument list and an associated target expression of `E`.
+5. Otherwise, `E.I` is an invalid member reference, and a compile-time error occurs.
 
 A member access of the form `MyClass.I(Of A)` is equivalent to `Me.I(Of A)`, but all members accessed on it are treated as if the members are non-overridable. Thus, the member accessed will not be affected by the run-time type of the value on which the member is being accessed.
 
@@ -891,10 +895,10 @@ End Class
 
 Extension methods for the member access expression `E.I` are collected by gathering all of the extension methods with the name `I` that are available in the current context:
 
-- First, each nested type containing the expression is checked, starting from the innermost and going to the outermost.
-- Then, each nested namespace is checked, starting from the innermost and going to the outermost namespace.
-- Then, the imports in the source file are checked.
-- Then, the imports defined by the compilation environment are checked.
+1. First, each nested type containing the expression is checked, starting from the innermost and going to the outermost.
+2. Then, each nested namespace is checked, starting from the innermost and going to the outermost namespace.
+3. Then, the imports in the source file are checked.
+4. Then, the imports defined by the compilation environment are checked.
 
 An extension method is collected only if there is a widening native conversion from the target expression type to the type of the first parameter of the extension method. And unlike regular simple name expression binding, the search collects *all* extension methods; the collection does not stop when an extension method is found. For example:
 
@@ -1529,34 +1533,34 @@ A member `M` is considered *equally specific* as `N`, given an argument-list `A`
 
 A member `M` is considered *more specific* than `N` if their signatures are different and at least one parameter type in `M` is more specific than a parameter type in `N`, and no parameter type in `N` is more specific than a parameter type in `M`. Given a pair of parameters `Mj` and `Nj` that matches an argument `Aj`, the type of `Mj` is considered *more specific* than the type of `Nj` if one of the following conditions is true:
 
-- There exists a widening conversion from the type of `Mj` to the type `Nj`, or
+1.  There exists a widening conversion from the type of `Mj` to the type `Nj`, or
+    
+    > __Annotation__
+    > Because parameters types are being compared without regard to the actual argument in this case, the widening conversion from constant expressions to a numeric type the value fits into is not considered in this case.
 
-> __Annotation__
-> Because parameters types are being compared without regard to the actual argument in this case, the widening conversion from constant expressions to a numeric type the value fits into is not considered in this case.
+2.  `Aj` is the literal `0`, `Mj` is a numeric type and `Nj` is an enumerated type, or
+    
+    > __Annotation__
+    > This rule is necessary because the literal `0` widens to any enumerated type. Since an enumerated type widens to its underlying type, this means that overload resolution on `0` will, by default, prefer enumerated types over numeric types. We received a lot of feedback that this behavior was counterintuitive.
 
-- `Aj` is the literal `0`, `Mj` is a numeric type and `Nj` is an enumerated type, or
-
-> __Annotation__
-> This rule is necessary because the literal `0` widens to any enumerated type. Since an enumerated type widens to its underlying type, this means that overload resolution on `0` will, by default, prefer enumerated types over numeric types. We received a lot of feedback that this behavior was counterintuitive.
-
-- `Mj` and `Nj` are both numeric types, and `Mj` comes earlier than `Nj` in the list
+3.  `Mj` and `Nj` are both numeric types, and `Mj` comes earlier than `Nj` in the list
 `Byte`, `SByte`, `Short`, `UShort`, `Integer`, `UInteger`, `Long`, `ULong`, `Decimal`, `Single`, `Double`
+    
+    > __Annotation__
+    > The rule about the numeric types is useful because the signed and unsigned numeric types of a particular size only have narrowing conversions between them. The above rule breaks the tie between the two types in favor of the more "natural" numeric type. This is particularly important when doing overload resolution on a type that widens to both the signed and unsigned numeric types of a particular size (for example, a numeric literal that fits into both).
 
-> __Annotation__
-> The rule about the numeric types is useful because the signed and unsigned numeric types of a particular size only have narrowing conversions between them. The above rule breaks the tie between the two types in favor of the more "natural" numeric type. This is particularly important when doing overload resolution on a type that widens to both the signed and unsigned numeric types of a particular size (for example, a numeric literal that fits into both).
-
-- `Mj` and `Nj` are delegate function types and the return type of `Mj` is more specific than the return type of `Nj` If `Aj` is classified as a lambda method, and `Mj` or `Nj` is `System.Linq.Expressions.Expression(Of T)`, then the type argument of the type (assuming it is a delegate type) is substituted for the type being compared.
-- `Mj` is identical to the type of `Aj`, and `Nj` is not.
-
-> __Annotation__
-> It is interesting to note that the previous rule differs slightly from C#, in that C# requires that the delegate function types have identical parameter lists before comparing return types, while Visual Basic does not.
+4.  `Mj` and `Nj` are delegate function types and the return type of `Mj` is more specific than the return type of `Nj` If `Aj` is classified as a lambda method, and `Mj` or `Nj` is `System.Linq.Expressions.Expression(Of T)`, then the type argument of the type (assuming it is a delegate type) is substituted for the type being compared.
+5.  `Mj` is identical to the type of `Aj`, and `Nj` is not.
+    
+    > __Annotation__
+    > It is interesting to note that the previous rule differs slightly from C#, in that C# requires that the delegate function types have identical parameter lists before comparing return types, while Visual Basic does not.
 
 #### Genericity
 
 A member `M` is determined to be *less generic* than a member `N` as follows:
 
-- If, for each pair of matching parameters `Mj` and `Nj`, `Mj` is less or equally generic than `Nj` with respect to type parameters on the method, and at least one `Mj` is less generic with respect to type parameters on the method.
-- Otherwise, if for each pair of matching parameters `Mj` and `Nj`, `Mj` is less or equally generic than `Nj` with respect to type parameters on the type, and at least one `Mj` is less generic with respect to type parameters on the type, then `M` is less generic than `N`.
+1. If, for each pair of matching parameters `Mj` and `Nj`, `Mj` is less or equally generic than `Nj` with respect to type parameters on the method, and at least one `Mj` is less generic with respect to type parameters on the method.
+2. Otherwise, if for each pair of matching parameters `Mj` and `Nj`, `Mj` is less or equally generic than `Nj` with respect to type parameters on the type, and at least one `Mj` is less generic with respect to type parameters on the type, then `M` is less generic than `N`.
 
 A parameter `M` is considered to be equally generic to a parameter `N` if their types `Mt` and `Nt` both refer to type parameters or both don't refer to type parameters. `M` is considered to be less generic than `N` if `Mt` does not refer to a type parameter and `Nt` does.
 
@@ -1617,9 +1621,9 @@ End Module
 
 A member `M` is determined to have *greater depth of genericity* than a member `N` if, for each pair of matching parameters  `Mj` and `Nj`, `Mj` has greater or equal *depth of genericity* than `Nj`, and at least one `Mj` is has greater depth of genericity. Depth of genericity is defined as follows:
 
-- Anything other than a type parameter has greater depth of genericity than a type parameter;
-- Recursively, a constructed type has greater depth of genericity than another constructed type (with the same number of type arguments) if at least one type argument has greater depth of genericity and no type argument has less depth than the corresponding type argument in the other.
-- An array type has greater depth of genericity than another array type (with the same number of dimensions) if the element type of the first has greater depth of genericity than the element type of the second.
+1. Anything other than a type parameter has greater depth of genericity than a type parameter;
+2. Recursively, a constructed type has greater depth of genericity than another constructed type (with the same number of type arguments) if at least one type argument has greater depth of genericity and no type argument has less depth than the corresponding type argument in the other.
+3. An array type has greater depth of genericity than another array type (with the same number of dimensions) if the element type of the first has greater depth of genericity than the element type of the second.
 
 For example:
 
@@ -1643,12 +1647,12 @@ End Module
 
 A method is *applicable* to a set of type arguments, positional arguments, and named arguments if the method can be invoked using the argument lists. The argument lists are matched against the parameter lists as follows:
 
-- First, match each positional argument in order to the list of method parameters. If there are more positional arguments than parameters and the last parameter is not a paramarray, the method is not applicable. Otherwise, the paramarray parameter is expanded with parameters of the paramarray element type to match the number of positional arguments. If a positional argument is omitted that would go into a paramarray, the method is not applicable.
-- Next, match each named argument to a parameter with the given name. If one of the named arguments fails to match, matches a paramarray parameter, or matches an argument already matched with another positional or named argument, the method is not applicable.
-- Next, if type arguments have been specified, they are matched against the type parameter list . If the two lists do not have the same number of elements, the method is not applicable, unless the type argument list is empty. If the type argument list is empty, type inference is used to try and infer the type argument list. If type inferencing fails, the method is not applicable. Otherwise, the type arguments are filled in the place of the type parameters in the signature.If parameters that have not been matched are not optional, the method is not applicable.
-- If the argument expressions are not implicitly convertible to the types of the parameters they match, then the method is not applicable.
-- If a parameter is ByRef, and there is not an implicit conversion from the type of the parameter to the type of the argument, then the method is not applicable.
-- If type arguments violate the method's constraints (including the inferred type arguments from Step 3), the method is not applicable. For example:
+1. First, match each positional argument in order to the list of method parameters. If there are more positional arguments than parameters and the last parameter is not a paramarray, the method is not applicable. Otherwise, the paramarray parameter is expanded with parameters of the paramarray element type to match the number of positional arguments. If a positional argument is omitted that would go into a paramarray, the method is not applicable.
+2. Next, match each named argument to a parameter with the given name. If one of the named arguments fails to match, matches a paramarray parameter, or matches an argument already matched with another positional or named argument, the method is not applicable.
+3. Next, if type arguments have been specified, they are matched against the type parameter list . If the two lists do not have the same number of elements, the method is not applicable, unless the type argument list is empty. If the type argument list is empty, type inference is used to try and infer the type argument list. If type inferencing fails, the method is not applicable. Otherwise, the type arguments are filled in the place of the type parameters in the signature.If parameters that have not been matched are not optional, the method is not applicable.
+4. If the argument expressions are not implicitly convertible to the types of the parameters they match, then the method is not applicable.
+5. If a parameter is ByRef, and there is not an implicit conversion from the type of the parameter to the type of the argument, then the method is not applicable.
+6. If type arguments violate the method's constraints (including the inferred type arguments from Step 3), the method is not applicable. For example:
 
 ```vb
 Module Module1
@@ -1711,9 +1715,9 @@ Otherwise, if the matching argument expression is classified as a variable, valu
 
 For optional parameters where an argument has not been provided, the compiler picks arguments as described below. In all cases it tests against the parameter type after generic type substitution.
 
-- If the optional parameter has the attribute `System.Runtime.CompilerServices.CallerLineNumber`, and the invocation is from a location in source code, and a numeric literal representing that location's line number has an intrinsic conversion to the parameter type, then the numeric literal is used. If the invocation spans multiple lines, then the choice of which line to use is implementation-dependent.
-- If the optional parameter has the attribute `System.Runtime.CompilerServices.CallerFilePath`, and the invocation is from a location in source code, and a string literal representing that location's file path has an intrinsic conversion to the parameter type, then the string literal is used. The format of the file path is implementation-dependent.
-- If the optional parameter has the attribute `System.Runtime.CompilerServices.CallerMemberName`, and the invocation is within the body of a type member or in an attribute applied to any part of that type member, and a string literal representing that member name has an intrinsic conversion to the parameter type, then the string literal is used. For invocations that are part of property accessors or custom event handlers, then the member name used is that of the property or event itself. For invocations that are part of an operator or constructor, then an implementation-specific name is used.
+1. If the optional parameter has the attribute `System.Runtime.CompilerServices.CallerLineNumber`, and the invocation is from a location in source code, and a numeric literal representing that location's line number has an intrinsic conversion to the parameter type, then the numeric literal is used. If the invocation spans multiple lines, then the choice of which line to use is implementation-dependent.
+2. If the optional parameter has the attribute `System.Runtime.CompilerServices.CallerFilePath`, and the invocation is from a location in source code, and a string literal representing that location's file path has an intrinsic conversion to the parameter type, then the string literal is used. The format of the file path is implementation-dependent.
+3. If the optional parameter has the attribute `System.Runtime.CompilerServices.CallerMemberName`, and the invocation is within the body of a type member or in an attribute applied to any part of that type member, and a string literal representing that member name has an intrinsic conversion to the parameter type, then the string literal is used. For invocations that are part of property accessors or custom event handlers, then the member name used is that of the property or event itself. For invocations that are part of an operator or constructor, then an implementation-specific name is used.
 
 If none of the above apply, then the optional parameter's default value is used (or `Nothing` if no default value is supplied). And if more than one of the above apply, then the choice of which to use is implementation-dependent.
 
@@ -1840,13 +1844,10 @@ If `Tp` is a method type parameter, then `Ta` is added as a type hint with the c
 
 If `A` is a lambda method and `Tp` is a constructed delegate type or `System.Linq.Expressions.Expression(Of T)`, where `T` is a constructed delegate type, for each lambda method parameter type `TL` and corresponding delegate parameter type `TD`, replace `Ta` with `TL` and `Tp` with `TD` and restart the process with no restriction. Then, replace `Ta` with the return type of the lambda method and:
 
-if `A` is a regular lambda method, replace `Tp` with the return type of the delegate type;
-
-if `A` is an async lambda method and the return type of the delegate type has form `Task(Of T)` for some `T`, replace `Tp` with that `T`;
-
-if `A` is an iterator lambda method and the return type of the delegate type has form `IEnumerator(Of T)` or `IEnumerable(Of T)` for some `T`, replace `Tp` with that `T`.
-
-Next, restart the process with no restriction.
+* if `A` is a regular lambda method, replace `Tp` with the return type of the delegate type;
+* if `A` is an async lambda method and the return type of the delegate type has form `Task(Of T)` for some `T`, replace `Tp` with that `T`;
+* if `A` is an iterator lambda method and the return type of the delegate type has form `IEnumerator(Of T)` or `IEnumerable(Of T)` for some `T`, replace `Tp` with that `T`.
+* Next, restart the process with no restriction.
 
 If `A` is a method pointer and `Tp` is a constructed delegate type, use the parameter types of `Tp` to determine which method pointed is most applicable to `Tp`. If there is a method that is most applicable, replace `Ta` with the return type of the method and `Tp` with the return type of the delegate type and restart the process with no restriction.
 
@@ -3550,9 +3551,9 @@ Dim y = Sub(x As Integer)
 
 Multi-line `Function` lambda expressions can declare a return type but cannot put attributes on it. If a multi-line `Function` lambda expression does not declare a return type but the return type can be inferred from the context in which the lambda expression is used , then that return type is used. Otherwise the return type of the function is calculated as follows.
 
-- In a regular lambda expression, the return type is the dominant type of the expressions in all the `Return` statements in the statement block.
-- In an async lambda expression, the return type is `Task(Of T)` where `T` is the dominant type of the expressions in all the `Return` statements in the statement block.
-- In an iterator lambda expression, the return type is `IEnumerable(Of T)` where `T` is the dominant type of the expressions in all the `Yield` statements in the statement block.
+1. In a regular lambda expression, the return type is the dominant type of the expressions in all the `Return` statements in the statement block.
+2. In an async lambda expression, the return type is `Task(Of T)` where `T` is the dominant type of the expressions in all the `Return` statements in the statement block.
+3. In an iterator lambda expression, the return type is `IEnumerable(Of T)` where `T` is the dominant type of the expressions in all the `Yield` statements in the statement block.
 
 For example:
 
@@ -5522,10 +5523,10 @@ The await operator is related to async methods, which are described in Section [
 
 The await operator takes a single expression which must be classified as a value and whose type must be an *awaitable* type, or `Object`. If its type is `Object` then all processing is deferred until run-time. A type `C` is said to be awaitable if all of the following are true:
 
-- `C` contains an accessible instance or extension method named `GetAwaiter` which has no arguments and which returns some type `E`;
-- `E` contains a readable instance or extension property named `IsCompleted` which takes no arguments and has type Boolean;
-- `E` contains an accessible instance or extension method named `GetResult` which takes no arguments;
-- `E` implements either `System.Runtime.CompilerServices.INotifyCompletion` or `ICriticalNotifyCompletion`.
+1. `C` contains an accessible instance or extension method named `GetAwaiter` which has no arguments and which returns some type `E`;
+2. `E` contains a readable instance or extension property named `IsCompleted` which takes no arguments and has type Boolean;
+3. `E` contains an accessible instance or extension method named `GetResult` which takes no arguments;
+4. `E` implements either `System.Runtime.CompilerServices.INotifyCompletion` or `ICriticalNotifyCompletion`.
 
 If `GetResult` was a `Sub`, then the await expression is classified as void. Otherwise, the await expression is classified as a value and its type is the return type of the `GetResult` method.
 
@@ -5574,24 +5575,24 @@ End Structure
 
 When control flow reaches an `Await` operator, behavior is as follows.
 
-- The `GetAwaiter` method of the await operand is invoked. The result of this invocation is termed the *awaiter*.
-- The awaiter's `IsCompleted` property is retrieved. If the result is true then:
-   1. The `GetResult` method of the awaiter is invoked. If `GetResult` was a function, then the value of the await expression is the return value of this function.
-- If the IsCompleted property isn't true then:
-   2. Either `ICriticalNotifyCompletion.UnsafeOnCompleted` is invoked on the awaiter (if the awaiter's type `E` implements `ICriticalNotifyCompletion`) or `INotifyCompletion.OnCompleted` (otherwise). In both cases it passes a *resumption delegate* associated with the current instance of the async method.
-   3. The control point of the current async method instance is suspended, and control flow resumes in the *current caller* (defined in Section [Async Methods](statements.md#async-methods)).
-   4. If later the resumption delegate is invoked,
-      1. the resumption delegate first restores `System.Threading.Thread.CurrentThread.ExecutionContext` to what it was at the time `OnCompleted` was called,
-      2. then it resumes control flow at the control point of the async method instance (see Section [Async Methods](statements.md#async-methods)),
-      3. where it calls the `GetResult` method of the awaiter, as in 2.1 above.
+1.  The `GetAwaiter` method of the await operand is invoked. The result of this invocation is termed the *awaiter*.
+2.  The awaiter's `IsCompleted` property is retrieved. If the result is true then:
+    21. The `GetResult` method of the awaiter is invoked. If `GetResult` was a function, then the value of the await expression is the return value of this function.
+3.  If the IsCompleted property isn't true then:
+    31. Either `ICriticalNotifyCompletion.UnsafeOnCompleted` is invoked on the awaiter (if the awaiter's type `E` implements `ICriticalNotifyCompletion`) or `INotifyCompletion.OnCompleted` (otherwise). In both cases it passes a *resumption delegate* associated with the current instance of the async method.
+    32. The control point of the current async method instance is suspended, and control flow resumes in the *current caller* (defined in Section [Async Methods](statements.md#async-methods)).
+    33. If later the resumption delegate is invoked,
+        331. the resumption delegate first restores `System.Threading.Thread.CurrentThread.ExecutionContext` to what it was at the time `OnCompleted` was called,
+        332. then it resumes control flow at the control point of the async method instance (see Section [Async Methods](statements.md#async-methods)),
+        333. where it calls the `GetResult` method of the awaiter, as in 2.1 above.
 
 If the await operand has type Object, then this behavior is deferred until runtime:
 
 - Step 1 is accomplished by calling GetAwaiter() with no arguments; it may therefore bind at runtime to instance methods which take optional parameters.
 - Step 2 is accomplished by retrieving the IsCompleted() property with no arguments, and by attempting an intrinsic conversion to Boolean.
-- Step 3.1 is accomplished by attempting `TryCast(awaiter, ICriticalNotifyCompletion)`, and if this fails then `DirectCast(awaiter, INotifyCompletion)`.
+- Step 3.a is accomplished by attempting `TryCast(awaiter, ICriticalNotifyCompletion)`, and if this fails then `DirectCast(awaiter, INotifyCompletion)`.
 
-The resumption delegate passed in 3.1 may only be invoked once. If it is invoked more than once, the behavior is undefined.
+The resumption delegate passed in 3.a may only be invoked once. If it is invoked more than once, the behavior is undefined.
 
 ```antlr
 AwaitOperatorExpression

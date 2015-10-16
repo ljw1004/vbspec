@@ -1,4 +1,12 @@
-﻿Module Module1
+﻿
+' TODO: there are two places where the numbering produced by md2docx is wrong...
+'    11.1.1 Expression reclassification
+'    11.4.4 Simple Name Expressions
+' TODO: look at the resulting readme.docx and figure out which styles are never used; then, remove them
+' TODO: shrink the size of the grammar font to 9pt
+
+
+Module Module1
 
     Sub Main()
         Dim args = Environment.GetCommandLineArgs

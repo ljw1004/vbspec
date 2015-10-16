@@ -645,6 +645,8 @@ To avoid problems with interpreting the year value in a date value, the year val
 
 A time value may be specified either using a 24-hour value or a 12-hour value; time values that omit an `AM` or `PM` are assumed to be 24-hour values. If a time value omits the minutes, the literal `0` is used by default. If a time value omits the seconds, the literal `0` is used by default. If both minutes and second are omitted, then `AM` or `PM` must be specified. If the date value specified is outside the range of the `Date` type, a compile-time error occurs.
 
+The following example contains several date literals.
+
 ```vb
 Dim d As Date
 

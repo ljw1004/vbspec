@@ -152,16 +152,17 @@ In the following, the *current caller* of the method instance is defined as eith
 When control flow exits the async method body -- through reaching the `End Sub` or `End Function` that mark its end, or through an explicit `Return` or `Exit` statement, or through an unhandled exception -- the instance's control point is set to the end of the method. Behavior then depends on the return type of the async method.
 
 1. In the case of an `Async Function` with return type `Task`:
-   1. If control flow exits through an unhandled exception, then the async object's status is set to `TaskStatus.Faulted` and its `Exception.InnerException` property is set to the exception (except: certain implementation-defined exceptions such as `OperationCanceledException` change it to `TaskStatus.Canceled`). Control flow resumes in the current caller.
-   2. Otherwise, the async object's status is set to `TaskStatus.Completed`. Control flow resumes in the current caller.
+   11. If control flow exits through an unhandled exception, then the async object's status is set to `TaskStatus.Faulted` and its `Exception.InnerException` property is set to the exception (except: certain implementation-defined exceptions such as `OperationCanceledException` change it to `TaskStatus.Canceled`). Control flow resumes in the current caller.
+   12. Otherwise, the async object's status is set to `TaskStatus.Completed`. Control flow resumes in the current caller.
 
-> __Annotation__
-> The whole point of Task, and what makes async methods interesting, is that when a task becomes Completed then any methods that were awaiting it will presently have their resumption delegates executed, i.e. they will become unblocked.
+    > __Annotation__
+    > The whole point of Task, and what makes async methods interesting, is that when a task becomes Completed then any methods that were awaiting it will presently have their resumption delegates executed, i.e. they will become unblocked.
 
 2. In the case of an `Async Function` with return type `Task(Of T)` for some `T`: the behavior is as above, except that in non-exception cases the async object's `Result` property is also set to the final value of the task return variable.
+
 3. In the case of an `Async Sub`:
-   3. If control flow exits through an unhandled exception, then that exception is propagated to the environment in some implementation-specific manner. Control flow resumes in the current caller.
-   4. Otherwise, control flow simply resumes in the current caller.
+   31. If control flow exits through an unhandled exception, then that exception is propagated to the environment in some implementation-specific manner. Control flow resumes in the current caller.
+   32. Otherwise, control flow simply resumes in the current caller.
 
 > __Annotation__
 > There is some Microsoft-specific behavior of an `Async Sub`.

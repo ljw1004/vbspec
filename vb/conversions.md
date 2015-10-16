@@ -69,13 +69,13 @@ For a conversion from a numeric type to a wider numeric type, the value is simpl
 
 For a conversion from an integral type to another integral type, or from `Single`, `Double`, or `Decimal` to an integral type, the result depends on whether integer overflow checking is on:
 
-If integer overflow is being checked:
+*If integer overflow is being checked:*
 
 If the source is an integral type, the conversion succeeds if the source argument is within the range of the destination type. The conversion throws a `System.OverflowException` exception if the source argument is outside the range of the destination type.
 
 If the source is `Single`, `Double`, or `Decimal`, the source value is rounded up or down to the nearest integral value, and this integral value becomes the result of the conversion. If the source value is equally close to two integral values, the value is rounded to the value that has an even number in the least significant digit position. If the resulting integral value is outside the range of the destination type, a `System.OverflowException` exception is thrown.
 
-If integer overflow is not being checked:
+*If integer overflow is not being checked:*
 
 If the source is an integral type, the conversion always succeeds and simply consists of discarding the most significant bits of the source value.
 
@@ -653,19 +653,19 @@ __Array conversions__
 
 From an array type `S` with an element type `Se`, to an array type `T` with an element type `Te`, provided that all of the following are true:
 
-- `S` and `T` differ only in element type.
-- Both `Se` and `Te` are reference types or are type parameters not known to be value types.
-- A narrowing reference, array, or type parameter conversion exists from `Se` to `Te`.
+* `S` and `T` differ only in element type.
+* Both `Se` and `Te` are reference types or are type parameters not known to be value types.
+* A narrowing reference, array, or type parameter conversion exists from `Se` to `Te`.
 
 From an array type `S` with an element type `Se` to an array type `T` with an enumerated element type `Te`, provided all of the following are true:
 
-- `S` and `T` differ only in element type.
-- `Se` is the underlying type of `Te` , or they are both different enumerated types that share the same underlying type.
+* `S` and `T` differ only in element type.
+* `Se` is the underlying type of `Te` , or they are both different enumerated types that share the same underlying type.
 
 From an array type `S` of rank 1 with an enumerated element type `Se`, to `IList(Of Te)`, `IReadOnlyList(Of Te)`, `ICollection(Of Te)`, `IReadOnlyCollection(Of Te)` and `IEnumerable(Of Te)`, provided one of the following is true:
 
-- Both `Se` and `Te` are reference types or are type parameters known to be a reference type, and a narrowing reference, array, or type parameter conversion exists from `Se` to `Te`; or
-- `Se` is the underlying type of `Te`, or they are both different enumerated types that share the same underlying type.
+* Both `Se` and `Te` are reference types or are type parameters known to be a reference type, and a narrowing reference, array, or type parameter conversion exists from `Se` to `Te`; or
+* `Se` is the underlying type of `Te`, or they are both different enumerated types that share the same underlying type.
 
 __Value type conversions__
 
