@@ -132,9 +132,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="project.json" />
-    <Content Include="..\vb\vb.html">
-      <Link>vb.html</Link>
-    </Content>
     <Content Include="template.docx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

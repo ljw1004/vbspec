@@ -465,11 +465,30 @@ document.onkeydown = function(e)
 
 document.onmouseover = function(e)
 {
+// Typically we'll be viewing this document at something like
+// http://ljw1004.github.io/vbspec/dir1/dir2/vb.html
+// but hrefs to "statements.md#section" must point to
+// https://github.com/ljw1004/vbspec/blob/gh-pages/dir1/dir2/statements.md#section
+// The raw HTML won't know where it's going to be sitting.
+// So instead we'll do the appropriate patching-up when you mouse over a link.
 if (!e) e=window.event;
 var a = e.toElement || e.relatedTarget;
 if (!a || a.tagName.toLowerCase()!="a") return;
-alert(a.className);
 if (a.className!="s") return;
+if (!a.href || typeof(a.href)=='undefined') return;
+var href = a.getAttribute("href");
+if (href.indexOf("http")==0) return; // has already been processed
+if (window.location.protocol.indexOf("http")!=0) return;
+if (window.location.host.indexOf(".github.io") == -1) return;
+
+var user = window.location.host.replace(".github.io",""); // "ljw1004"
+var dirs = window.location.pathname.split("/"); dirs.splice(0,1);
+var repository = dirs[0];                                 // "vbspec"
+dirs.splice(0,1); dirs.splice(dirs.length-1,1);
+var dir = dirs.join("/");                                 // "dir1/dir2"
+var target = href;                                        // "statements.md#section"
+var url = "https://github.com/"+user+"/"+repository+"/blob/gh-pages/"+dir+"/"+target;
+a.setAttribute("href",url); a.href = url; // I'm not sure which of these to change, so I'm doing both
 }
 
 document.onmouseout = function(e)
