@@ -39,6 +39,12 @@ Annotations are like this:
 > Here is the body of the annotation
 ```
 
+This kind of comment is retained in the online markdown, but absent from the Word document. Use it for comments that are worth preserving within the spec for use of spec lawyers (e.g. thorny corner-cases) but shouldn't be part of the actual grammar:
+```
+> __Comment__
+> Here is the body of the comment
+```
+
 VB code blocks are like this:
 ```
 ``vb

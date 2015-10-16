@@ -366,6 +366,8 @@ Class MarkdownSpec
                                     End If
                                 ElseIf literal = "Note" Then
                                     kind = "AlertText"
+                                ElseIf literal = "Comment" Then
+                                    kind = "Comment"
                                 End If
                             End If
                         End If
@@ -376,7 +378,7 @@ Class MarkdownSpec
                                 Dim props As New ParagraphProperties(New ParagraphStyleId() With {.Val = kind})
                                 qpp.ParagraphProperties = props
                             End If
-                            Yield qp
+                            If kind <> "Comment" Then Yield qp
                         Next
 
                     ElseIf quoted.IsCodeBlock Then

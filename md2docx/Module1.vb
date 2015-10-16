@@ -1,6 +1,5 @@
 ﻿Module Module1
 
-
     Sub Main()
         Dim args = Environment.GetCommandLineArgs
         Dim ifn = If(args.Length >= 2, args(1), "readme.md")
@@ -39,7 +38,6 @@
         ' correct references to within the spec. We'll check that it has the same productions as
         ' in the corresponding ANTLR file
         Dim antlrfn = IO.Directory.GetFiles(".", "*.g4").FirstOrDefault
-        antlrfn = Nothing ' TODO: remove this
         If antlrfn IsNot Nothing Then
             Dim htmlfn = IO.Path.ChangeExtension(antlrfn, ".html")
             Dim grammar = Antlr.ReadFile(antlrfn)
