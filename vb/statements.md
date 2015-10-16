@@ -61,7 +61,7 @@ After control flow has exited, there are no longer any live references to the me
 
 ### Iterator Methods
 
-Iterator methods are used as a convenient way to generate a sequence, one which can be consumed by the `For Each` statement. Iterator methods use the `Yield` statement (Section [Yield Statements](statements.md#yield-statements)) to provide elements of the sequence. (An iterator method with no `Yield` statements will produce an empty sequence). Here is an example of an iterator method:
+Iterator methods are used as a convenient way to generate a sequence, one which can be consumed by the `For Each` statement. Iterator methods use the `Yield` statement (Section [Yield Statement](statements.md#yield-statement)) to provide elements of the sequence. (An iterator method with no `Yield` statements will produce an empty sequence). Here is an example of an iterator method:
 
 ```vb
 Iterator Function Test() As IEnumerable(Of Integer)
