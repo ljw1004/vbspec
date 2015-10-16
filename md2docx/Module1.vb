@@ -1,5 +1,4 @@
 ﻿
-' TODO: The page headers (see page 14 for an example) look Like they are part bold text And part regular text. The page header for page 14 looks Like "2. Lexical Grammar".
 ' TODO: The 50% shading pattern on the annotations, to me, makes them a bit hard to read on the screen. (I think this Is consistent with the existing spec formatting, but I think it should just be a solid gray background.)
 ' TODO: The page header has a separator line between it And the content but the page footer doesn't. I think it would be easier to read if the footer also had a separator.
 ' TODO: check the legal stuff
