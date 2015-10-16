@@ -1,10 +1,4 @@
-﻿
-' TODO: The page header has a separator line between it And the content but the page footer doesn't. I think it would be easier to read if the footer also had a separator.
-' TODO: check the legal stuff
-
-
-
-Module Module1
+﻿Module Module1
 
 
     Sub Main()

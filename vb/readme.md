@@ -1,5 +1,5 @@
-The Microsoft Visual Basic Language Specification
-===================================================
+Visual Basic Language Reference
+=================================
 
 * [Introduction](introduction.md)
     * [Grammar Notation](introduction.md)
