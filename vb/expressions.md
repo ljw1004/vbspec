@@ -90,9 +90,9 @@ The following types of expressions can be reclassified:
 
 4.  A lambda method can be reclassified as a value. If the reclassification occurs in the context of a conversion where the target type is known, then one of two reclassifications can occur:
     
-    (a) If the target type is a delegate type, the lambda method is interpreted as the argument to a delegate-construction expression of the appropriate type.
+    41. If the target type is a delegate type, the lambda method is interpreted as the argument to a delegate-construction expression of the appropriate type.
     
-    (b) If the target type is `System.Linq.Expressions.Expression(Of T)`, and `T` is a delegate type, then the lambda method is interpreted as if it was being used in delegate-construction expression for `T` and then converted to an expression tree.
+    42. If the target type is `System.Linq.Expressions.Expression(Of T)`, and `T` is a delegate type, then the lambda method is interpreted as if it was being used in delegate-construction expression for `T` and then converted to an expression tree.
     
     An async or iterator lambda method may only be interpreted as the argument to a delegate-construction expression, if the delegate has no ByRef parameters.
     
@@ -366,31 +366,41 @@ InstanceExpression
 
 A *simple name expression* consists of a single identifier followed by an optional type argument list. The name is resolved and classified by the following "simple name resolution rules":
 
-- Starting with the immediately enclosing block and continuing with each enclosing outer block (if any), if the identifier matches the name of a local variable, static variable, constant local, method type parameter, or parameter, then the identifier refers to the matching entity.
+1.  Starting with the immediately enclosing block and continuing with each enclosing outer block (if any), if the identifier matches the name of a local variable, static variable, constant local, method type parameter, or parameter, then the identifier refers to the matching entity.
 
-If the identifier matches a local variable, static variable, or constant local and a type argument list was provided, a compile-time error occurs. If the identifier matches a method type parameter and a type argument list was provided, no match occurs and resolution continues. If the identifier matches a local variable, the local variable matched is the implicit function or `Get` accessor return local variable, and the expression is part of an invocation expression, invocation statement, or an `AddressOf` expression, then no match occurs and resolution continues.
+    If the identifier matches a local variable, static variable, or constant local and a type argument list was provided, a compile-time error occurs. If the identifier matches a method type parameter and a type argument list was provided, no match occurs and resolution continues. If the identifier matches a local variable, the local variable matched is the implicit function or `Get` accessor return local variable, and the expression is part of an invocation expression, invocation statement, or an `AddressOf` expression, then no match occurs and resolution continues.
 
-The expression is classified as a variable if it is a local variable, static variable, or parameter. The expression is classified as a type if it is a method type parameter. The expression is classified as a value if it is a constant local.
+    The expression is classified as a variable if it is a local variable, static variable, or parameter. The expression is classified as a type if it is a method type parameter. The expression is classified as a value if it is a constant local.
 
-- For each nested type containing the expression, starting from the innermost and going to the outermost, if a lookup of the identifier in the type produces a match with an accessible member:
-- If the matching type member is a type parameter, then the result is classified as a type and is the matching type parameter. If a type argument list was provided, no match occurs and resolution continues.
-- Otherwise, if the type is the immediately enclosing type and the lookup identifies a non-shared type member, then the result is the same as a member access of the form `Me.E(Of A)`, where `E` is the identifier and `A` is the type argument list, if any.
-- Otherwise, the result is exactly the same as a member access of the form `T.E(Of A)`, where `T` is the type containing the matching member, `E` is the identifier, and `A` is the type argument list, if any. In this case, it is an error for the identifier to refer to a non-shared member.
-- For each nested namespace, starting from the innermost and going to the outermost namespace, do the following:
-- If the namespace contains an accessible type with the given name and has the same number of type parameters as was supplied in the type argument list, if any, then the identifier refers to that type and is classified as a type.
-- Otherwise, if no type argument list was supplied and the namespace contains a namespace member with the given name, then the identifier refers to that namespace and is classified as a namespace.
-- Otherwise, if the namespace contains one or more accessible standard modules, and a member name lookup of the identifier produces an accessible match in exactly one standard module, then the result is exactly the same as a member access of the form `M.E(Of A)`, where `M` is the standard module containing the matching member, `E` is the identifier, and `A` is the type argument list, if any. If the identifier matches accessible type members in more than one standard module, a compile-time error occurs.
-- If the source file has one or more import aliases, and the identifier matches the name of one of them, then the identifier refers to that namespace or type. If a type argument list is supplied, a compile-time error occurs.
-- If the source file containing the name reference has one or more imports:
-- If the identifier matches in exactly one import the name of an accessible type with the same number of type parameters as was supplied in the type argument list, if any, or a type member, then the identifier refers to that type or type member. If the identifier matches in more than one import the name of an accessible type with the same number of type parameters as was supplied in the type argument list, if any, or an accessible type member, a compile-time error occurs.
-- Otherwise, if no type argument list was supplied and the identifier matches in exactly one import the name of a namespace with accessible types, then the identifier refers to that namespace. If no type argument list was supplied and the identifier matches in more than one import the name of a namespace with accessible types, a compile-time error occurs.
-- Otherwise, if the imports contain one or more accessible standard modules, and a member name lookup of the identifier produces an accessible match in exactly one standard module, then the result is exactly the same as a member access of the form `M.E(Of A)`, where `M` is the standard module containing the matching member, `E` is the identifier, and `A` is the type argument list, if any. If the identifier matches accessible type members in more than one standard module, a compile-time error occurs.
-- If the compilation environment defines one or more import aliases, and the identifier matches the name of one of them, then the identifier refers to that namespace or type. If a type argument list is supplied, a compile-time error occurs.
-- If the compilation environment defines one or more imports:
-- If the identifier matches in exactly one import the name of an accessible type with the same number of type parameters as was supplied in the type argument list, if any, or a type member, then the identifier refers to that type or type member. If the identifier matches in more than one import the name of an accessible type with the same number of type parameters as was supplied in the type argument list, if any, or a type member, a compile-time error occurs.
-- Otherwise, if no type argument list was supplied and the identifier matches in exactly one import the name of a namespace with accessible types, then the identifier refers to that namespace. If no type argument list was supplied and the identifier matches in more than one import the name of a namespace with accessible types, a compile-time error occurs.
-- Otherwise, if the imports contain one or more accessible standard modules, and a member name lookup of the identifier produces an accessible match in exactly one standard module, then the result is exactly the same as a member access of the form `M.E(Of A)`, where `M` is the standard module containing the matching member,  `E` is the identifier, and `A` is the type argument list, if any. If the identifier matches accessible type members in more than one standard module, a compile-time error occurs.
-- Otherwise, the name given by the identifier is undefined.
+2.  For each nested type containing the expression, starting from the innermost and going to the outermost, if a lookup of the identifier in the type produces a match with an accessible member:
+
+    21. If the matching type member is a type parameter, then the result is classified as a type and is the matching type parameter. If a type argument list was provided, no match occurs and resolution continues.
+    22. Otherwise, if the type is the immediately enclosing type and the lookup identifies a non-shared type member, then the result is the same as a member access of the form `Me.E(Of A)`, where `E` is the identifier and `A` is the type argument list, if any.
+    23. Otherwise, the result is exactly the same as a member access of the form `T.E(Of A)`, where `T` is the type containing the matching member, `E` is the identifier, and `A` is the type argument list, if any. In this case, it is an error for the identifier to refer to a non-shared member.
+
+3.  For each nested namespace, starting from the innermost and going to the outermost namespace, do the following:
+
+    31. If the namespace contains an accessible type with the given name and has the same number of type parameters as was supplied in the type argument list, if any, then the identifier refers to that type and is classified as a type.
+    32. Otherwise, if no type argument list was supplied and the namespace contains a namespace member with the given name, then the identifier refers to that namespace and is classified as a namespace.
+    33. Otherwise, if the namespace contains one or more accessible standard modules, and a member name lookup of the identifier produces an accessible match in exactly one standard module, then the result is exactly the same as a member access of the form `M.E(Of A)`, where `M` is the standard module containing the matching member, `E` is the identifier, and `A` is the type argument list, if any. If the identifier matches accessible type members in more than one standard module, a compile-time error occurs.
+
+4.  If the source file has one or more import aliases, and the identifier matches the name of one of them, then the identifier refers to that namespace or type. If a type argument list is supplied, a compile-time error occurs.
+
+5. If the source file containing the name reference has one or more imports:
+
+    51. If the identifier matches in exactly one import the name of an accessible type with the same number of type parameters as was supplied in the type argument list, if any, or a type member, then the identifier refers to that type or type member. If the identifier matches in more than one import the name of an accessible type with the same number of type parameters as was supplied in the type argument list, if any, or an accessible type member, a compile-time error occurs.
+    52. Otherwise, if no type argument list was supplied and the identifier matches in exactly one import the name of a namespace with accessible types, then the identifier refers to that namespace. If no type argument list was supplied and the identifier matches in more than one import the name of a namespace with accessible types, a compile-time error occurs.
+    53. Otherwise, if the imports contain one or more accessible standard modules, and a member name lookup of the identifier produces an accessible match in exactly one standard module, then the result is exactly the same as a member access of the form `M.E(Of A)`, where `M` is the standard module containing the matching member, `E` is the identifier, and `A` is the type argument list, if any. If the identifier matches accessible type members in more than one standard module, a compile-time error occurs.
+
+6.  If the compilation environment defines one or more import aliases, and the identifier matches the name of one of them, then the identifier refers to that namespace or type. If a type argument list is supplied, a compile-time error occurs.
+
+7. If the compilation environment defines one or more imports:
+
+    71. If the identifier matches in exactly one import the name of an accessible type with the same number of type parameters as was supplied in the type argument list, if any, or a type member, then the identifier refers to that type or type member. If the identifier matches in more than one import the name of an accessible type with the same number of type parameters as was supplied in the type argument list, if any, or a type member, a compile-time error occurs.
+    72. Otherwise, if no type argument list was supplied and the identifier matches in exactly one import the name of a namespace with accessible types, then the identifier refers to that namespace. If no type argument list was supplied and the identifier matches in more than one import the name of a namespace with accessible types, a compile-time error occurs.
+    73. Otherwise, if the imports contain one or more accessible standard modules, and a member name lookup of the identifier produces an accessible match in exactly one standard module, then the result is exactly the same as a member access of the form `M.E(Of A)`, where `M` is the standard module containing the matching member,  `E` is the identifier, and `A` is the type argument list, if any. If the identifier matches accessible type members in more than one standard module, a compile-time error occurs.
+
+8. Otherwise, the name given by the identifier is undefined.
 
 A simple name expression that is undefined is a compile-time error.
 

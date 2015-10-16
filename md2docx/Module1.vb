@@ -1,12 +1,15 @@
 ﻿
-' TODO: there are two places where the numbering produced by md2docx is wrong...
-'    11.1.1 Expression reclassification
-'    11.4.4 Simple Name Expressions
 ' TODO: look at the resulting readme.docx and figure out which styles are never used; then, remove them
 ' TODO: shrink the size of the grammar font to 9pt
+' TODO: The page headers (see page 14 for an example) look Like they are part bold text And part regular text. The page header for page 14 looks Like "2. Lexical Grammar".
+' TODO: The 50% shading pattern on the annotations, to me, makes them a bit hard to read on the screen. (I think this Is consistent with the existing spec formatting, but I think it should just be a solid gray background.)
+' TODO: The page header has a separator line between it And the content but the page footer doesn't. I think it would be easier to read if the footer also had a separator.
+' TODO: check the legal stuff
+
 
 
 Module Module1
+
 
     Sub Main()
         Dim args = Environment.GetCommandLineArgs
@@ -46,6 +49,7 @@ Module Module1
         ' correct references to within the spec. We'll check that it has the same productions as
         ' in the corresponding ANTLR file
         Dim antlrfn = IO.Directory.GetFiles(".", "*.g4").FirstOrDefault
+        antlrfn = Nothing ' TODO: remove this
         If antlrfn IsNot Nothing Then
             Dim htmlfn = IO.Path.ChangeExtension(antlrfn, ".html")
             Dim grammar = Antlr.ReadFile(antlrfn)

@@ -258,7 +258,7 @@ Class MarkdownSpec
                 ' Let's figure out what kind of list it is - ordered or unordered? nested?
                 Dim format0 = {"1", "1", "1"}
                 For Each item In flat
-                    format0(item.Item1) = If(item.Item2, "1", "o")
+                    format0(item.Level) = If(item.IsBulletOrdered, "1", "o")
                 Next
                 Dim format = String.Join("", format0)
 
@@ -286,11 +286,21 @@ Class MarkdownSpec
                 Dim numInstance As New NumberingInstance(New AbstractNumId With {.Val = aid}) With {.NumberID = nid}
                 numberingPart.Numbering.AppendChild(numInstance)
 
+                ' We'll also figure out the indentation (for the benefit of those paragraphs that should be
+                ' indendent with the list but aren't numbered). I'm not sure what the indent comes from.
+                ' In the docx, each AbstractNum that I created has an indent for each of its levels,
+                ' defaulted at 900, 1260, 1620, ... but I can't see where in the above code that's created?
+                Dim calcIndent = Function(level%) CStr(540 + level * 360)
+
                 For Each item In flat
-                    Dim content = item.Item3
+                    Dim content = item.Paragraph
                     If content.IsParagraph OrElse content.IsSpan Then
                         Dim spans = If(content.IsParagraph, CType(content, MarkdownParagraph.Paragraph).Item, CType(content, MarkdownParagraph.Span).Item)
-                        Yield New Paragraph(Spans2Elements(spans)) With {.ParagraphProperties = New ParagraphProperties(New NumberingProperties(New ParagraphStyleId With {.Val = "ListParagraph"}, New NumberingLevelReference With {.Val = item.Item1}, New NumberingId With {.Val = nid}))}
+                        If item.HasBullet Then
+                            Yield New Paragraph(Spans2Elements(spans)) With {.ParagraphProperties = New ParagraphProperties(New NumberingProperties(New ParagraphStyleId With {.Val = "ListParagraph"}, New NumberingLevelReference With {.Val = item.Level}, New NumberingId With {.Val = nid}))}
+                        Else
+                            Yield New Paragraph(Spans2Elements(spans)) With {.ParagraphProperties = New ParagraphProperties(New Indentation With {.Left = calcIndent(item.Level)})}
+                        End If
                     ElseIf content.IsQuotedBlock OrElse content.IsCodeBlock Then
                         For Each p In Paragraph2Paragraphs(content)
                             Yield p
@@ -443,11 +453,18 @@ Class MarkdownSpec
             End If
         End Function
 
-        Function FlattenList(md As MarkdownParagraph.ListBlock) As IEnumerable(Of Tuple(Of Integer, Boolean, MarkdownParagraph))
+        Class FlatItem
+            Public Level As Integer
+            Public HasBullet As Boolean
+            Public IsBulletOrdered As Boolean
+            Public Paragraph As MarkdownParagraph
+        End Class
+
+        Function FlattenList(md As MarkdownParagraph.ListBlock) As IEnumerable(Of FlatItem)
             Dim flat = FlattenList(md, 0).ToList()
             Dim isOrdered As New Dictionary(Of Integer, Boolean)
             For Each item In flat
-                Dim level = item.Item1, isItemOrdered = item.Item2, content = item.Item3
+                Dim level = item.Level, isItemOrdered = item.IsBulletOrdered, content = item.Paragraph
                 If isOrdered.ContainsKey(level) AndAlso isOrdered(level) <> isItemOrdered Then Throw New NotImplementedException("List can't mix ordered and unordered items at same level")
                 If Not isOrdered.ContainsKey(level) Then isOrdered(level) = isItemOrdered
                 If Not content.IsParagraph AndAlso Not content.IsSpan AndAlso Not content.IsQuotedBlock AndAlso Not content.IsCodeBlock Then Throw New NotImplementedException("List can only have text, quoted-blocks and code-blocks")
@@ -456,18 +473,22 @@ Class MarkdownSpec
             Return flat
         End Function
 
-        Iterator Function FlattenList(md As MarkdownParagraph.ListBlock, level As Integer) As IEnumerable(Of Tuple(Of Integer, Boolean, MarkdownParagraph))
+        Iterator Function FlattenList(md As MarkdownParagraph.ListBlock, level As Integer) As IEnumerable(Of FlatItem)
             Dim isOrdered = md.Item1.IsOrdered, items = md.Item2
             For Each mdpars In items
+                Dim isFirstParagraph = True
                 For Each mdp In mdpars
                     If mdp.IsParagraph OrElse mdp.IsSpan Then
-                        Yield Tuple.Create(level, isOrdered, mdp)
+                        Yield New FlatItem With {.Level = level, .HasBullet = isFirstParagraph, .IsBulletOrdered = isOrdered, .Paragraph = mdp}
+                        isFirstParagraph = False
                     ElseIf mdp.IsQuotedBlock OrElse mdp.IsCodeBlock Then
-                        Yield Tuple.Create(level, isOrdered, mdp)
+                        Yield New FlatItem With {.Level = level, .HasBullet = False, .IsBulletOrdered = isOrdered, .Paragraph = mdp}
+                        isFirstParagraph = False
                     ElseIf mdp.IsListBlock Then
                         For Each subitem In FlattenList(CType(mdp, MarkdownParagraph.ListBlock), level + 1)
                             Yield subitem
                         Next
+                        isFirstParagraph = False
                     Else
                         Throw New NotImplementedException("Nothing fancy allowed in lists")
                     End If
