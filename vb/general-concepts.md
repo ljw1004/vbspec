@@ -522,7 +522,7 @@ End Module
 
 There are two `Overridable` methods here: one introduced by class `A` and the one introduced by class `C`. The method introduced by class `C` hides the method inherited from class `A`. Thus, the `Overrides` declaration in class `D` overrides the method introduced by class `C`, and it is not possible for class `D` to override the method introduced by class `A`. The example produces the output:
 
-```vb
+```
 B.F
 B.F
 D.F
@@ -771,7 +771,7 @@ End Module
 
 This example prints:
 
-```vb
+```
 TestDerived.DerivedTest1
 TestBase.Test2
 ```

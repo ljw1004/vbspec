@@ -269,7 +269,7 @@ End Module
 
 This code displays:
 
-```vb
+```
 Early-bound: xy
 Late-bound: yx
 ```
@@ -305,7 +305,7 @@ End Module
 
 This code displays:
 
-```vb
+```
 F(Base)
 F(Derived)
 ```
@@ -457,7 +457,7 @@ End Module
 
 The resulting output is:
 
-```vb
+```
 Int32
 Int32
 String
@@ -646,7 +646,7 @@ End Module
 
 This code prints out:
 
-```vb
+```
 MoreDerived.F
 Derived.F
 Derived.F
@@ -1309,7 +1309,7 @@ Given a method group, the most applicable method in the group for an argument li
 
         The above example produces the following output:
 
-        ```vb
+        ```
         F(Object, Object())
         F(Object, Object, Object())
         F(Object, Object, Object())
@@ -1706,7 +1706,7 @@ End Module
 
 The above example produces the following output:
 
-```vb
+```
 System.Int32 System.String System.Double
 System.Object[]
 System.Object[]
@@ -2607,7 +2607,7 @@ End Module
 
 It prints the following result:
 
-```vb
+```
 System.Int16 = 512
 ```
 
@@ -3346,7 +3346,7 @@ End Module
 
 It prints the following result:
 
-```vb
+```
 And: False True
 Or: True False
 AndAlso: False
@@ -3510,7 +3510,7 @@ End Module
 
 will print out:
 
-```vb
+```
 2 4 6 8
 ```
 
@@ -3758,13 +3758,13 @@ End Module
 
 prints
 
-```vb
+```
 1 2 3 4 5 6 7 8 9 10
 ```
 
 instead of
 
-```vb
+```
 9 9 9 9 9 9 9 9 9 9
 ```
 
@@ -4584,8 +4584,8 @@ Dim averageAges = _
 The `By` clause declares expression range variables that are used as key values in the grouping operation. The `Into` clause allows the declaration of expression range variables that calculate aggregations over each of the groups formed by the `By` clause. Within the `Into` clause, the expression range variable can only be assigned an expression which is a method invocation of an *aggregate function*. An aggregate function is a function on the collection type of the group (which may not necessarily be the same collection type of the original collection) which looks like either of the following methods:
 
 ```vb
-Function <name>() As <type>
-Function <name>(selector As Func(Of T, R)) As R
+Function _name_() As _type_
+Function _name_(selector As Func(Of T, R)) As R
 ```
 
 If an aggregate function takes a delegate argument, then the invocation expression can have an argument expression that must be classified as a value.  The argument expression can use the range variables that are in scope; within the call to an aggregate function, those range variables represent the values in the group being formed, not all of the values in the collection. For example, in the original example in this section the `Average` function calculates the average of the customers' ages per state rather than for all of the customers together.

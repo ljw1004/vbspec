@@ -404,7 +404,7 @@ End Module
 
 This program prints:
 
-```vb
+```
 Static variable x = 5
 Static variable x = 6
 Static variable x = 7
@@ -864,7 +864,7 @@ End Module
 
 The expression `a(GetIndex())` is evaluated twice for simple assignment but only once for compound assignment, so the code prints:
 
-```vb
+```
 Simple assignment
 Getting index
 Getting index
@@ -1079,7 +1079,7 @@ End Module
 
 The code prints:
 
-```vb
+```
 x = 10
 ```
 
@@ -1148,7 +1148,7 @@ End Module
 
 The code produces the output:
 
-```vb
+```
 31    32    33
 ```
 
@@ -1188,7 +1188,7 @@ End Module
 
 The code produces the output:
 
-```vb
+```
 Second Loop
 ```
 
@@ -1539,7 +1539,7 @@ End Module
 
 This example prints:
 
-```vb
+```
 Third handler
 ```
 
@@ -1723,7 +1723,7 @@ End Module
 
 It prints the following result.
 
-```vb
+```
 Before exception
 Before exception
 After SyncLock
@@ -1851,7 +1851,7 @@ End Module
 
 It prints the following result:
 
-```vb
+```
 3, 0
 ```
 
