@@ -22,8 +22,7 @@ Statement
     ;
 ```
 
-> __Annotation__
-> The Microsoft Visual Basic Compiler only allows statements which start with a keyword or an identifier. Thus, for instance, the invocation statement "`Call (Console).WriteLine`" is allowed, but the invocation statement "`(Console).WriteLine`" is not.
+__Note.__ The Microsoft Visual Basic Compiler only allows statements which start with a keyword or an identifier. Thus, for instance, the invocation statement "`Call (Console).WriteLine`" is allowed, but the invocation statement "`(Console).WriteLine`" is not.
 
 ## Control Flow
 
@@ -118,9 +117,7 @@ Dim t = TestAsync()         ' prints "hello"
 Console.WriteLine(Await t)  ' prints "world"
 ```
 
-> __Annotation__
-
-> Async methods are *not* run on a background thread. Instead they allow a method to suspend itself through the `Await` operator, and schedule itself to be resumed in response to some event.
+__Note.__ Async methods are *not* run on a background thread. Instead they allow a method to suspend itself through the `Await` operator, and schedule itself to be resumed in response to some event.
 
 When an async method is invoked
 
@@ -134,18 +131,17 @@ __Resumption Delegate and Current Caller__
 
 As detailed in Section [Await Operator](expressions.md#await-operator), execution of an `Await` expression has the ability to suspend the method instance's control point leaving control flow to go elsewhere. Control flow can later resume at the same instance's control point through invocation of a *resumption delegate*. Note that this suspension is done without exiting the async method, and does not cause finally handlers to execute. The method instance is still referenced by both the resumption delegate and the `Task` or `Task(Of T)` result (if any), and will not be garbage collected so long as there exists a live reference to either delegate or result.
 
-> __Annotation__
-> It is helpful to imagine the statement "`Dim x = Await WorkAsync()`" approximately as syntactic shorthand for the following:
->
-> ```vb
-> Dim temp = WorkAsync().GetAwaiter()
-> If Not temp.IsCompleted Then
->        temp.OnCompleted(resumptionDelegate)
->        Return [task]
->        CONT:   ' invocation of 'resumptionDelegate' will resume here
-> End If
-> Dim x = temp.GetResult()
-> ```
+It is helpful to imagine the statement `Dim x = Await WorkAsync()` approximately as syntactic shorthand for the following:
+
+```vb
+Dim temp = WorkAsync().GetAwaiter()
+If Not temp.IsCompleted Then
+       temp.OnCompleted(resumptionDelegate)
+       Return [task]
+       CONT:   ' invocation of 'resumptionDelegate' will resume here
+End If
+Dim x = temp.GetResult()
+```
 
 In the following, the *current caller* of the method instance is defined as either the original caller, or the caller of the resumption delegate, whichever is more recent.
 
@@ -155,8 +151,7 @@ When control flow exits the async method body -- through reaching the `End Sub` 
    11. If control flow exits through an unhandled exception, then the async object's status is set to `TaskStatus.Faulted` and its `Exception.InnerException` property is set to the exception (except: certain implementation-defined exceptions such as `OperationCanceledException` change it to `TaskStatus.Canceled`). Control flow resumes in the current caller.
    12. Otherwise, the async object's status is set to `TaskStatus.Completed`. Control flow resumes in the current caller.
 
-    > __Annotation__
-    > The whole point of Task, and what makes async methods interesting, is that when a task becomes Completed then any methods that were awaiting it will presently have their resumption delegates executed, i.e. they will become unblocked.
+       (__Note.__ The whole point of Task, and what makes async methods interesting, is that when a task becomes Completed then any methods that were awaiting it will presently have their resumption delegates executed, i.e. they will become unblocked.)
 
 2. In the case of an `Async Function` with return type `Task(Of T)` for some `T`: the behavior is as above, except that in non-exception cases the async object's `Result` property is also set to the final value of the task return variable.
 
@@ -164,29 +159,32 @@ When control flow exits the async method body -- through reaching the `End Sub` 
    31. If control flow exits through an unhandled exception, then that exception is propagated to the environment in some implementation-specific manner. Control flow resumes in the current caller.
    32. Otherwise, control flow simply resumes in the current caller.
 
-> __Annotation__
-> There is some Microsoft-specific behavior of an `Async Sub`.
->
-> If `SynchronizationContext.Current` is `Nothing` at the start of the invocation, then any unhandled exceptions from an Async Sub will be posted to the Threadpool.
->
-> If `SynchronizationContext.Current` is not `Nothing` at the start of the invocation, then `OperationStarted()` is invoked on that context before the start of the method and `OperationCompleted()` after the end. Additionally, any unhandled exceptions will be posted to be rethrown on the synchronization context.
->
-> This means that in UI applications, for an `Async Sub` that is invoked on the UI thread, any exceptions it fails to handle will be reposted the UI thread.
->
-> Mutable structures in general are considered bad practice, and they are not supported by async or iterator methods. In particular, each invocation of an async or iterator method in a structure will implicitly operate on a *copy* of that structure that is copied at its moment of invocation. Thus, for example,
->
-> ```vb
-> Structure S
->        Dim x As Integer
->        Async Sub Mutate()
->            x = 2
->        End Sub
-> End Structure
+#### Async Sub
 
-> Dim s As New S With {.x = 1}
-> s.Mutate()
-> Console.WriteLine(s.x)   ' prints "1"
-> ```
+There is some Microsoft-specific behavior of an `Async Sub`.
+
+If `SynchronizationContext.Current` is `Nothing` at the start of the invocation, then any unhandled exceptions from an Async Sub will be posted to the Threadpool.
+
+If `SynchronizationContext.Current` is not `Nothing` at the start of the invocation, then `OperationStarted()` is invoked on that context before the start of the method and `OperationCompleted()` after the end. Additionally, any unhandled exceptions will be posted to be rethrown on the synchronization context.
+
+This means that in UI applications, for an `Async Sub` that is invoked on the UI thread, any exceptions it fails to handle will be reposted the UI thread.
+
+#### Mutable structures in async and iterator methods
+
+Mutable structures in general are considered bad practice, and they are not supported by async or iterator methods. In particular, each invocation of an async or iterator method in a structure will implicitly operate on a *copy* of that structure that is copied at its moment of invocation. Thus, for example,
+
+```vb
+Structure S
+       Dim x As Integer
+       Async Sub Mutate()
+           x = 2
+       End Sub
+End Structure
+
+Dim s As New S With {.x = 1}
+s.Mutate()
+Console.WriteLine(s.x)   ' prints "1"
+```
 
 ### Blocks and Labels
 
@@ -828,8 +826,7 @@ End Module
 Note that the semantics of the assignment depend on the type of the variable or property to which it is being assigned. If the variable to which it is being assigned is a value type, the assignment copies the value of the expression into the variable. If the variable to which it is being assigned is a reference type, the assignment copies the reference, not the value itself, into the variable. If the type of the variable is `Object`, the assignment semantics are determined by whether the value's type is a value type or a reference type at run time.
 
 
-> __Annotation__
-> For intrinsic types such as `Integer` and `Date`, reference and value assignment semantics are the same because the types are immutable. As a result, the language is free to use reference assignment on boxed intrinsic types as an optimization. From a value perspective, the result is the same.
+__Note.__ For intrinsic types such as `Integer` and `Date`, reference and value assignment semantics are the same because the types are immutable. As a result, the language is free to use reference assignment on boxed intrinsic types as an optimization. From a value perspective, the result is the same.
 
 Because the equals character (`=`) is used both for assignment and for equality, there is an ambiguity between a simple assignment and an invocation statement in situations such as `x = y.ToString()`. In all such cases, the assignment statement takes precedence over the equality operator. This means that the example expression is interpreted as `x = (y.ToString())` rather than `(x = y).ToString()`.
 
@@ -901,8 +898,7 @@ Module Test
 End Module
 ```
 
-> __Note__
-> `Mid` is not a reserved word.
+__Note.__ `Mid` is not a reserved word.
 
 ```antlr
 MidAssignmentStatement
@@ -1194,8 +1190,7 @@ Second Loop
 
 In the case of the first loop, the condition is evaluated before the loop executes. In the case of the second loop, the condition is executed after the loop executes. The conditional expression must be prefixed with either a `While` keyword or an `Until` keyword. The former breaks the loop if the condition evaluates to false, the latter when the condition evaluates to true.
 
-> __Note__
-> `Until` is not a reserved word.
+__Note.__ `Until` is not a reserved word.
 
 ```antlr
 WhileStatement
@@ -1348,8 +1343,7 @@ End Class
 
 Before the loop begins, the enumerator expression is evaluated. If the type of the expression does not satisfy the design pattern, then the expression is cast to `System.Collections.IEnumerable` or `System.Collections.Generic.IEnumerable(Of T)`. If the expression type implements the generic interface, the generic interface is preferred at compile-time but the non-generic interface is preferred at run-time. If the expression type implements the generic interface multiple times, the statement is considered ambiguous and a compile-time error occurs.
 
-> __Annotation__
-> The non-generic interface is preferred in the late bound case, because picking the generic interface would mean that all the calls to the interface methods would involve type parameters. Since it is not possible to know the matching type arguments at run-time, all such calls would have to be made using late-bound calls. This would be slower than calling the non-generic interface because the non-generic interface could be called using compile-time calls.
+__Note.__ The non-generic interface is preferred in the late bound case, because picking the generic interface would mean that all the calls to the interface methods would involve type parameters. Since it is not possible to know the matching type arguments at run-time, all such calls would have to be made using late-bound calls. This would be slower than calling the non-generic interface because the non-generic interface could be called using compile-time calls.
 
 `GetEnumerator` is called on the resulting value and the return value of the function is stored in a temporary. Then at the beginning of each iteration, `MoveNext` is called on the temporary. If it returns `False`, the loop terminates. Otherwise, each iteration of the loop is executed as follows:
 
@@ -1357,26 +1351,23 @@ Before the loop begins, the enumerator expression is evaluated. If the type of t
 2. The `Current` property is retrieved, coerced to the type of the loop control variable (regardless of whether the conversion is implicit or explicit), and assigned to the loop control variable.
 3. The loop block executes.
 
-> __Annotation__
-> There is a slight change in behavior between version 10.0 and 11.0 of the language. Prior to 11.0, a fresh iteration variable was *not* created for each iteration of the loop. This difference is observable only if the iteration variable is captured by a lambda or a LINQ expression which is then invoked after the loop.
->
-> ```vb
-> Dim lambdas As New List(Of Action)
-> For Each x In {1,2,3}
->    lambdas.Add(Sub() Console.WriteLine(x)
-> Next
-> lambdas(0).Invoke()
-> lambdas(1).Invoke()
-> lambdas(2).Invoke()
-> ```
->
-> Up to Visual Basic 10.0, this produced a warning at compile-time and printed "3" three times. That was because there was only a single variable "x" shared by all iterations of the loop, and all three lambdas captured the same "x", and by the time the lambdas were executed it then held the number 3.
->
-> As of Visual Basic 11.0, it prints "1, 2, 3". That is because each lambda captures a different variable "x".
->
-> The current element of the iteration is converted to the type of the loop control variable even if the conversion is explicit because there is no convenient place to introduce a conversion operator in the statement. This became particularly troublesome when working with the now-obsolete type `System.Collections.ArrayList`, because its element type is `Object`. This would have required casts in a great many loops, something we felt was not ideal.
->
-> Ironically, generics enabled the creation of a strongly-typed collection, `System.Collections.Generic.List(Of T)`, which might have made us rethink this design point, but for compatibility's sake, this cannot be changed now.
+__Note.__ There is a slight change in behavior between version 10.0 and 11.0 of the language. Prior to 11.0, a fresh iteration variable was *not* created for each iteration of the loop. This difference is observable only if the iteration variable is captured by a lambda or a LINQ expression which is then invoked after the loop:
+
+```vb
+Dim lambdas As New List(Of Action)
+For Each x In {1,2,3}
+   lambdas.Add(Sub() Console.WriteLine(x)
+Next
+lambdas(0).Invoke()
+lambdas(1).Invoke()
+lambdas(2).Invoke()
+```
+
+Up to Visual Basic 10.0, this produced a warning at compile-time and printed "3" three times. That was because there was only a single variable "x" shared by all iterations of the loop, and all three lambdas captured the same "x", and by the time the lambdas were executed it then held the number 3. As of Visual Basic 11.0, it prints "1, 2, 3". That is because each lambda captures a different variable "x".
+
+
+__Note.__ The current element of the iteration is converted to the type of the loop control variable even if the conversion is explicit because there is no convenient place to introduce a conversion operator in the statement. This became particularly troublesome when working with the now-obsolete type `System.Collections.ArrayList`, because its element type is `Object`. This would have required casts in a great many loops, something we felt was not ideal. Ironically, generics enabled the creation of a strongly-typed collection, `System.Collections.Generic.List(Of T)`, which might have made us rethink this design point, but for compatibility's sake, this cannot be changed now.
+
 
 When the `Next` statement is reached, execution returns to the top of the loop. If a variable is specified after the `Next` keyword, it must be the same as the first variable after the `For Each`. For example, consider the following code:
 
@@ -1415,8 +1406,7 @@ End Module
 
 If the type `E` of the enumerator implements `System.IDisposable`, then the enumerator is disposed upon exiting the loop by calling the `Dispose` method. This ensures that resources held by the enumerator are released. If the method containing the `For Each` statement does not use unstructured error handling, then the `For Each` statement is wrapped in a `Try` statement with the `Dispose` method called in the `Finally` to ensure cleanup.
 
-> __Note__
-> The `System.Array` type is a collection type, and since all array types derive from `System.Array`, any array type expression is permitted in a `For Each` statement. For single-dimensional arrays, the `For Each` statement enumerates the array elements in increasing index order, starting with index 0 and ending with index Length - 1. For multidimensional arrays, the indices of the rightmost dimension are increased first.
+__Note.__ The `System.Array` type is a collection type, and since all array types derive from `System.Array`, any array type expression is permitted in a `For Each` statement. For single-dimensional arrays, the `For Each` statement enumerates the array elements in increasing index order, starting with index 0 and ending with index Length - 1. For multidimensional arrays, the indices of the rightmost dimension are increased first.
 
 For example, the following code prints `1 2 3 4`:
 
@@ -1547,33 +1537,32 @@ If a `Catch` clause handles the exception, execution transfers to the `Catch` bl
 
 It is invalid to explicitly transfer execution into a `Catch` block.
 
-> __Annotation__
-> The filters in When clauses are normally evaluated prior to the exception being thrown. For instance, the following code will print "Filter, Finally, Catch".
->
-> ```vb
->     Sub Main()
->        Try
->            Foo()
->        Catch ex As Exception When F()
->            Console.WriteLine("Catch")
->        End Try
->    End Sub
->
->     Sub Foo()
->        Try
->            Throw New Exception
->        Finally
->            Console.WriteLine("Finally")
->        End Try
->    End Sub
->
->     Function F() As Boolean
->        Console.WriteLine("Filter")
->        Return True
->    End Function
-> ```
->
-> However, Async and Iterator methods cause all finally blocks inside them to be executed prior to any filters outside. For instance, if the above code had "`Async Sub Foo()`", then the output would be "Finally, Filter, Catch".
+The filters in When clauses are normally evaluated prior to the exception being thrown. For instance, the following code will print "Filter, Finally, Catch".
+
+```vb
+Sub Main()
+   Try
+       Foo()
+   Catch ex As Exception When F()
+       Console.WriteLine("Catch")
+   End Try
+End Sub
+
+Sub Foo()
+    Try
+        Throw New Exception
+    Finally
+        Console.WriteLine("Finally")
+    End Try
+End Sub
+
+Function F() As Boolean
+    Console.WriteLine("Filter")
+    Return True
+End Function
+```
+
+ However, Async and Iterator methods cause all finally blocks inside them to be executed prior to any filters outside. For instance, if the above code had `Async Sub Foo()`, then the output would be "Finally, Filter, Catch".
 
 ```antlr
 CatchStatement
@@ -1857,8 +1846,7 @@ It prints the following result:
 
 If the existing array reference is a null value at run time, no error is given. Other than the rightmost dimension, if the size of a dimension changes, a `System.ArrayTypeMismatchException` will be thrown.
 
-> __Note__
-> `Preserve` is not a reserved word.
+__Note.__ `Preserve` is not a reserved word.
 
 ```antlr
 RedimStatement

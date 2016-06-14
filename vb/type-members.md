@@ -254,21 +254,20 @@ G(String)
 G(String, Optional String)
 ```
 
-> __Annotation__
-> Overloads that differ only in optional parameters can be used for "versioning" of libraries. For instance, v1 of a library might include a function with optional parameters:
->
-> ```vb
-> Sub fopen(fileName As String, Optional accessMode as Integer = 0)
-> ```
->
-> Then v2 of the library wants to add another optional parameter "password", and it wants to do so without breaking source compatibility (so applications that used to target v1 can be recompiled), and without breaking binary compatibility (so applications that used to reference v1 can now reference v2 without recompilation). This is how v2 will look:
->
-> ```vb
-> Sub fopen(file As String, mode as Integer)
-> Sub fopen(file As String, Optional mode as Integer = 0, Optional pword As String = "")
-> ```
->
-> Note that optional parameters in a public API are not CLS-compliant. However, they can be consumed at least by Visual Basic and C#4 and F#.
+Overloads that differ only in optional parameters can be used for "versioning" of libraries. For instance, v1 of a library might include a function with optional parameters:
+
+```vb
+Sub fopen(fileName As String, Optional accessMode as Integer = 0)
+```
+
+Then v2 of the library wants to add another optional parameter "password", and it wants to do so without breaking source compatibility (so applications that used to target v1 can be recompiled), and without breaking binary compatibility (so applications that used to reference v1 can now reference v2 without recompilation). This is how v2 will look:
+
+```vb
+Sub fopen(file As String, mode as Integer)
+Sub fopen(file As String, Optional mode as Integer = 0, Optional pword As String = "")
+```
+
+Note that optional parameters in a public API are not CLS-compliant. However, they can be consumed at least by Visual Basic and C#4 and F#.
 
 ```antlr
 MethodMemberDeclaration
@@ -903,8 +902,7 @@ Module StringExtensions
 End Module
 ```
 
-> __Annotation__
-> Although Visual Basic requires extension methods to be declared in a standard module, other languages such as C# may allow them to be declared in other kinds of types. As long as the methods follow the other conventions outlined here and the containing type is not an open generic type and cannot be instantiated, Visual Basic will recognize the extension methods.
+__Note.__ Although Visual Basic requires extension methods to be declared in a standard module, other languages such as C# may allow them to be declared in other kinds of types. As long as the methods follow the other conventions outlined here and the containing type is not an open generic type and cannot be instantiated, Visual Basic will recognize the extension methods.
 
 When an extension method is invoked, the instance it is being invoked on is passed to the first parameter. The first parameter cannot be declared `Optional` or `ParamArray`. Any type, including a type parameter, can appear as the first parameter of an extension method. For example, the following methods extend the types `Integer()`, any type that implements `System.Collections.Generic.IEnumerable(Of T)`, and any type at all:
 
@@ -1096,10 +1094,9 @@ Module Test
 End Module
 ```
 
-> __Annotation__
-> Visual Basic normally inserts a check on an instance method call that causes a `System.NullReferenceException` to occur if the instance the method is being invoked on is `Nothing`. In the case of extension methods, there is no efficient way to insert this check, so extension methods will need to explicitly check for `Nothing`. 
+__Note.__ Visual Basic normally inserts a check on an instance method call that causes a `System.NullReferenceException` to occur if the instance the method is being invoked on is `Nothing`. In the case of extension methods, there is no efficient way to insert this check, so extension methods will need to explicitly check for `Nothing`. 
 
-> Additionally, a value type will be boxed when being passed as a `ByVal` argument to a parameter typed as an interface.  This implies that side effects of the extension method will operate on a copy of the structure instead of the original. While the language puts no restrictions on the first argument of an extension method, it is recommended that extension methods are not used to extend value types or that when extending value types, the first parameter is passed `ByRef` to ensure that side effects operate on the original value.
+__Note.__ A value type will be boxed when being passed as a `ByVal` argument to a parameter typed as an interface.  This implies that side effects of the extension method will operate on a copy of the structure instead of the original. While the language puts no restrictions on the first argument of an extension method, it is recommended that extension methods are not used to extend value types or that when extending value types, the first parameter is passed `ByRef` to ensure that side effects operate on the original value.
 
 ### Partial Methods
 
@@ -1149,10 +1146,7 @@ Public Class C1
 End Class
 ```
 
-Any expressions that are passed in as arguments to a partial method call that is ignored are ignored also and not evaluated.
-
-> __Annotation__
-> This means that partial methods are a very efficient way of providing behavior that is defined across two partial types, since the partial methods have no cost if they are not used.
+Any expressions that are passed in as arguments to a partial method call that is ignored are ignored also and not evaluated. (__Note.__ This means that partial methods are a very efficient way of providing behavior that is defined across two partial types, since the partial methods have no cost if they are not used.)
 
 The partial method declaration must be declared as `Private` and must always be a subroutine with no statements in its body. Partial methods cannot themselves implement interface methods, although the method that supplies their body can.
 
@@ -1177,8 +1171,7 @@ End Class
 
 *Constructors* are special methods that allow control over initialization. They are run after the program begins or when an instance of a type is created. Unlike other members, constructors are not inherited and do not introduce a name into a type's declaration space. Constructors may only be invoked by object-creation expressions or by the .NET Framework; they may never be directly invoked.
 
-> __Note__
-> Constructors have the same restriction on line placement that subroutines have. The beginning statement, end statement and block must all appear at the beginning of a logical line.
+__Note.__ Constructors have the same restriction on line placement that subroutines have. The beginning statement, end statement and block must all appear at the beginning of a logical line.
 
 ```antlr
 ConstructorMemberDeclaration
@@ -1230,8 +1223,7 @@ When a type declares only `Private` constructors, it is not possible in general 
 
 If a type contains no instance constructor declarations, a default constructor is automatically provided. The default constructor simply invokes the parameterless constructor of the direct base type. If the direct base type does not have an accessible parameterless constructor, a compile-time error occurs. The declared access type for the default constructor is `Public` unless the type is `MustInherit`, in which case the default constructor is `Protected`.
 
-> __Annotation__
-> The default access for a `MustInherit` type's default constructor is `Protected` because `MustInherit` classes cannot be created directly. So there is no point in making the default constructor `Public`.
+__Note.__ The default access for a `MustInherit` type's default constructor is `Protected` because `MustInherit` classes cannot be created directly. So there is no point in making the default constructor `Public`.
 
 In the following example a default constructor is provided because the class contains no constructor declarations:
 
@@ -1254,10 +1246,7 @@ Class Message
 End Class
 ```
 
-Default constructors that are emitted into a designer generated class marked with the attribute `Microsoft.VisualBasic.CompilerServices.DesignerGeneratedAttribute` will call the method `Sub InitializeComponent()`, if it exists, after the call to the base constructor.
-
-> __Annotation__
-> This allows designer generated files, such as those created by the WinForms designer, to omit the constructor in the designer file. This enables the programmer to specify it themselves, if they so choose.
+Default constructors that are emitted into a designer generated class marked with the attribute `Microsoft.VisualBasic.CompilerServices.DesignerGeneratedAttribute` will call the method `Sub InitializeComponent()`, if it exists, after the call to the base constructor. (__Note.__ This allows designer generated files, such as those created by the WinForms designer, to omit the constructor in the designer file. This enables the programmer to specify it themselves, if they so choose.)
 
 ### Shared Constructors
 
@@ -1424,8 +1413,7 @@ Events are used to notify code of a particular occurrence. An event declaration 
 
 In addition to the member name added to the type's declaration space, an event declaration implicitly declares several other members. Given an event named `X`, the following members are added to the declaration space:
 
-> __Annotation__
-> If the form of the declaration is a method declaration, a nested delegate class named `XEventHandler` is introduced. The nested delegate class matches the method declaration and has the same accessibility as the event. The attributes in the parameter list apply to the parameters of the delegate class.
+If the form of the declaration is a method declaration, a nested delegate class named `XEventHandler` is introduced. The nested delegate class matches the method declaration and has the same accessibility as the event. The attributes in the parameter list apply to the parameters of the delegate class.
 
 A `Private` instance variable typed as the delegate, named `XEvent`.
 
@@ -1589,45 +1577,6 @@ The `AddHandler` and `RemoveHandler` declaration take one `ByVal` parameter, whi
 
 Note that `AddHandler`, `RemoveHandler` and `RaiseEvent` declarations have the same restriction on line placement that subroutines have. The beginning statement, end statement and block must all appear at the beginning of a logical line.
 
-
-> __Annotation__
-> In Microsoft Visual Basic 11.0, events declared in a file compiled with /target:winmdobj, or declared in an interface in such a file and then implemented elsewhere, are treated a little differently.
->
-> 1. External tools used to build the winmd will typically allow only certain delegate types such as `System.EventHandler(Of T)` or `System.TypedEventHandle(Of T, U)`, and will disallow others.
-> 2. The `XEvent` field has type `System.Runtime.InteropServices.WindowsRuntime.EventRegistrationTokenTable(Of T)` where `T` is the delegate type.
-> 3. The AddHandler accessor returns a `System.Runtime.InteropServices.WindowsRuntime.EventRegistrationToken`, and the RemoveHandler accessor takes a single parameter of the same type.
->
-> Here is an example of such a custom event.
->
-> ```vb
-> Imports System.Runtime.InteropServices.WindowsRuntime
->
-> Public NotInheritable Class ClassInWinMD
->     Private XEvent As EventRegistrationTokenTable(Of EventHandler(Of Integer))
->
->     Public Custom Event X As EventHandler(Of Integer)
->         AddHandler(handler As EventHandler(Of Integer))
->             Return EventRegistrationTokenTable(Of EventHandler(Of Integer)).
->                    GetOrCreateEventRegistrationTokenTable(XEvent).
->                    AddEventHandler(handler)
->         End AddHandler
->
->         RemoveHandler(token As EventRegistrationToken)
->             EventRegistrationTokenTable(Of EventHandler(Of Integer)).
->                 GetOrCreateEventRegistrationTokenTable(XEvent).
->                 RemoveEventHandler(token)
->         End RemoveHandler
->
->         RaiseEvent(sender As Object, i As Integer)
->             Dim table = EventRegistrationTokenTable(Of EventHandler(Of Integer)).
->                 GetOrCreateEventRegistrationTokenTable(XEvent).
->                 InvocationList
->             If table IsNot Nothing Then table(sender, i)
->         End RaiseEvent
->     End Event
-> End Class
-> ```
-
 In addition to the member name added to the type's declaration space, a custom event declaration implicitly declares several other members. Given an event named `X`, the following members are added to the declaration space:
 
 A method named `add_X`, corresponding to the `AddHandler` declaration.
@@ -1638,8 +1587,46 @@ A method named `fire_X`, corresponding to the `RaiseEvent` declaration.
 
 If a type attempts to declare a name that matches one of the above names, a compile-time error will result, and the implicit declarations are all ignored for the purposes of name binding. It is not possible to override or overload any of the introduced members, although it is possible to shadow them in derived types.
 
-> __Note__
-> `Custom` is not a reserved word.
+__Note.__ `Custom` is not a reserved word.
+
+#### Custom events in WinRT assemblies
+
+As of Microsoft Visual Basic 11.0, events declared in a file compiled with /target:winmdobj, or declared in an interface in such a file and then implemented elsewhere, are treated a little differently.
+
+1. External tools used to build the winmd will typically allow only certain delegate types such as `System.EventHandler(Of T)` or `System.TypedEventHandle(Of T, U)`, and will disallow others.
+2. The `XEvent` field has type `System.Runtime.InteropServices.WindowsRuntime.EventRegistrationTokenTable(Of T)` where `T` is the delegate type.
+3. The AddHandler accessor returns a `System.Runtime.InteropServices.WindowsRuntime.EventRegistrationToken`, and the RemoveHandler accessor takes a single parameter of the same type.
+
+Here is an example of such a custom event.
+
+```vb
+Imports System.Runtime.InteropServices.WindowsRuntime
+
+Public NotInheritable Class ClassInWinMD
+    Private XEvent As EventRegistrationTokenTable(Of EventHandler(Of Integer))
+
+    Public Custom Event X As EventHandler(Of Integer)
+        AddHandler(handler As EventHandler(Of Integer))
+            Return EventRegistrationTokenTable(Of EventHandler(Of Integer)).
+                   GetOrCreateEventRegistrationTokenTable(XEvent).
+                   AddEventHandler(handler)
+        End AddHandler
+
+        RemoveHandler(token As EventRegistrationToken)
+            EventRegistrationTokenTable(Of EventHandler(Of Integer)).
+                GetOrCreateEventRegistrationTokenTable(XEvent).
+                RemoveEventHandler(token)
+        End RemoveHandler
+
+        RaiseEvent(sender As Object, i As Integer)
+            Dim table = EventRegistrationTokenTable(Of EventHandler(Of Integer)).
+                GetOrCreateEventRegistrationTokenTable(XEvent).
+                InvocationList
+            If table IsNot Nothing Then table(sender, i)
+        End RaiseEvent
+    End Event
+End Class
+```
 
 ```antlr
 CustomEventMemberDeclaration
@@ -1819,9 +1806,7 @@ A variable declared without the `Shared` modifier is called an *instance variabl
 
 If the declarator contains an `As` clause, the clause specifies the type of the members introduced by the declaration. If the type is omitted and strict semantics are being used, a compile-time error occurs. Otherwise the type of the members is implicitly `Object` or the type of the members' type character.
 
-> __Note__
-
-> There is no ambiguity in the syntax: if a declarator omits a type, it will always use the type of a following declarator.
+__Note.__ There is no ambiguity in the syntax: if a declarator omits a type, it will always use the type of a following declarator.
 
 The accessibility domain of an instance or shared variable's type or array element type must be the same as or a superset of the accessibility domain of the instance or shared variable itself.
 
@@ -2630,8 +2615,7 @@ The value of the `NextValue` property depends on the number of times the propert
 
 The "no side effects" convention for `Get` accessors does not mean that `Get` accessors should always be written to simply return values stored in variables. Indeed, `Get` accessors often compute the value of a property by accessing multiple variables or invoking methods. However, a properly designed `Get` accessor performs no actions that cause observable changes in the state of the object.
 
-> __Note__
-> `Get` accessors have the same restriction on line placement that subroutines have. The beginning statement, end statement and block must all appear at the beginning of a logical line.
+__Note.__ `Get` accessors have the same restriction on line placement that subroutines have. The beginning statement, end statement and block must all appear at the beginning of a logical line.
 
 ```antlr
 PropertyGetDeclaration
@@ -2647,8 +2631,7 @@ A `Set` accessor (setter) is declared by using a property set declaration. A pro
 
 If a parameter list is specified, it must have one member, that member must have no modifiers except `ByVal`, and its type must be the same as the type of the property. The parameter represents the property value being set. If the parameter is omitted, a parameter named `Value` is implicitly declared.
 
-> __Note__
-> `Set` accessors have the same restriction on line placement that subroutines have. The beginning statement, end statement and block must all appear at the beginning of a logical line.
+__Note.__ `Set` accessors have the same restriction on line placement that subroutines have. The beginning statement, end statement and block must all appear at the beginning of a logical line.
 
 ```antlr
 PropertySetDeclaration
@@ -2787,8 +2770,7 @@ Public Property x() As Integer = 10
 Public Shared Property y() As New Customer() With { .Name = "Bob" }
 ```
 
-> __Annotation__
-> When an automatically implemented property is initialized, it is initialized through the property, not the underlying field. This is so overriding properties can intercept the initialization if they need to.
+__Note.__ When an automatically implemented property is initialized, it is initialized through the property, not the underlying field. This is so overriding properties can intercept the initialization if they need to.
 
 Array initializers are allowed on automatically implemented properties, except that there is no way to specify the array bounds explicitly.  For example:
 
@@ -2879,8 +2861,7 @@ The only exception to these restrictions applies to nullable value types. Since 
 
 The precedence and associativity of an operator cannot be modified by an operator declaration.
 
-> __Note__
-> Operators have the same restriction on line placement that subroutines have. The beginning statement, end statement and block must all appear at the beginning of a logical line.
+__Note.__ Operators have the same restriction on line placement that subroutines have. The beginning statement, end statement and block must all appear at the beginning of a logical line.
 
 ```antlr
 OperatorDeclaration
@@ -2928,8 +2909,7 @@ End Structure
 
 If a type overloads one of `IsTrue` or `IsFalse`, then it must overload the other as well. If only one is overloaded, a compile-time error results.
 
-> __Note__
-> `IsTrue` and `IsFalse` are not reserved words.
+__Note.__ `IsTrue` and `IsFalse` are not reserved words.
 
 ### Binary Operators
 
@@ -2939,8 +2919,7 @@ The addition `+`, subtraction `-`, multiplication `*`, division `/`, integral di
 
 The relational operators `=`, `<>`, `<`, `>`, `<=`, `>=` (corresponding methods: `op_Equality`, `op_Inequality`, `op_LessThan`, `op_GreaterThan`, `op_LessThanOrEqual`, `op_GreaterThanOrEqual`)
 
-> __Note__
-> While the equality operator can be overloaded, the assignment operator (used only in assignment statements) cannot be overloaded.
+__Note.__ While the equality operator can be overloaded, the assignment operator (used only in assignment statements) cannot be overloaded.
 
 The `Like` operator (corresponding method: `op_Like`)
 
@@ -2960,15 +2939,9 @@ Operator `>` and operator `<`
 
 Operator `>=` and operator `<=`
 
-If one of the pair is declared, then the other must also be declared with matching parameter and return types, or a compile-time error will result.
+If one of the pair is declared, then the other must also be declared with matching parameter and return types, or a compile-time error will result. (__Note.__ The purpose of requiring paired declarations of relational operators is to try and ensure at least a minimum level of logical consistency in overloaded operators.)
 
-> __Annotation__
-> The purpose of requiring paired declarations of relational operators is to try and ensure at least a minimum level of logical consistency in overloaded operators.
-
-In contrast to the relational operators, overloading both the division and integral division operators is strongly discouraged, although not an error.
-
-> __Annotation__
-> In general, the two types of division should be entirely distinct: a type that supports division is either integral (in which case it should support `\`) or not (in which case it should support `/`). We considered making it an error to define both operators, but because their languages do not generally distinguish between two types of division the way Visual Basic does, we felt it was safest to allow the practice but strongly discourage it.
+In contrast to the relational operators, overloading both the division and integral division operators is strongly discouraged, although not an error. (__Note.__ In general, the two types of division should be entirely distinct: a type that supports division is either integral (in which case it should support `\`) or not (in which case it should support `/`). We considered making it an error to define both operators, but because their languages do not generally distinguish between two types of division the way Visual Basic does, we felt it was safest to allow the practice but strongly discourage it.)
 
 Compound assignment operators cannot be overloaded directly. Instead, when the corresponding binary operator is overloaded, the compound assignment operator will use the overloaded operator. For example:
 

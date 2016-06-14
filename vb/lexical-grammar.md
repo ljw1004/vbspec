@@ -2,8 +2,7 @@
 
 Compilation of a Visual Basic program first involves translating the raw stream of Unicode characters into an ordered set of lexical tokens. Because the Visual Basic language is not free-format, the set of tokens is then further divided into a series of logical lines. A *logical line* spans from either the start of the stream or a line terminator through to the next line terminator that is not preceded by a line continuation or through to the end of the stream.
 
-> __Note__
-> With the introduction of XML literal expressions in version 9.0 of the language, Visual Basic no longer has a distinct lexical grammar in the sense that Visual Basic code can be tokenized without regard to the syntactic context. This is due to the fact that XML and Visual Basic have different lexical rules and the set of lexical rules in use at any particular time depends on what syntactic construct is being processed at that moment. This specification retains this lexical grammar section as a guide to the lexical rules of regular Visual Basic code. However, long term the lexical rules will likely be merged into the syntactic rules.
+__Note.__ With the introduction of XML literal expressions in version 9.0 of the language, Visual Basic no longer has a distinct lexical grammar in the sense that Visual Basic code can be tokenized without regard to the syntactic context. This is due to the fact that XML and Visual Basic have different lexical rules and the set of lexical rules in use at any particular time depends on what syntactic construct is being processed at that moment. This specification retains this lexical grammar section as a guide to the lexical rules of regular Visual Basic code. However, long term the lexical rules will likely be merged into the syntactic rules.
 
 ```antlr
 LogicalLineStart
@@ -120,10 +119,7 @@ Dim x = _
 y
 ```
 
-Line continuations will not be inferred in conditional compilation contexts.
-
-> __Annotation__
-> This last restriction is required because text in conditional compilation blocks that are not compiled do not have to be syntactically valid. Thus, text in the block might accidentally get "picked up" by the conditional compilation statement, especially as the language gets extended in the future. 
+Line continuations will not be inferred in conditional compilation contexts. (__Note.__ This last restriction is required because text in conditional compilation blocks that are not compiled do not have to be syntactically valid. Thus, text in the block might accidentally get "picked up" by the conditional compilation statement, especially as the language gets extended in the future.)
 
 ```antlr
 LineContinuation
@@ -165,10 +161,8 @@ ColonEquals
 
 ### White Space
 
-*White space* serves only to separate tokens and is otherwise ignored. Logical lines containing only white space are ignored.
-
-> __Note__
-> Line terminators are not considered white space.
+*White space* serves only to separate tokens and is otherwise ignored. Logical lines containing only white space are ignored. (__Note.__
+Line terminators are not considered white space.)
 
 ```antlr
 WhiteSpace
@@ -224,10 +218,7 @@ Module [module]
 End Module
 ```
 
-Identifiers are case insensitive, so two identifiers are considered to be the same identifier if they differ only in case.
-
-> __Note__
-> The Unicode Standard one-to-one case mappings are used when comparing identifiers and any locale-specific case mappings are ignored.
+Identifiers are case insensitive, so two identifiers are considered to be the same identifier if they differ only in case. (__Note.__ The Unicode Standard one-to-one case mappings are used when comparing identifiers and any locale-specific case mappings are ignored.)
 
 ```antlr
 Identifier
@@ -357,10 +348,7 @@ StringTypeCharacter
 ## Keywords
 
 A *keyword* is a word that has special meaning in a
-language construct. All keywords are reserved by the language and may not be used as identifiers unless the identifiers are escaped.
-
-> __Note__
-> `EndIf`, `GoSub`, `Let`, `Variant`, and `Wend` are retained as keywords, although they are no longer used in Visual Basic.
+language construct. All keywords are reserved by the language and may not be used as identifiers unless the identifiers are escaped. (__Note.__ `EndIf`, `GoSub`, `Let`, `Variant`, and `Wend` are retained as keywords, although they are no longer used in Visual Basic.)
 
 ```antlr
 Keyword
@@ -439,10 +427,7 @@ BooleanLiteral
 
 Integer literals can be decimal (base 10), hexadecimal (base 16), or octal (base 8). A decimal integer literal is a string of decimal digits (0-9). A hexadecimal literal is `&H` followed by a string of hexadecimal digits (0-9, A-F). An octal literal is `&O` followed by a string of octal digits (0-7). Decimal literals directly represent the decimal value of the integral literal, whereas octal and hexadecimal literals represent the binary value of the integer literal (thus, `&H8000S` is -32768, not an overflow error).
 
-The type of a literal is determined by its value or by the following type character. If no type character is specified, values in the range of the `Integer` type are typed as `Integer`; values outside the range for `Integer` are typed as `Long`. If an integer literal's type is of insufficient size to hold the integer literal, a compile-time error results.
-
-> __Annotation__
-> There isn't a type character for `Byte` because the most natural character would be `B`, which is a legal character in a hexadecimal literal.
+The type of a literal is determined by its value or by the following type character. If no type character is specified, values in the range of the `Integer` type are typed as `Integer`; values outside the range for `Integer` are typed as `Long`. If an integer literal's type is of insufficient size to hold the integer literal, a compile-time error results. (__Note.__ There isn't a type character for `Byte` because the most natural character would be `B`, which is a legal character in a hexadecimal literal.)
 
 ```antlr
 IntegerLiteral
@@ -520,8 +505,7 @@ OctalDigit
 
 A floating-point literal is an integer literal followed by an optional decimal point (the ASCII period character) and mantissa, and an optional base 10 exponent. By default, a floating-point literal is of type `Double`. If the `Single`, `Double`, or `Decimal` type character is specified, the literal is of that type. If a floating-point literal's type is of insufficient size to hold the floating-point literal, a compile-time error results.
 
-> __Annotation__
-> It is worth noting that the `Decimal` data type can encode trailing zeros in a value. The specification currently makes no comment about whether trailing zeros in a `Decimal` literal should be honored by a compiler.
+__Note.__ It is worth noting that the `Decimal` data type can encode trailing zeros in a value. The specification currently makes no comment about whether trailing zeros in a `Decimal` literal should be honored by a compiler.
 
 ```antlr
 FloatingPointLiteral

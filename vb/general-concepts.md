@@ -12,8 +12,7 @@ An entity that can contain other entities defines a *declaration space*. Entitie
 
 Except in the case of overloaded type members, it is invalid for declarations to introduce identically named entities of the same kind into the same declaration context. Additionally, a declaration space may never contain different kinds of entities with the same name; for example, a declaration space may never contain a variable and a method by the same name.
 
-> __Annotation__
-> It may be possible in other languages to create a declaration space that contains different kinds of entities with the same name (for example, if the language is case sensitive and allows different declarations based on casing). In that situation, the most accessible entity is considered bound to that name; if more than one type of entity is most accessible then the name is ambiguous. `Public` is more accessible than `Protected Friend`, `Protected Friend` is more accessible than `Protected` or `Friend`, and `Protected` or `Friend` is more accessible than `Private`.
+__Note.__ It may be possible in other languages to create a declaration space that contains different kinds of entities with the same name (for example, if the language is case sensitive and allows different declarations based on casing). In that situation, the most accessible entity is considered bound to that name; if more than one type of entity is most accessible then the name is ambiguous. `Public` is more accessible than `Protected Friend`, `Protected Friend` is more accessible than `Protected` or `Friend`, and `Protected` or `Friend` is more accessible than `Private`.
 
 The declaration space of a namespace is "open ended," so two namespace declarations with the same fully qualified name contribute to the same declaration space. In the example below, the two namespace declarations contribute to the same declaration space, in this case declaring two classes with the fully qualified names `Data.Customer` and `Data.Order:`
 
@@ -1291,8 +1290,7 @@ Class Derived(Of T)
 End Class
 ```
 
-> __Annotation__
-> The C# language (and possibly other languages) allows a generic type to access `Protected` members regardless of what type arguments are supplied. This should be kept in mind when designing generic classes that contain `Protected` members.
+__Note.__ The C# language (and possibly other languages) allows a generic type to access `Protected` members regardless of what type arguments are supplied. This should be kept in mind when designing generic classes that contain `Protected` members.
 
 ```antlr
 AccessModifier
@@ -1402,8 +1400,7 @@ Given a qualified namespace or type name of the form `N.R(Of A)`, where `R` is t
 
 5. Otherwise, a compile-time error occurs.
 
-> __Note__
-> An implication of this resolution process is that type members do not shadow namespaces or types when resolving namespace or type names.
+__Note.__ An implication of this resolution process is that type members do not shadow namespaces or types when resolving namespace or type names.
 
 ### Unqualified Name Resolution for namespaces and types
 
@@ -1436,8 +1433,7 @@ Given an unqualified name `R(Of A)`, where `A` is an optional type argument list
 
 8. Otherwise, a compile-time error occurs.
 
-> __Note__
-> An implication of this resolution process is that type members do not shadow namespaces or types when resolving namespace or type names.
+__Note.__ An implication of this resolution process is that type members do not shadow namespaces or types when resolving namespace or type names.
 
 Normally, a name can only occur once in a particular namespace. However, because namespaces can be declared across multiple .NET assemblies, it is possible to have a situation where two assemblies define a type with the same fully qualified name. In that case, a type declared in the current set of source files is preferred over a type declared in an external .NET assembly. Otherwise, the name is ambiguous and there is no way to disambiguate the name.
 
@@ -1449,8 +1445,7 @@ A *variable* represents a storage location. Every variable has a type that deter
 
 Types (except for standard modules and enumerated types) and methods can declare *type parameters*, which are types that will not be provided until an instance of the type is declared or the method is invoked. Types and methods with type parameters are also known as *generic types* and *generic methods*, respectively, because the type or method must be written generically, without specific knowledge of the types that will be supplied by code that uses the type or method.
 
-> __Annotation__
-> At this time, even though methods and delegates can be generic, properties, events and operators cannot be generic themselves. They may, however, use type parameters from the containing class.
+__Note.__ At this time, even though methods and delegates can be generic, properties, events and operators cannot be generic themselves. They may, however, use type parameters from the containing class.
 
 From the perspective of the generic type or method, a type parameter is a placeholder type that will be filled in with an actual type when the type or method is used. Type arguments are substituted for the type parameters in the type or method at the point at which the type or method is used. For example, a generic stack class could be implemented as:
 
@@ -1677,13 +1672,11 @@ End Class
 
 The special type constraint `Class` constrains the supplied type argument to any reference type.
 
-> __Annotation__
-> The special type constraint `Class` can be satisfied by an interface. And a structure can implement an interface. Therefore, the constraint `(Of T As U, U As Class)` might be satisfied with "T" a structure (which does not satisfy the `Class` special constraint), and "U" an interface that it implements (which does satisfy the `Class` special constraint).
+__Note.__ The special type constraint `Class` can be satisfied by an interface. And a structure can implement an interface. Therefore, the constraint `(Of T As U, U As Class)` might be satisfied with "T" a structure (which does not satisfy the `Class` special constraint), and "U" an interface that it implements (which does satisfy the `Class` special constraint).
 
 The special type constraint `Structure` constrains the supplied type argument to any value type except `System.Nullable(Of T)`.
 
-> __Annotation__
-> Structure constraints do not allow `System.Nullable(Of T)` so that it is not possible to supply `System.Nullable(Of T)` as a type argument to itself.
+__Note.__ Structure constraints do not allow `System.Nullable(Of T)` so that it is not possible to supply `System.Nullable(Of T)` as a type argument to itself.
 
 The special type constraint `New` requires that the supplied type argument must have an accessible parameterless constructor and cannot be declared `MustInherit`. For example:
 
@@ -1876,8 +1869,7 @@ They cannot contain an event declaration that specifies a parameter list (but a 
 
 They cannot contain a nested class, structure, or enumerated type.
 
-> __Annotation__
-> These restrictions are due to the fact that types nested in generic types implicitly copy the generic parameters of their parent. In the case of nested classes, structures, or enumerated types, those kinds of types cannot have variance modifiers on their type parameters. In the case of an event declaration with a parameter list, the generated nested delegate class could have confusing errors when a type that appears to be used in an `In` position (i.e. a parameter type) is actually used in an `Out` position (i.e. the type of the event).
+__Note.__ These restrictions are due to the fact that types nested in generic types implicitly copy the generic parameters of their parent. In the case of nested classes, structures, or enumerated types, those kinds of types cannot have variance modifiers on their type parameters. In the case of an event declaration with a parameter list, the generated nested delegate class could have confusing errors when a type that appears to be used in an `In` position (i.e. a parameter type) is actually used in an `Out` position (i.e. the type of the event).
 
 A type parameter that is declared with the Out modifier is *covariant*. Informally, a covariant type parameter can only be used in an output position -- i.e. a value that is being returned from the interface or delegate type -- and cannot be used in an input position. A type `T` is considered to be *valid covariantly* if:
 
@@ -1924,8 +1916,7 @@ Interface I2(Of Out T)
 End Interface
 ```
 
-> __Note__
-> `Out` is not a reserved word.
+__Note.__ `Out` is not a reserved word.
 
 A type parameter that is declared with the In modifier is *contravariant*. Informally, a contravariant type parameter can only be used in an input position -- i.e. a value that is being passed in to the interface or delegate type -- and cannot be used in an output position. A type `T` is considered to be *valid contravariantly* if:
 
@@ -1973,25 +1964,26 @@ End Interface
 In the case where a type must be valid be contravariantly and covariantly (such as a property with both a `Get` and `Set` accessor or a `ByRef` parameter), a variant type parameter cannot be used.
 
 
-> __Annotation__
-> Co- and contra-variance give rise to a "diamond ambiguity problem". Consider the following code:
->
->     Class C
->        Implements IEnumerable(Of String)
->        Implements IEnumerable(Of Exception)
->     
->        Public Function GetEnumerator1() As IEnumerator(Of String) _
->           Implements IEnumerable(Of String).GetEnumerator
->           Console.WriteLine("string")
->        End Function
->     
->        Public Function GetEnumerator2() As IEnumerator(Of Exception) _
->           Implements IEnumerable(Of Execption).GetEnumerator
->           Console.WriteLine("exception")
->        End Function
->     End Class
->     
->     Dim c As IEnumerable(Of Object) = New C
->     c.GetEnumerator()
->
-> The class `C` can be converted to `IEnumerable(Of Object)` in two ways, both through covariant conversion from `IEnumerable(Of String)` and through covariant conversion from `IEnumerable(Of Exception)`. The CLR does not specify which of the two methods will be called by `c.GetEnumerator()`. In general, whenever a class is declared to implement a covariant interface with two different generic arguments that have a common supertype (e.g. in this case `String` and `Exception` have the common supertype `Object`), or a class is declared to implement a contravariant interface with two different generic arguments that have a common subtype, then ambiguity is likely to arise. The compiler gives a warning on such declarations.
+Co- and contra-variance give rise to a "diamond ambiguity problem". Consider the following code:
+
+```vb
+Class C
+    Implements IEnumerable(Of String)
+    Implements IEnumerable(Of Exception)
+     
+    Public Function GetEnumerator1() As IEnumerator(Of String) _
+       Implements IEnumerable(Of String).GetEnumerator
+       Console.WriteLine("string")
+    End Function
+     
+    Public Function GetEnumerator2() As IEnumerator(Of Exception) _
+       Implements IEnumerable(Of Execption).GetEnumerator
+       Console.WriteLine("exception")
+    End Function
+End Class
+     
+Dim c As IEnumerable(Of Object) = New C
+c.GetEnumerator()
+```
+
+The class `C` can be converted to `IEnumerable(Of Object)` in two ways, both through covariant conversion from `IEnumerable(Of String)` and through covariant conversion from `IEnumerable(Of Exception)`. The CLR does not specify which of the two methods will be called by `c.GetEnumerator()`. In general, whenever a class is declared to implement a covariant interface with two different generic arguments that have a common supertype (e.g. in this case `String` and `Exception` have the common supertype `Object`), or a class is declared to implement a contravariant interface with two different generic arguments that have a common subtype, then ambiguity is likely to arise. The compiler gives a warning on such declarations.

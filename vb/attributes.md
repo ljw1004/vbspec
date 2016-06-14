@@ -4,8 +4,7 @@ The Visual Basic language enables the programmer to specify modifiers on declara
 
 In addition to the modifiers defined by the language, Visual Basic also enables programmers to create new modifiers, called *attributes*, and to use them when declaring new entities. These new modifiers, which are defined through the declaration of attribute classes, are then assigned to entities through *attribute blocks*.
 
-> __Note__
-> Attributes may be retrieved at run time through the .NET Framework's reflection APIs. These APIs are outside the scope of this specification.
+__Note.__ Attributes may be retrieved at run time through the .NET Framework's reflection APIs. These APIs are outside the scope of this specification.
 
 For instance, a framework might define a `Help` attribute that can be placed on program elements such as classes and methods to provide a mapping from program elements to documentation, as the following example demonstrates:
 

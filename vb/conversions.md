@@ -93,8 +93,7 @@ Reference types may be converted to a base type, and vice versa. Conversions fro
 
 Class and interface types can be cast to and from any interface type. Conversions between a type and an interface type only succeed at run time if the actual types involved have an inheritance or implementation relationship. Because an interface type will always contain an instance of a type that derives from `Object`, an interface type can also always be cast to and from `Object`.
 
-> __Annotation__
-> It is not an error to convert a `NotInheritable` classes to and from interfaces that it does not implement because classes that represent COM classes may have interface implementations that are not known until run time. 
+__Note.__ It is not an error to convert a `NotInheritable` classes to and from interfaces that it does not implement because classes that represent COM classes may have interface implementations that are not known until run time. 
 
 If a reference conversion fails at run time, a `System.InvalidCastException` exception is thrown.
 
@@ -311,8 +310,7 @@ Refs: 123, 123
 
 The assignment to the field of the local variable `val2` does not impact the field of the local variable `val1` because when the boxed `Struct1` was assigned to `val2`, a copy of the value was made. In contrast, the assignment `ref2.Value = 123` affects the object that both `ref1` and `ref2` references.
 
-> __Annotation__
-> Structure copying is not done for boxed structures typed as `System.ValueType` because it is not possible to late bind off of `System.ValueType`.
+__Note.__ Structure copying is not done for boxed structures typed as `System.ValueType` because it is not possible to late bind off of `System.ValueType`.
 
 There is one exception to the rule that boxed value types will be copied on assignment. If a boxed value type reference is stored within another type, the inner reference will not be copied. For example:
 
@@ -345,8 +343,7 @@ Values: 123, 123
 
 This is because the inner boxed value is not copied when the value is copied. Thus, both `val1.Value` and `val2.Value` have a reference to the same boxed value type.
 
-> __Annotation__
-> The fact that inner boxed value types are not copied is a limitation of the .NET type system -- to ensure that all inner boxed value types were copied whenever a value of type `Object` was copied would be prohibitively expensive.
+__Note.__ The fact that inner boxed value types are not copied is a limitation of the .NET type system -- to ensure that all inner boxed value types were copied whenever a value of type `Object` was copied would be prohibitively expensive.
 
 As previously described, boxed value types can only be unboxed to their original type. Boxed primitive types, however, are treated specially when typed as `Object`. They can be converted to any other primitive type that they have a conversion to. For example:
 
@@ -504,17 +501,11 @@ From `Decimal` to `Single` or `Double`.
 
 From `Single` to `Double`.
 
-From the literal `0` to an enumerated type.
-
-> __Annotation__
-> The conversion from `0` to any enumerated type is widening to simplify testing flags. For example, if `Values` is an enumerated type with a value `One`, you could test a variable `v` of type `Values` by saying `(v And Values.One) = 0`.
+From the literal `0` to an enumerated type. (__Note.__ The conversion from `0` to any enumerated type is widening to simplify testing flags. For example, if `Values` is an enumerated type with a value `One`, you could test a variable `v` of type `Values` by saying `(v And Values.One) = 0`.)
 
 From an enumerated type to its underlying numeric type, or to a numeric type that its underlying numeric type has a widening conversion to.
 
-From a constant expression of type `ULong`, `Long`, `UInteger`, `Integer`, `UShort`, `Short`, `Byte`, or `SByte` to a narrower type, provided the value of the constant expression is within the range of the destination type.
-
-> __Note__
-> Conversions from `UInteger` or `Integer` to `Single`, `ULong` or `Long` to `Single` or `Double`, or `Decimal` to `Single` or `Double` may cause a loss of precision, but will never cause a loss of magnitude. The other widening numeric conversions never lose any information.
+From a constant expression of type `ULong`, `Long`, `UInteger`, `Integer`, `UShort`, `Short`, `Byte`, or `SByte` to a narrower type, provided the value of the constant expression is within the range of the destination type. (__Note.__ Conversions from `UInteger` or `Integer` to `Single`, `ULong` or `Long` to `Single` or `Double`, or `Decimal` to `Single` or `Double` may cause a loss of precision, but will never cause a loss of magnitude. The other widening numeric conversions never lose any information.)
 
 __Reference conversions__
 
@@ -526,10 +517,7 @@ From an interface type to `Object`.
 
 From an interface type to a variant compatible interface type.
 
-From a delegate type to a variant compatible delegate type.
-
-> __Note__
-> Many other reference conversions are implied by these rules. For example, anonymous delegates are reference types that inherit from `System.MulticastDelegate`; array types are reference types that inherit from `System.Array`; anonymous types are reference types that inherit from `System.Object`.
+From a delegate type to a variant compatible delegate type. (__Note.__ Many other reference conversions are implied by these rules. For example, anonymous delegates are reference types that inherit from `System.MulticastDelegate`; array types are reference types that inherit from `System.Array`; anonymous types are reference types that inherit from `System.Object`.)
 
 __Anonymous Delegate conversions__
 

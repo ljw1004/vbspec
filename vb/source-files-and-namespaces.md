@@ -20,8 +20,7 @@ End Class
 
 The two source files contribute to the global namespace, in this case declaring two classes with the fully qualified names `A` and `B`. Because the two source files contribute to the same declaration space, it would have been an error if each contained a declaration of a member with the same name.
 
-> __Note__
-> The compilation environment may override the namespace declarations into which a source file is implicitly placed.
+__Note.__ The compilation environment may override the namespace declarations into which a source file is implicitly placed.
 
 Except where noted, statements within a Visual Basic program can be terminated either by a line terminator or by a colon.
 
@@ -83,8 +82,7 @@ OptionStatement
 
 The `Option Explicit` statement determines whether local variables may be implicitly declared. The keywords `On` or `Off` may follow the statement; if neither is specified, the default is `On`. If no statement is specified in a file, the compilation environment determines which will be used.
 
-> __Note__
-> `Explicit` and `Off` are not reserved words.
+__Note.__ `Explicit` and `Off` are not reserved words.
 
 ```vb
 Option Explicit Off
@@ -112,8 +110,7 @@ OnOff
 
 The `Option Strict` statement determines whether conversions and operations on `Object` are governed by strict or permissive type semantics and whether types are implicitly typed as `Object` if no `As` clause is specified. The statement may be followed by the keywords `On` or `Off`; if neither is specified, the default is `On`. If no statement is specified in a file, the compilation environment determines which will be used.
 
-> __Note__
-> `Strict` and `Off` are not reserved words.
+__Note.__ `Strict` and `Off` are not reserved words.
 
 ```vb
 Option Strict On
@@ -150,8 +147,7 @@ OptionStrictStatement
 
 The `Option Compare` statement determines the semantics of string comparisons. String comparisons are carried out either using binary comparisons (in which the binary Unicode value of each character is compared) or text comparisons (in which the lexical meaning of each character is compared using the current culture). If no statement is specified in a file, the compilation environment controls which type of comparison will be used.
 
-> __Note__
-> `Compare`, `Binary`, and `Text` are not reserved words.
+__Note.__ `Compare`, `Binary`, and `Text` are not reserved words.
 
 ```vb
 Option Compare Text
@@ -183,8 +179,7 @@ Integer operations can either be checked or not checked for overflow conditions 
 
 The `Option Infer` statement determines whether local variable declarations that have no `As` clause have an inferred type or use `Object`. The statement may be followed by the keywords `On` or `Off`; if neither is specified, the default is `On`. If no statement is specified in a file, the compilation environment determines which will be used.
 
-> __Note__
-> `Infer` and `Off` are not reserved words.
+__Note.__ `Infer` and `Off` are not reserved words.
 
 ```vb
 Option Infer On
@@ -244,8 +239,7 @@ Namespace N1.N2
 End Namespace
 ```
 
-> __Note__
-> The namespace or type names that appear in `Imports` statements are always treated as if they are fully qualified. That is, the leftmost identifier in a namespace or type name always resolves in the global namespace and the rest of the resolution proceeds according to normal name resolution rules. This is the only place in the language that applies such a rule; the rule ensures that a name cannot be completely hidden from qualification. Without the rule, if a name in the global namespace were hidden in a particular source file, it would be impossible to specify any names from that namespace in a qualified way.
+__Note.__ The namespace or type names that appear in `Imports` statements are always treated as if they are fully qualified. That is, the leftmost identifier in a namespace or type name always resolves in the global namespace and the rest of the resolution proceeds according to normal name resolution rules. This is the only place in the language that applies such a rule; the rule ensures that a name cannot be completely hidden from qualification. Without the rule, if a name in the global namespace were hidden in a particular source file, it would be impossible to specify any names from that namespace in a qualified way.
 
 In this example, the `Imports` statement always refers to the global `System` namespace, and not the class in the source file.
 
@@ -305,8 +299,7 @@ End Namespace
 
 The identifier of an import alias must be unique within the declaration space of the global namespace (not just the global namespace declaration in the source file in which the import alias is defined), even though it does not declare a name in the global namespace's declaration space.
 
-> __Annotation__
-> Declarations in a module do not introduce names into the containing declaration space. Thus, it is valid for a declaration in a module to have the same name as an import alias, even though the declaration's name will be accessible in the containing declaration space.
+__Note.__ Declarations in a module do not introduce names into the containing declaration space. Thus, it is valid for a declaration in a module to have the same name as an import alias, even though the declaration's name will be accessible in the containing declaration space.
 
 ```vb
 ' Error: Alias A conflicts with typename A

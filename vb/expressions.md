@@ -98,17 +98,7 @@ The following types of expressions can be reclassified:
     
     If conversion from any of the delegate's parameter types to the corresponding lambda parameter types is a narrowing conversion, then the reclassification is judged as narrowing; otherwise it is widening.
     
-    > __Annotation__
-    > The exact translation between lambda methods and expression trees may not be fixed between versions of the compiler and is beyond the scope of this specification. For Microsoft Visual Basic 11.0, all lambda expressions may be converted to expression trees subject to the following restrictions:
-    >
-    > 1.  Only single-line lambda expressions without ByRef parameters may be converted to expression trees. Of the single-line `Sub` lambdas, only invocation statements may be converted to expression trees.
-    > 2.  Anonymous type expressions cannot be converted to expression trees if an earlier field initializer is used to initialize a subsequent field initializer, e.g. `New With {.a=1, .b=.a}`
-    > 3.  Object initializer expressions cannot be converted to expression trees if a member of the current object being initialized is used in one of the field initializers, e.g. `New C1 With {.a=1, .b=.Method1()}`
-    > 4.  Multi-dimensional array creation expressions can only be converted to expression trees if they declare their element type explicitly.
-    > 5.  Late-binding expressions cannot be converted to expression trees.
-    > 6.  When a variable or field is passed ByRef to an invocation expression but does not have exactly the same type as the ByRef parameter, or when a property is passed ByRef, normal VB semantics are that a copy of the argument is passed ByRef and its final value is then copied back into the variable or field or property. In expression trees, the copy-back does not happen.
-    >
-    > All these restrictions apply to nested lambda expressions as well.
+    __Note.__ The exact translation between lambda methods and expression trees may not be fixed between versions of the compiler and is beyond the scope of this specification. For Microsoft Visual Basic 11.0, all lambda expressions may be converted to expression trees subject to the following restrictions: (1) 1.  Only single-line lambda expressions without ByRef parameters may be converted to expression trees. Of the single-line `Sub` lambdas, only invocation statements may be converted to expression trees. (2) Anonymous type expressions cannot be converted to expression trees if an earlier field initializer is used to initialize a subsequent field initializer, e.g. `New With {.a=1, .b=.a}`. (3) Object initializer expressions cannot be converted to expression trees if a member of the current object being initialized is used in one of the field initializers, e.g. `New C1 With {.a=1, .b=.Method1()}`. (4) Multi-dimensional array creation expressions can only be converted to expression trees if they declare their element type explicitly. (5) Late-binding expressions cannot be converted to expression trees. (6) When a variable or field is passed ByRef to an invocation expression but does not have exactly the same type as the ByRef parameter, or when a property is passed ByRef, normal VB semantics are that a copy of the argument is passed ByRef and its final value is then copied back into the variable or field or property. In expression trees, the copy-back does not happen. (7) All these restrictions apply to nested lambda expressions as well.
     
     If the target type is not known, then the lambda method is interpreted as the argument to a delegate instantiation expression of an anonymous delegate type with the same signature of the lambda method. If strict semantics are being used and the type of any of the parameters are omitted, a compile-time error occurs; otherwise, `Object` is substituted for any missing parameter type. For example:
     
@@ -152,8 +142,7 @@ The following types of expressions can be reclassified:
         Dim a = { { 10 }, { 20, 30 } }.GetType()
         ```
 
-    > __Annotation__
-    > There is a slight change in behavior between version 9.0 and version 10.0 of the language. Prior to 10.0, array element initializers did not affect local variable type inference and now they do. So `Dim a() = { 1, 2, 3 }` would have inferred `Object()` as the type of `a` in version 9.0 of the language and `Integer()` in version 10.0.
+    __Note.__ There is a slight change in behavior between version 9.0 and version 10.0 of the language. Prior to 10.0, array element initializers did not affect local variable type inference and now they do. So `Dim a() = { 1, 2, 3 }` would have inferred `Object()` as the type of `a` in version 9.0 of the language and `Integer()` in version 10.0.
 
     The reclassification then reinterprets the array literal as an array-creation expression. So the examples:
 
@@ -824,10 +813,7 @@ The parameter `CreateInstanceMethodName` specifies the method to call in the gro
 
 The parameter `DisposeInstanceMethodName` specifies the method to call in the group class to dispose of a default instance property if the default instance property is assigned the value `Nothing`.
 
-The parameter `DefaultInstanceAlias` specifics the expression `E'` to substitute for the class name if the default instances are accessible directly through their type name. If this parameter is `Nothing` or an empty string, default instances on this group type are not accessible directly through their type's name.
-
-> __Annotation__
-> In all current implementations of the Visual Basic language, the `DefaultInstanceAlias` parameter is ignored, except in compiler-provided code.
+The parameter `DefaultInstanceAlias` specifics the expression `E'` to substitute for the class name if the default instances are accessible directly through their type name. If this parameter is `Nothing` or an empty string, default instances on this group type are not accessible directly through their type's name. (__Note.__ In all current implementations of the Visual Basic language, the `DefaultInstanceAlias` parameter is ignored, except in compiler-provided code.)
 
 Multiple types can be collected into the same group by separating the names of the types and methods in the first three parameters using commas. There must be the same number of items in each parameter, and the list elements are matched in order. For example, the following attribute declaration collects types that derive from `C1`, `C2` or `C3` into a single group:
 
@@ -1033,8 +1019,7 @@ Module Main
 End Module
 ```
 
-> __Annotation__
-> One of the main reasons for doing currying of extension methods is that it allows query expressions to infer the type of the iteration before evaluating the arguments to a query pattern method. Since most query pattern methods take lambda expressions, which require type inference themselves, this greatly simplifies the process of evaluating a query expression.
+__Note.__ One of the main reasons for doing currying of extension methods is that it allows query expressions to infer the type of the iteration before evaluating the arguments to a query pattern method. Since most query pattern methods take lambda expressions, which require type inference themselves, this greatly simplifies the process of evaluating a query expression.
 
 Unlike normal interface inheritance, extension methods that extend two interfaces that do not relate to one another are available, as long as they do not have the same curried signature:
 
@@ -1183,8 +1168,7 @@ NamedArgumentList
 
 In practice, the rules for determining overload resolution are intended to find the overload that is "closest" to the actual arguments supplied. If there is a method whose parameter types match the argument types, then that method is obviously the closest. Barring that, one method is closer than another if all of its parameter types are narrower than (or the same as) the parameter types of the other method. If neither method's parameters are narrower than the other, then there is no way for to determine which method is closer to the arguments.
 
-> __Note__
-> Overload resolution does not take into account the expected return type of the method. 
+__Note.__ Overload resolution does not take into account the expected return type of the method. 
 
 Also note that because of the named parameter syntax, the ordering of the actual and formal parameters may not be the same.
 
@@ -1231,12 +1215,7 @@ Given a method group, the most applicable method in the group for an argument li
     42. If the set contains more than one member which requires narrowing only from `Object`, then the invocation target expression is reclassified as a late-bound method access (and an error is given if the type containing the method group is an interface, or if any of the applicable members were extension members).
     43. If there are any candidates that only require narrowing from numeric literals, then chose the most specific among all remaining candidates by the steps below. If the winner requires only narrowing from numeric literals, then it is picked as the result of overload resolution; otherwise it is an error.
 
-    > __Annotation__
-    > The justification for this rule is that if a program is loosely-typed (that is, most or all variables are declared as `Object`), overload resolution can be difficult when many conversions from `Object` are narrowing. Rather than have the overload resolution fail in many situations (requiring strong typing of the arguments to the method call), resolution the appropriate overloaded method to call is deferred until run time. This allows the loosely-typed call to succeed without additional casts.
-    >
-    > An unfortunate side-effect of this, however, is that performing the late-bound call requires casting the call target to `Object`. In the case of a structure value, this means that the value must be boxed to a temporary. If the method eventually called tries to change a field of the structure, this change will be lost once the method returns.
-    >
-    > Interfaces are excluded from this special rule because late binding always resolves against the members of the runtime class or structure type, which may have different names than the members of the interfaces they implement.
+    __Note.__ The justification for this rule is that if a program is loosely-typed (that is, most or all variables are declared as `Object`), overload resolution can be difficult when many conversions from `Object` are narrowing. Rather than have the overload resolution fail in many situations (requiring strong typing of the arguments to the method call), resolution the appropriate overloaded method to call is deferred until run time. This allows the loosely-typed call to succeed without additional casts. An unfortunate side-effect of this, however, is that performing the late-bound call requires casting the call target to `Object`. In the case of a structure value, this means that the value must be boxed to a temporary. If the method eventually called tries to change a field of the structure, this change will be lost once the method returns. Interfaces are excluded from this special rule because late binding always resolves against the members of the runtime class or structure type, which may have different names than the members of the interfaces they implement.
 
 5.  Next, if any instance methods remain in the set which do not require narrowing, then eliminate all extension methods from the set. For example:
 
@@ -1273,8 +1252,7 @@ Given a method group, the most applicable method in the group for an argument li
     End Module
     ```
 
-    > __Annotation__
-    > Extension methods are ignored if there are applicable instance methods to guarantee that adding an import (that might bring new extension methods into scope) will not cause a call on an existing instance method to rebind to an extension method. Given the broad scope of some extension methods (i.e. those defined on interfaces and/or type parameters), this is a safer approach to binding to extension methods.
+    __Note.__ Extension methods are ignored if there are applicable instance methods to guarantee that adding an import (that might bring new extension methods into scope) will not cause a call on an existing instance method to rebind to an extension method. Given the broad scope of some extension methods (i.e. those defined on interfaces and/or type parameters), this is a safer approach to binding to extension methods.
 
 6.  Next, if, given any two members of the set `M` and `N`, `M` is more *specific* (Section [Specificity of members/types given an argument list](expressions.md#specificity-of-memberstypes-given-an-argument-list)) than `N` given the argument list, eliminate `N` from the set. If more than one member remains in the set and the remaining members are not equally specific given the argument list, a compile-time error results.
 
@@ -1316,8 +1294,7 @@ Given a method group, the most applicable method in the group for an argument li
         G(Object)
         ```
 
-        > __Annotation__
-        > When a class declares a method with a paramarray parameter, it is not uncommon to also include some of the expanded forms as regular methods. By doing so it is possible to avoid the allocation of an array instance that occurs when an expanded form of a method with a paramarray parameter is invoked.
+        __Note.__ When a class declares a method with a paramarray parameter, it is not uncommon to also include some of the expanded forms as regular methods. By doing so it is possible to avoid the allocation of an array instance that occurs when an expanded form of a method with a paramarray parameter is invoked.
 
     72. If `M` is defined in a more derived type than `N`, eliminate `N` from the set. For example:
 
@@ -1521,8 +1498,7 @@ Given a method group, the most applicable method in the group for an argument li
 
     78. If `M` and `N` both required type inference to produce type arguments, and `M` did not require determining the dominant type for any of its type arguments (i.e. each the type arguments inferred to a single type), but `N` did, eliminate `N` from the set.
 
-        > __Annotation__
-        > This rule ensures that overload resolution that succeeded in previous versions (where inferring multiple types for a type argument would cause an error), continue to produce the same results.
+        __Note.__ This rule ensures that overload resolution that succeeded in previous versions (where inferring multiple types for a type argument would cause an error), continue to produce the same results.
 
     79. If overload resolution is being done to resolve the target of a delegate-creation expression from an `AddressOf` expression, and both the delegate and `M` are functions while `N` is a subroutine, eliminate `N` from the set. Likewise, if both the delegate and `M` are subroutines, while `N` is a function, eliminate `N` from the set.
 
@@ -1536,32 +1512,28 @@ Given a method group, the most applicable method in the group for an argument li
 
 A member `M` is considered *equally specific* as `N`, given an argument-list `A`, if their signatures are the same or if each parameter type in `M` is the same as the corresponding parameter type in `N`.
 
-> __Annotation__
-> Two members can end up in a method group with the same signature due to extension methods. Two members can also be equally specific but not have the same signature due to type parameters or paramarray expansion.
+__Note.__ Two members can end up in a method group with the same signature due to extension methods. Two members can also be equally specific but not have the same signature due to type parameters or paramarray expansion.
 
 A member `M` is considered *more specific* than `N` if their signatures are different and at least one parameter type in `M` is more specific than a parameter type in `N`, and no parameter type in `N` is more specific than a parameter type in `M`. Given a pair of parameters `Mj` and `Nj` that matches an argument `Aj`, the type of `Mj` is considered *more specific* than the type of `Nj` if one of the following conditions is true:
 
 1.  There exists a widening conversion from the type of `Mj` to the type `Nj`, or
     
-    > __Annotation__
-    > Because parameters types are being compared without regard to the actual argument in this case, the widening conversion from constant expressions to a numeric type the value fits into is not considered in this case.
+    (__Note.__ Because parameters types are being compared without regard to the actual argument in this case, the widening conversion from constant expressions to a numeric type the value fits into is not considered in this case.)
 
 2.  `Aj` is the literal `0`, `Mj` is a numeric type and `Nj` is an enumerated type, or
     
-    > __Annotation__
-    > This rule is necessary because the literal `0` widens to any enumerated type. Since an enumerated type widens to its underlying type, this means that overload resolution on `0` will, by default, prefer enumerated types over numeric types. We received a lot of feedback that this behavior was counterintuitive.
+    (__Note.__ This rule is necessary because the literal `0` widens to any enumerated type. Since an enumerated type widens to its underlying type, this means that overload resolution on `0` will, by default, prefer enumerated types over numeric types. We received a lot of feedback that this behavior was counterintuitive.)
 
 3.  `Mj` and `Nj` are both numeric types, and `Mj` comes earlier than `Nj` in the list
 `Byte`, `SByte`, `Short`, `UShort`, `Integer`, `UInteger`, `Long`, `ULong`, `Decimal`, `Single`, `Double`
     
-    > __Annotation__
-    > The rule about the numeric types is useful because the signed and unsigned numeric types of a particular size only have narrowing conversions between them. The above rule breaks the tie between the two types in favor of the more "natural" numeric type. This is particularly important when doing overload resolution on a type that widens to both the signed and unsigned numeric types of a particular size (for example, a numeric literal that fits into both).
+    (__Note.__ The rule about the numeric types is useful because the signed and unsigned numeric types of a particular size only have narrowing conversions between them. The above rule breaks the tie between the two types in favor of the more "natural" numeric type. This is particularly important when doing overload resolution on a type that widens to both the signed and unsigned numeric types of a particular size, for example, a numeric literal that fits into both.)
 
 4.  `Mj` and `Nj` are delegate function types and the return type of `Mj` is more specific than the return type of `Nj` If `Aj` is classified as a lambda method, and `Mj` or `Nj` is `System.Linq.Expressions.Expression(Of T)`, then the type argument of the type (assuming it is a delegate type) is substituted for the type being compared.
+
 5.  `Mj` is identical to the type of `Aj`, and `Nj` is not.
     
-    > __Annotation__
-    > It is interesting to note that the previous rule differs slightly from C#, in that C# requires that the delegate function types have identical parameter lists before comparing return types, while Visual Basic does not.
+    (__Note.__ It is interesting to note that the previous rule differs slightly from C#, in that C# requires that the delegate function types have identical parameter lists before comparing return types, while Visual Basic does not.)
 
 #### Genericity
 
@@ -1729,42 +1701,43 @@ For optional parameters where an argument has not been provided, the compiler pi
 
 If none of the above apply, then the optional parameter's default value is used (or `Nothing` if no default value is supplied). And if more than one of the above apply, then the choice of which to use is implementation-dependent.
 
-> __Annotation__
-> The `CallerLineNumber` and `CallerFilePath` attributes are useful for logging. The `CallerMemberName` is useful for implementing `INotifyPropertyChanged`. Here are examples.
->
-> ````vb
-> Sub Log(msg As String,
->         <CallerFilePath> Optional file As String = Nothing,
->         <CallerLineNumber> Optional line As Integer? = Nothing)
->     Console.WriteLine("{0}:{1} - {2}", file, line, msg)
-> End Sub
+The `CallerLineNumber` and `CallerFilePath` attributes are useful for logging. The `CallerMemberName` is useful for implementing `INotifyPropertyChanged`. Here are examples.
 
-> WriteOnly Property p As Integer
->     Set(value As Integer)
->         Notify(_p, value)
->     End Set
-> End Property
+```vb
+Sub Log(msg As String,
+        <CallerFilePath> Optional file As String = Nothing,
+        <CallerLineNumber> Optional line As Integer? = Nothing)
+    Console.WriteLine("{0}:{1} - {2}", file, line, msg)
+End Sub
 
-> Private _p As Integer
-> 
-> Sub Notify(Of T As IEquatable(Of T))(ByRef v1 As T, v2 As T,
->         <CallerMemberName> Optional prop As String = Nothing)
->     If v1 IsNot Nothing AndAlso v1.Equals(v2) Then Return
->     If v1 Is Nothing AndAlso v2 Is Nothing Then Return
->     v1 = v2
->     RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(prop))
-> End Sub
-> ```
->
-> In addition to the optional parameters above, Microsoft Visual Basic also recognizes some additional optional parameters if they are imported from metadata (i.e. from a DLL reference). Upon importing from metadata, Visual Basic also treats the parameter `<Optional>` as indicative that the parameter is optional: in this way it is possible to import a declaration which has an optional parameter but no default value, even though this can't be expressed using the `Optional` keyword.
->
-> If the optional parameter has the attribute `Microsoft.VisualBasic.CompilerServices.OptionCompareAttribute`, and the numeric literal 1 or 0 has a conversion to the parameter type, then the compiler uses as argument either the literal 1 if `Option Compare Text` is in effect, or the literal 0 if `Optional Compare Binary` is in effect.
->
-> If the optional parameter has the attribute `System.Runtime.CompilerServices.IDispatchConstantAttribute`, and it has type `Object`, and it does not specify a default value, then the compiler uses the argument New System.Runtime.InteropServices.DispatchWrapper(Nothing).
->
-> If the optional parameter has the attribute `System.Runtime.CompilerServices.IUnknownConstantAttribute`, and it has type `Object`, and it does not specify a default value, then the compiler uses the argument `New System.Runtime.InteropServices.UnknownWrapper(Nothing)`.
->
-> If the optional parameter has type `Object`, and it does not specify a default value, then the compiler uses the argument `System.Reflection.Missing.Value`.
+WriteOnly Property p As Integer
+    Set(value As Integer)
+        Notify(_p, value)
+    End Set
+End Property
+
+Private _p As Integer
+
+Sub Notify(Of T As IEquatable(Of T))(ByRef v1 As T, v2 As T,
+        <CallerMemberName> Optional prop As String = Nothing)
+    If v1 IsNot Nothing AndAlso v1.Equals(v2) Then Return
+    If v1 Is Nothing AndAlso v2 Is Nothing Then Return
+    v1 = v2
+    RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(prop))
+End Sub
+```
+
+In addition to the optional parameters above, Microsoft Visual Basic also recognizes some additional optional parameters if they are imported from metadata (i.e. from a DLL reference):
+
+* Upon importing from metadata, Visual Basic also treats the parameter `<Optional>` as indicative that the parameter is optional: in this way it is possible to import a declaration which has an optional parameter but no default value, even though this can't be expressed using the `Optional` keyword.
+
+* If the optional parameter has the attribute `Microsoft.VisualBasic.CompilerServices.OptionCompareAttribute`, and the numeric literal 1 or 0 has a conversion to the parameter type, then the compiler uses as argument either the literal 1 if `Option Compare Text` is in effect, or the literal 0 if `Optional Compare Binary` is in effect.
+
+* If the optional parameter has the attribute `System.Runtime.CompilerServices.IDispatchConstantAttribute`, and it has type `Object`, and it does not specify a default value, then the compiler uses the argument `New System.Runtime.InteropServices.DispatchWrapper(Nothing)`.
+
+* If the optional parameter has the attribute `System.Runtime.CompilerServices.IUnknownConstantAttribute`, and it has type `Object`, and it does not specify a default value, then the compiler uses the argument `New System.Runtime.InteropServices.UnknownWrapper(Nothing)`.
+
+* If the optional parameter has type `Object`, and it does not specify a default value, then the compiler uses the argument `System.Reflection.Missing.Value`.
 
 ### Conditional Methods
 
@@ -1772,8 +1745,7 @@ If the target method to which an invocation expression refers is a subroutine th
 
 When looking for the attribute, the most derived declaration of an overridable method is checked.
 
-> __Note__
-> The attribute is not valid on functions or interface methods and is ignored if specified on either kind of method. Thus, conditional methods will only appear in invocation statements.
+__Note.__ The attribute is not valid on functions or interface methods and is ignored if specified on either kind of method. Thus, conditional methods will only appear in invocation statements.
 
 ### Type Argument Inference
 
@@ -2173,8 +2145,7 @@ Dim g = {1, {2}}
 
 The format and requirements for the collection initializer in an array literal is exactly the same as that for the collection initializer in an array creation expression.
 
-> __Annotation__
-> An array literal does not create the array in and of itself; instead, it is the reclassification of the expression into a value that causes the array to be created. For instance, the conversion `CType(new Integer() {1,2,3}, Short())` is not possible because there is no conversion from `Integer()` to `Short()`; but the expression `CType({1,2,3},Short())` is possible because it first reclassifies the array literal into the array creation expression `New Short() {1,2,3}`.
+__Note.__ An array literal does not create the array in and of itself; instead, it is the reclassification of the expression into a value that causes the array to be created. For instance, the conversion `CType(new Integer() {1,2,3}, Short())` is not possible because there is no conversion from `Integer()` to `Short()`; but the expression `CType({1,2,3},Short())` is possible because it first reclassifies the array literal into the array creation expression `New Short() {1,2,3}`.
 
 ```antlr
 ArrayExpression
@@ -2225,8 +2196,7 @@ Module Test
 End Module
 ```
 
-> __Annotation__
-> This relaxation is only allowed when strict semantics are not being used because of extension methods. Because extension methods are only considered if a regular method was not applicable, it is possible for an instance method with no parameters to hide an extension method with parameters for the purpose of delegate construction.
+__Note.__ This relaxation is only allowed when strict semantics are not being used because of extension methods. Because extension methods are only considered if a regular method was not applicable, it is possible for an instance method with no parameters to hide an extension method with parameters for the purpose of delegate construction.
 
 If more than one method referenced by the method pointer is applicable to the delegate type, then overload resolution is used to pick between the candidate methods. The types of the parameters to the delegate are used as the types of the arguments for the purposes of overload resolution. If no one method candidate is most applicable, a compile-time error occurs. In the following example, the local variable is initialized with a delegate that refers to the second `Square` method because that method is more applicable to the signature and return type of `DoubleFunc`.
 
@@ -2484,8 +2454,7 @@ End Module
 
 If two anonymous class creation expressions occur within the same method and yield the same resulting shape -- if the property order, property names, and property types all match -- they will both refer to the same anonymous class. The method scope of an instance or shared member variable with an initializer is the constructor in which the variable is initialized.
 
-> __Annotation__
-> It is possible that a compiler may choose to unify anonymous types further, such as at the assembly level, but this cannot be relied upon at this time.
+__Note.__ It is possible that a compiler may choose to unify anonymous types further, such as at the assembly level, but this cannot be relied upon at this time.
 
 ```antlr
 AnonymousObjectCreationExpression
@@ -2499,13 +2468,11 @@ A cast expression coerces an expression to a given type. Specific cast keywords 
 
 `DirectCast` and `TryCast` have special behaviors. Because of this, they only support native conversions. Additionally, the target type in a `TryCast` expression cannot be a value type. User-defined conversion operators are not considered when `DirectCast` or `TryCast` is used.
 
-> __Annotation__
-> The conversion set that `DirectCast` and `TryCast` support are restricted because they implement "native CLR" conversions. The purpose of `DirectCast` is to provide the functionality of the "unbox" instruction, while the purpose of `TryCast` is to provide the functionality of the "isinst" instruction. Since they map onto CLR instructions, supporting conversions not directly supported by the CLR would defeat the intended purpose.
+__Note.__ The conversion set that `DirectCast` and `TryCast` support are restricted because they implement "native CLR" conversions. The purpose of `DirectCast` is to provide the functionality of the "unbox" instruction, while the purpose of `TryCast` is to provide the functionality of the "isinst" instruction. Since they map onto CLR instructions, supporting conversions not directly supported by the CLR would defeat the intended purpose.
 
 `DirectCast` converts expressions that are typed as `Object` differently than `CType`. When converting an expression of type `Object` whose run-time type is a primitive value type, `DirectCast` throws a `System.InvalidCastException` exception if the specified type is not the same as the run-time type of the expression or a `System.NullReferenceException` if the expression evaluates to `Nothing`.
 
-> __Annotation__
-> As noted above, `DirectCast` maps directly onto the CLR instruction "unbox" when the type of the expression is `Object`. In contrast, `CType` turns into a call to a runtime helper to do the conversion so that conversions between primitive types can be supported. In the case when an `Object` expression is being converted to a primitive value type and the type of the actual instance match the target type, `DirectCast` will be significantly faster than `CType`.
+__Note.__ As noted above, `DirectCast` maps directly onto the CLR instruction "unbox" when the type of the expression is `Object`. In contrast, `CType` turns into a call to a runtime helper to do the conversion so that conversions between primitive types can be supported. In the case when an `Object` expression is being converted to a primitive value type and the type of the actual instance match the target type, `DirectCast` will be significantly faster than `CType`.
 
 `TryCast` converts expressions but does not throw an exception if the expression cannot be converted to the target type. Instead, `TryCast` will result in `Nothing` if the expression cannot be converted at runtime. For example:
 
@@ -2525,8 +2492,7 @@ Module Test
 End Module
 ```
 
-> __Annotation__
-> As noted above, `TryCast` maps directly onto the CLR instruction "isinst". By combining the type check and the conversion into a single operation, `TryCast` can be cheaper than doing a `TypeOf`...`Is` and then a `CType`.
+__Note.__ As noted above, `TryCast` maps directly onto the CLR instruction "isinst". By combining the type check and the conversion into a single operation, `TryCast` can be cheaper than doing a `TypeOf ... Is` and then a `CType`.
 
 If no conversion exists from the type of the expression to the specified type, a compile-time error occurs. Otherwise, the expression is classified as a value and the result is the value produced by the conversion.
 
@@ -2667,8 +2633,7 @@ Module Test
 End Module
 ```
 
-> __Annotation__
-> This rule exists because there has been consideration whether we wish to add null-propagating reference types in a future version, in which case the behavior in the case of binary operators between the two types would change.
+__Note.__ This rule exists because there has been consideration whether we wish to add null-propagating reference types in a future version, in which case the behavior in the case of binary operators between the two types would change.
 
 As with conversions, user-defined operators are always preferred over lifted operators.
 
@@ -2680,18 +2645,17 @@ In other languages, `>>` and `<<` may be overloaded both as signed operators and
 
 If no user-defined operator is most specific to the operands, then intrinsic operators will be considered. If no intrinsic operator is defined for the operands and either operand has type Object then the operator will be resolved late-bound; otherwise,  a compile-time error results.
 
-> __Annotation__
-> In prior versions of Visual Basic, if there was exactly one operand of type Object, and no applicable user-defined operators, and no applicable intrinsic operators, then it was an error. As of Visual Basic 11, it is now resolved late-bound. For example:
->
-> ```vb
-> Module Module1
->   Sub Main()
->       Dim p As Object = Nothing
->       Dim U As New Uri("http://www.microsoft.com")
->       Dim j = U * p  ' is now resolved late-bound
->    End Sub
-> End Module
-> ```
+In prior versions of Visual Basic, if there was exactly one operand of type Object, and no applicable user-defined operators, and no applicable intrinsic operators, then it was an error. As of Visual Basic 11, it is now resolved late-bound. For example:
+
+```vb
+Module Module1
+  Sub Main()
+      Dim p As Object = Nothing
+      Dim U As New Uri("http://www.microsoft.com")
+      Dim j = U * p  ' is now resolved late-bound
+   End Sub
+End Module
+```
 
 A type `T` that has an intrinsic operator also defines that same operator for `T?`. The result of the operator on `T?` will be the same as for `T`, except that if either operand is `Nothing`, the result of the operator will be `Nothing` (i.e. the null value is propagated). For the purposes of resolving the type of an operation, the `?` is removed from any operands that have them, the type of the operation is determined, and a `?` is added to the type of the operation if any of the operands were nullable value types. For example:
 
@@ -2719,8 +2683,7 @@ Otherwise, the operands are converted to the wider of the operand types and the 
 
 Despite these general rules, however, there are a number of special cases called out in the operator results tables.
 
-> __Note__
-> For formatting reasons, the operator type tables abbreviate the predefined names to their first two characters. So "By" is `Byte`, "UI" is `UInteger`, "St" is `String`, etc. "Err" means that there is no operation defined for the given operand types.
+__Note.__ For formatting reasons, the operator type tables abbreviate the predefined names to their first two characters. So "By" is `Byte`, "UI" is `UInteger`, "St" is `String`, etc. "Err" means that there is no operation defined for the given operand types.
 
 ## Arithmetic Operators
 
@@ -2792,8 +2755,7 @@ The addition operator computes the sum of the two operands. The addition operato
 
 `String`. The two `String` operands are concatenated together.
 
-> __Note__
-> The `System.DateTime` type defines overloaded addition operators. Because `System.DateTime` is equivalent to the intrinsic `Date` type, these operators is also available on the `Date` type.
+__Note.__ The `System.DateTime` type defines overloaded addition operators. Because `System.DateTime` is equivalent to the intrinsic `Date` type, these operators is also available on the `Date` type.
 
 __Operation Type:__
 
@@ -2833,8 +2795,7 @@ The subtraction operator subtracts the second operand from the first operand. Th
 
 `Decimal`. If the resulting value is too large to represent in the decimal format, a `System.OverflowException` exception is thrown. If the result value is too small to represent in the decimal format, the result is 0.
 
-> __Note__
-> The `System.DateTime` type defines overloaded subtraction operators. Because `System.DateTime` is equivalent to the intrinsic `Date` type, these operators is also available on the `Date` type.
+__Note.__ The `System.DateTime` type defines overloaded subtraction operators. Because `System.DateTime` is equivalent to the intrinsic `Date` type, these operators is also available on the `Date` type.
 
 __Operation Type:__
 
@@ -2935,8 +2896,7 @@ __Operation Type:__
 
 The integer division operator is defined for `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, and `Long`. If the value of the right operand is zero, a `System.DivideByZeroException` exception is thrown. The division rounds the result towards zero, and the absolute value of the result is the largest possible integer that is less than the absolute value of the quotient of the two operands. The result is zero or positive when the two operands have the same sign, and zero or negative when the two operands have opposite signs. If the left operand is the maximum negative `SByte`, `Short`, `Integer`, or `Long`, and the right operand is `-1`, an overflow occurs; if integer overflow checking is on, a `System.OverflowException` exception is thrown. Otherwise, the overflow is not reported and the result is instead the value of the left operand.
 
-> __Annotation__
-> As the two operands for unsigned types will always be zero or positive, the result is always zero or positive.  As the result of the expression will always be less than or equal to the largest of the two operands, it is not possible for an overflow to occur.  As such integer overflow checking is not performed for integer divide with two unsigned integers. The result is the type as that of the left operand.
+__Note.__ As the two operands for unsigned types will always be zero or positive, the result is always zero or positive.  As the result of the expression will always be less than or equal to the largest of the two operands, it is not possible for an overflow to occur.  As such integer overflow checking is not performed for integer divide with two unsigned integers. The result is the type as that of the left operand.
 
 
 __Operation Type:__
@@ -3125,8 +3085,7 @@ A list of characters surrounded by brackets and prefixed by an exclamation point
 
 Two characters in a character list separated by a hyphen (`-`) specify a range of Unicode characters starting with the first character and ending with the second character. If the second character is not later in the sort order than the first character, a run-time exception occurs. A hyphen that appears at the beginning or end of a character list specifies itself.
 
-> __Note__
-> To match the special characters left bracket (`[`), question mark (`?`), number sign (`#`), and asterisk (`*`), brackets must enclose them. The right bracket (`]`) cannot be used within a group to match itself, but it can be used outside a group as an individual character. The character sequence `[]` is considered to be the string literal `""`. 
+__Note.__ To match the special characters left bracket (`[`), question mark (`?`), number sign (`#`), and asterisk (`*`), brackets must enclose them. The right bracket (`]`) cannot be used within a group to match itself, but it can be used outside a group as an individual character. The character sequence `[]` is considered to be the string literal `""`. 
 
 Also note that character comparisons and ordering for character lists are dependent on the type of comparisons being used. If binary comparisons are being used, character comparisons and ordering are based on the numeric Unicode values. If text comparisons are being used, character comparisons and ordering are based on the current locale being used on the .NET Framework.
 
@@ -3241,8 +3200,7 @@ Module Test
 End Module
 ```
 
-> __Annotation__
-> Ideally, the logical operators `And` and `Or` would be lifted using three-valued logic for any type that can be used in a Boolean expression (i.e. a type that implements `IsTrue` and `IsFalse`), in the same way that `AndAlso` and `OrElse` short circuit across any type that can be used in a Boolean expression. Unfortunately, three-valued lifting is only applied to `Boolean?`, so user-defined types that desire three-valued logic must do so manually by defining `And` and `Or` operators for their nullable version.
+__Note.__ Ideally, the logical operators `And` and `Or` would be lifted using three-valued logic for any type that can be used in a Boolean expression (i.e. a type that implements `IsTrue` and `IsFalse`), in the same way that `AndAlso` and `OrElse` short circuit across any type that can be used in a Boolean expression. Unfortunately, three-valued lifting is only applied to `Boolean?`, so user-defined types that desire three-valued logic must do so manually by defining `And` and `Or` operators for their nullable version.
 
 No overflows are possible from these operations. The enumerated type operators do the bitwise operation on the underlying type of the enumerated type, but the return value is the enumerated type.
 
@@ -3432,8 +3390,7 @@ A Boolean expression is an expression that can be tested to see if it is true or
 
 `T` has a narrowing conversion to `Boolean`.
 
-> __Annotation__
-> It is interesting to note that if `Option Strict` is off, an expression that has a narrowing conversion to `Boolean` will be accepted without a compile-time error but the language will still prefer an `IsTrue` operator if it exists. This is because `Option Strict` only changes what is and isn't accepted by the language, and never changes the actual meaning of an expression. Thus, `IsTrue` has to always be preferred over a narrowing conversion, regardless of `Option Strict`.
+__Note.__ It is interesting to note that if `Option Strict` is off, an expression that has a narrowing conversion to `Boolean` will be accepted without a compile-time error but the language will still prefer an `IsTrue` operator if it exists. This is because `Option Strict` only changes what is and isn't accepted by the language, and never changes the actual meaning of an expression. Thus, `IsTrue` has to always be preferred over a narrowing conversion, regardless of `Option Strict`.
 
 For example, the following class does not define a widening conversion to `Boolean`. As a result, its use in the `If` statement causes a call to the `IsTrue` operator.
 
@@ -3542,8 +3499,7 @@ End Module
 
 Single-line lambda constructs bind less tightly than all other expressions and statements. Thus, for example, "`Function() x + 5`" is equivalent to "`Function() (x+5)"` rather than "`(Function() x) + 5`". To avoid ambiguity, a single-line `Sub` lambda expression may not contain a Dim statement or a label declaration statement. Also, unless it is enclosed in parentheses, a single-line `Sub` lambda expression may not be immediately followed by a colon ":", a member access operator ".", a dictionary member access operator "!" or an open parenthesis "(". It may not contain any block statement (`With`, `SyncLock, If...EndIf`, `While`, `For`, `Do`, `Using`) nor `OnError` nor `Resume`.
 
-> __Annotation__
-> In the lambda expression "`Function(i) x=i`", the body is interpreted as an *expression* (which tests whether `x` and `i` are equal). But in the lambda expression "`Sub(i) x=i`", the body is interpreted as a statement (which assigns `i` to `x`).
+__Note.__ In the lambda expression `Function(i) x=i`, the body is interpreted as an *expression* (which tests whether `x` and `i` are equal). But in the lambda expression `Sub(i) x=i`, the body is interpreted as a statement (which assigns `i` to `x`).
 
 A multi-line lambda expression contains a statement block and must end with an appropriate `End` statement (i.e. `End Function` or `End Sub`). As with regular methods, a multi-line lambda method's `Function` or `Sub` statement and `End` statements must be on their own lines. For example:
 
@@ -4109,8 +4065,7 @@ Dim zs = _
         Function(x As Integer, y As Integer) New With {x, y})...
 ```
 
-> __Note__
-> `From` is not a reserved word.
+__Note.__ `From` is not a reserved word.
 
 ```antlr
 FromQueryOperator
@@ -4176,8 +4131,7 @@ Dim zs = _
         Function(x As Integer, y As Integer) New With {x, y})...
 ```
 
-> __Note__
-> `Join`, `On` and `Equals` are not reserved words.
+__Note.__ `Join`, `On` and `Equals` are not reserved words.
 
 ```antlr
 JoinQueryOperator
@@ -4352,8 +4306,7 @@ Dim xs() As Integer = ...
 Dim zs = xs.Distinct()...
 ```
 
-> __Note__
-> `Distinct` is not a reserved word.
+__Note.__ `Distinct` is not a reserved word.
 
 ```antlr
 DistinctQueryOperator
@@ -4406,8 +4359,7 @@ Dim zs = _
     xs.Where(Function(x As Integer) x < 10)...
 ```
 
-> __Note__
-> `Where` is not a reserved word.
+__Note.__ `Where` is not a reserved word.
 
 ```antlr
 WhereQueryOperator
@@ -4466,8 +4418,7 @@ Dim zs = _
         TakeWhile(Function(x) x > 5)...
 ```
 
-> __Note__
-> `Take` and `Skip` are not reserved words.
+__Note.__ `Take` and `Skip` are not reserved words.
 
 ```antlr
 PartitionQueryOperator
@@ -4538,10 +4489,9 @@ Dim zs = _
     xs.OrderBy(Function(x) x).ThenByDescending(Function(x) x Mod 2)...
 ```
 
-> __Annotation__
-> Because query operators simply map syntax to methods that implement a particular query operation, order preservation is not dictated by the language and is determined by the implementation of the operator itself. This is very similar to user-defined operators in that the implementation to overload the addition operator for a user-defined numeric type may not perform anything resembling an addition. Of course, to preserve predictability, implementing something that does not match user expectations is not recommended.
+__Note.__ Because query operators simply map syntax to methods that implement a particular query operation, order preservation is not dictated by the language and is determined by the implementation of the operator itself. This is very similar to user-defined operators in that the implementation to overload the addition operator for a user-defined numeric type may not perform anything resembling an addition. Of course, to preserve predictability, implementing something that does not match user expectations is not recommended.
 
-Note that `Order` and `By` are not reserved words.
+__Note.__ `Order` and `By` are not reserved words.
 
 ```antlr
 OrderByQueryOperator
@@ -4681,8 +4631,7 @@ Dim zs = _
             .Average = group.Average(Function(e) e.z)})...
 ```
 
-> __Note__
-> `Group`, `By`, and `Into` are not reserved words.
+__Note.__ `Group`, `By`, and `Into` are not reserved words.
 
 ```antlr
 GroupByQueryOperator
@@ -4744,8 +4693,7 @@ Dim zs = _
     xs.Where(Function(x) x < 5).Sum()
 ```
 
-> __Note__
->  `Aggregate` and `Into` are not reserved words.
+__Note.__ `Aggregate` and `Into` are not reserved words.
 
 ```antlr
 AggregateQueryOperator
@@ -4799,8 +4747,7 @@ Dim zs = _
         Function(x, group) New With {x, .g = group})...
 ```
 
-> __Note__
-> `Group`, `Join`, and `Into` are not reserved words.
+__Note.__ `Group`, `Join`, and `Into` are not reserved words.
 
 ```antlr
 GroupJoinQueryOperator
@@ -4859,8 +4806,7 @@ Dim book As System.Xml.Linq.XElement = _
 
 An XML literal expression can take the form of an XML document, an XML element, an XML processing instruction, an XML comment, or a CDATA section.
 
-> __Annotation__
-> This specification contains only enough of a description of XML to describe the behavior of the Visual Basic language. More information on XML can be found at http://www.w3.org/TR/REC-xml/.
+__Note.__ This specification contains only enough of a description of XML to describe the behavior of the Visual Basic language. More information on XML can be found at http://www.w3.org/TR/REC-xml/.
 
 ```antlr
 XMLLiteralExpression
@@ -5013,8 +4959,7 @@ An XML document can contain an embedded expression whose type can be any type; a
 
 Unlike regular XML, XML document expressions do not support DTDs (Document Type Declarations). Also, the encoding attribute, if supplied, will be ignored since the encoding of the Xml literal expression is always the same as the encoding of the source file itself.
 
-> __Annotation__
-> Although the encoding attribute is ignored, it is still valid attribute in order to maintain the ability to include any valid Xml 1.0 documents in source code.
+__Note.__ Although the encoding attribute is ignored, it is still valid attribute in order to maintain the ability to include any valid Xml 1.0 documents in source code.
 
 ```antlr
 XMLDocument
@@ -5262,8 +5207,7 @@ Dim bad1 = <elem xmlns:xmlns="http://example.org/namespace"/>
 Dim bad2 = <elem xmlns:db=<%= "http://example.org/database" %>>Bob</>
 ```
 
-> __Annotation__
-> This specification contains only enough of a description of XML namespace to describe the behavior of the Visual Basic language. More information on XML namespaces can be found at http://www.w3.org/TR/REC-xml-names/.
+__Note.__ This specification contains only enough of a description of XML namespace to describe the behavior of the Visual Basic language. More information on XML namespaces can be found at http://www.w3.org/TR/REC-xml-names/.
 
 XML element and attribute names can be qualified using namespace names. Namespaces are bound as in regular XML, with the exception that any namespace imports declared at the file level are considered to be declared in a context enclosing the declaration, which is itself enclosed by any namespace imports declared by the compilation environment. If a namespace name cannot be found, a compile-time error occurs. For example:
 
@@ -5303,8 +5247,7 @@ Dim customer = _
     </>
 ```
 
-> __Annotation__
-> This is because the embedded expression can be anything, including a function call. If the function call contained an XML literal expression, it is not clear whether programmers would expect the XML namespace to be applied or ignored.
+__Note.__ This is because the embedded expression can be anything, including a function call. If the function call contained an XML literal expression, it is not clear whether programmers would expect the XML namespace to be applied or ignored.
 
 ```antlr
 XMLNamespaceAttributeName
@@ -5446,8 +5389,7 @@ So the above example is equivalent to:
 Dim customerAge = customer.AttributeValue("age")
 ```
 
-> __Annotation__
-> The `AttributeValue` extension method (as well as the related extension property `Value`) is not currently defined in any assembly. If the extension members are needed, they are automatically defined in the assembly being produced.
+__Note.__ The `AttributeValue` extension method (as well as the related extension property `Value`) is not currently defined in any assembly. If the extension members are needed, they are automatically defined in the assembly being produced.
 
 Descendents access, in which an XML names follows three dots. For example:
 
@@ -5581,8 +5523,7 @@ Structure MyTaskAwaiter(Of T)
 End Structure
 ```
 
-> __Annotation__
-> Library authors are recommended to follow the pattern that they invoke the continuation delegate on the same `SynchronizationContext` as their `OnCompleted` was itself invoked on. Also, the resumption delegate should not be executed synchronously within the `OnCompleted` method since that can lead to stack overflow: instead, the delegate should be queued for subsequent execution.
+__Note.__ Library authors are recommended to follow the pattern that they invoke the continuation delegate on the same `SynchronizationContext` as their `OnCompleted` was itself invoked on. Also, the resumption delegate should not be executed synchronously within the `OnCompleted` method since that can lead to stack overflow: instead, the delegate should be queued for subsequent execution.
 
 When control flow reaches an `Await` operator, behavior is as follows.
 
