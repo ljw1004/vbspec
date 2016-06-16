@@ -772,9 +772,9 @@ A `ParamArray` parameter represents an indeterminate number of parameters of the
 
 A `ParamArray` permits arguments to be specified in one of two ways in a method invocation:
 
-The argument given for a `ParamArray` can be a single expression of a type that widens to the `ParamArray` type. In this case, the `ParamArray` acts precisely like a value parameter.
+* The argument given for a `ParamArray` can be a single expression of a type that widens to the `ParamArray` type. In this case, the `ParamArray` acts precisely like a value parameter.
 
-Alternatively, the invocation can specify zero or more arguments for the `ParamArray`, where each argument is an expression of a type that is implicitly convertible to the element type of the `ParamArray`. In this case, the invocation creates an instance of the `ParamArray` type with a length corresponding to the number of arguments, initializes the elements of the array instance with the given argument values, and uses the newly created array instance as the actual argument.
+* Alternatively, the invocation can specify zero or more arguments for the `ParamArray`, where each argument is an expression of a type that is implicitly convertible to the element type of the `ParamArray`. In this case, the invocation creates an instance of the `ParamArray` type with a length corresponding to the number of arguments, initializes the elements of the array instance with the given argument values, and uses the newly created array instance as the actual argument.
 
 Except for allowing a variable number of arguments in an invocation, a `ParamArray` is precisely equivalent to a value parameter of the same type, as the following example illustrates.
 
@@ -1463,11 +1463,11 @@ If a delegate type is specified, the delegate type may not have a return type. I
 
 In addition to the member name added to the type's declaration space, an event declaration implicitly declares several other members. Given an event named `X`, the following members are added to the declaration space:
 
-If the form of the declaration is a method declaration, a nested delegate class named `XEventHandler` is introduced. The nested delegate class matches the method declaration and has the same accessibility as the event. The attributes in the parameter list apply to the parameters of the delegate class.
+* If the form of the declaration is a method declaration, a nested delegate class named `XEventHandler` is introduced. The nested delegate class matches the method declaration and has the same accessibility as the event. The attributes in the parameter list apply to the parameters of the delegate class.
 
-A `Private` instance variable typed as the delegate, named `XEvent`.
+* A `Private` instance variable typed as the delegate, named `XEvent`.
 
-Two methods named `add_X` and `remove_X` which cannot be invoked, overridden or overloaded.
+* Two methods named `add_X` and `remove_X` which cannot be invoked, overridden or overloaded.
 
 If a type attempts to declare a name that matches one of the above names, a compile-time error will result, and the implicit `add_X` and `remove_X` declarations are ignored for the purposes of name binding. It is not possible to override or overload any of the introduced members, although it is possible to shadow them in derived types. For example, the class declaration
 
@@ -1650,9 +1650,11 @@ __Note.__ `Custom` is not a reserved word.
 
 As of Microsoft Visual Basic 11.0, events declared in a file compiled with `/target:winmdobj`, or declared in an interface in such a file and then implemented elsewhere, are treated a little differently.
 
-1. External tools used to build the winmd will typically allow only certain delegate types such as `System.EventHandler(Of T)` or `System.TypedEventHandle(Of T, U)`, and will disallow others.
-2. The `XEvent` field has type `System.Runtime.InteropServices.WindowsRuntime.EventRegistrationTokenTable(Of T)` where `T` is the delegate type.
-3. The AddHandler accessor returns a `System.Runtime.InteropServices.WindowsRuntime.EventRegistrationToken`, and the RemoveHandler accessor takes a single parameter of the same type.
+* External tools used to build the winmd will typically allow only certain delegate types such as `System.EventHandler(Of T)` or `System.TypedEventHandle(Of T, U)`, and will disallow others.
+
+* The `XEvent` field has type `System.Runtime.InteropServices.WindowsRuntime.EventRegistrationTokenTable(Of T)` where `T` is the delegate type.
+
+* The AddHandler accessor returns a `System.Runtime.InteropServices.WindowsRuntime.EventRegistrationToken`, and the RemoveHandler accessor takes a single parameter of the same type.
 
 Here is an example of such a custom event.
 

@@ -1,5 +1,8 @@
-Visual Basic Language Reference
-=================================
+Visual Basic Language Specification
+=====================================
+__Version 11__
+
+(This document is also available for download: [vb.pdf](Visual%20Basic%20Language%20Specification.pdf?raw=true) and [vb.docx](Visual%20Basic%20Language%20Specification.docx?raw=true))
 
 * [Introduction](introduction.md)
     * [Grammar Notation](introduction.md#grammar-notation)
@@ -119,4 +122,4 @@ Visual Basic Language Reference
     * [Recommended tags](documentation-comments.md#recommended-tags)
     * [ID Strings](documentation-comments.md#id-strings)
     * [Documentation comments example](documentation-comments.md#documentation-comments-example)
-* [Grammar](http://ljw1004.github.io/vbspec/vb/vb.html)
+* Grammar: [vb.html](http://ljw1004.github.io/vbspec/vb.html). Or download in ANTLR format: [vb.g4](vb.g4?raw=true).

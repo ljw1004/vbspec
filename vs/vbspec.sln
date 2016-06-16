@@ -13,20 +13,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vb", "vb", "{3293C606-6E40-485A-9542-07EAA4EC9953}"
 	ProjectSection(SolutionItems) = preProject
-		attributes.md = attributes.md
-		conversions.md = conversions.md
-		documentation-comments.md = documentation-comments.md
-		expressions.md = expressions.md
-		general-concepts.md = general-concepts.md
-		introduction.md = introduction.md
-		lexical-grammar.md = lexical-grammar.md
-		preprocessing-directives.md = preprocessing-directives.md
-		readme.md = readme.md
-		source-files-and-namespaces.md = source-files-and-namespaces.md
-		statements.md = statements.md
-		..\template.docx = ..\template.docx
-		type-members.md = type-members.md
-		types.md = types.md
+		..\attributes.md = ..\attributes.md
+		..\conversions.md = ..\conversions.md
+		..\documentation-comments.md = ..\documentation-comments.md
+		..\expressions.md = ..\expressions.md
+		..\general-concepts.md = ..\general-concepts.md
+		..\introduction.md = ..\introduction.md
+		..\lexical-grammar.md = ..\lexical-grammar.md
+		..\preprocessing-directives.md = ..\preprocessing-directives.md
+		..\readme.md = ..\readme.md
+		..\source-files-and-namespaces.md = ..\source-files-and-namespaces.md
+		..\statements.md = ..\statements.md
+		..\type-members.md = ..\type-members.md
+		..\types.md = ..\types.md
 		..\vb.g4 = ..\vb.g4
 	EndProjectSection
 EndProject
