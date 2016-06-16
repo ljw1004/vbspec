@@ -25,11 +25,11 @@ Documentation comments must be well formed XML according to http://www.w3.org/TR
 
 Although developers are free to create their own set of tags, a recommended set is defined in the next section. Some of the recommended tags have special meanings:
 
-The `<param>` tag is used to describe parameters. The parameter specified by a `<param>` tag must exist and all parameters of the type member must be described in the documentation comment. If either condition is not true, the compiler issues a warning.
+* The `<param>` tag is used to describe parameters. The parameter specified by a `<param>` tag must exist and all parameters of the type member must be described in the documentation comment. If either condition is not true, the compiler issues a warning.
 
-The `cref` attribute can be attached to any tag to provide a reference to a code element. The code element must exist; at compile-time the compiler replaces the name with the ID string representing the member. If the code element does not exist, the compiler issues a warning. When looking for a name described in a `cref` attribute, the compiler respects `Imports` statements that appear within the containing source file.
+* The `cref` attribute can be attached to any tag to provide a reference to a code element. The code element must exist; at compile-time the compiler replaces the name with the ID string representing the member. If the code element does not exist, the compiler issues a warning. When looking for a name described in a `cref` attribute, the compiler respects `Imports` statements that appear within the containing source file.
 
-The `<summary>` tag is intended to be used by a documentation viewer to display additional information about a type or member.
+* The `<summary>` tag is intended to be used by a documentation viewer to display additional information about a type or member.
 
 Note that the documentation file does not provide full information about a type and members, only what is contained in the document comments. To get more information about a type or member, the documentation file must be used in conjunction with reflection on the actual type or member.
 
@@ -741,7 +741,7 @@ End Namespace
 "M:Acme.Widget.op_Addition(Acme.Widget,Acme.Widget)"
 ```
 
-Conversion operators have a trailing '~' followed by the return type.
+Conversion operators have a trailing `~` followed by the return type.
 
 ```vb
 Namespace Acme

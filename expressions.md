@@ -25,33 +25,33 @@ Expression
 
 Every expression is classified as one of the following:
 
-A value. Every value has an associated type.
+* *A value.* Every value has an associated type.
 
-A variable. Every variable has an associated type, namely the declared type of the variable.
+* *A variable.* Every variable has an associated type, namely the declared type of the variable.
 
-A namespace. An expression with this classification can only appear as the left side of a member access. In any other context, an expression classified as a namespace causes a compile-time error.
+* *A namespace.* An expression with this classification can only appear as the left side of a member access. In any other context, an expression classified as a namespace causes a compile-time error.
 
-A type. An expression with this classification can only appear as the left side of a member access. In any other context, an expression classified as a type causes a compile-time error.
+* *A type.* An expression with this classification can only appear as the left side of a member access. In any other context, an expression classified as a type causes a compile-time error.
 
-A method group, which is a set of methods overloaded on the same name. A method group may have an associated target expression and an associated type argument list.
+* *A method group,* which is a set of methods overloaded on the same name. A method group may have an associated target expression and an associated type argument list.
 
-A method pointer, which represents the location of a method. A method pointer may have an associated target expression and an associated type argument list.
+* *A method pointer,* which represents the location of a method. A method pointer may have an associated target expression and an associated type argument list.
 
-A lambda method, which is an anonymous method.
+* *A lambda method,* which is an anonymous method.
 
-A property group, which is a set of properties overloaded on the same name. A property group may have an associated target expression.
+* *A property group,* which is a set of properties overloaded on the same name. A property group may have an associated target expression.
 
-A property access. Every property access has an associated type, namely the type of the property. A property access may have an associated target expression.
+* *A property access.* Every property access has an associated type, namely the type of the property. A property access may have an associated target expression.
 
-A late-bound access, which represents a method or property access deferred until run-time. A late-bound access may have an associated target expression and an associated type argument list. The type of a late-bound access is always `Object`.
+* *A late-bound access,* which represents a method or property access deferred until run-time. A late-bound access may have an associated target expression and an associated type argument list. The type of a late-bound access is always `Object`.
 
-An event access. Every event access has an associated type, namely the type of the event. An event access may have an associated target expression. An event access may appear as the first argument of the `RaiseEvent`, `AddHandler`, and `RemoveHandler` statements. In any other context, an expression classified as an event access causes a compile-time error.
+* *An event access.* Every event access has an associated type, namely the type of the event. An event access may have an associated target expression. An event access may appear as the first argument of the `RaiseEvent`, `AddHandler`, and `RemoveHandler` statements. In any other context, an expression classified as an event access causes a compile-time error.
 
-An array literal, which represents the initial values of an array whose type has not yet been determined.
+* *An array literal,* which represents the initial values of an array whose type has not yet been determined.
 
-Void. This occurs when the expression is an invocation of a subroutine, or an await operator expression with no result. An expression classified as void is only valid in the context of an invocation statement or an await statement.
+* *Void.* This occurs when the expression is an invocation of a subroutine, or an await operator expression with no result. An expression classified as void is only valid in the context of an invocation statement or an await statement.
 
-A default value. Only the literal `Nothing` produces this classification.
+* *A default value.* Only the literal `Nothing` produces this classification.
 
 The final result of an expression is usually a value or a variable, with the other categories of expressions functioning as intermediate values that are only permitted in certain contexts.
 
@@ -65,11 +65,11 @@ If reclassification succeeds, then the reclassification is judged as widening or
 
 The following types of expressions can be reclassified:
 
-1.  A variable can be reclassified as a value. The value stored in the variable is fetched.
+* A variable can be reclassified as a value. The value stored in the variable is fetched.
 
-2.  A method group can be reclassified as a value. The method group expression is interpreted as an invocation expression with the associated target expression and type parameter list, and empty parentheses (that is, `f` is interpreted as `f()` and `f(Of Integer)` is interpreted as `f(Of Integer)()`). This reclassification may result in the expression being further reclassified as void.
+* A method group can be reclassified as a value. The method group expression is interpreted as an invocation expression with the associated target expression and type parameter list, and empty parentheses (that is, `f` is interpreted as `f()` and `f(Of Integer)` is interpreted as `f(Of Integer)()`). This reclassification may result in the expression being further reclassified as void.
 
-3.  A method pointer can be reclassified as a value. This reclassification can only occur in the context of a conversion where the target type is known. The method pointer expression is interpreted as the argument to a delegate instantiation expression of the appropriate type with the associated type argument list. For example:
+* A method pointer can be reclassified as a value. This reclassification can only occur in the context of a conversion where the target type is known. The method pointer expression is interpreted as the argument to a delegate instantiation expression of the appropriate type with the associated type argument list. For example:
     
     ```vb
     Delegate Sub D(i As Integer)
@@ -88,79 +88,79 @@ The following types of expressions can be reclassified:
     End Module
     ```
 
-4.  A lambda method can be reclassified as a value. If the reclassification occurs in the context of a conversion where the target type is known, then one of two reclassifications can occur:
+* A lambda method can be reclassified as a value. If the reclassification occurs in the context of a conversion where the target type is known, then one of two reclassifications can occur:
     
-    41. If the target type is a delegate type, the lambda method is interpreted as the argument to a delegate-construction expression of the appropriate type.
+  1. If the target type is a delegate type, the lambda method is interpreted as the argument to a delegate-construction expression of the appropriate type.
     
-    42. If the target type is `System.Linq.Expressions.Expression(Of T)`, and `T` is a delegate type, then the lambda method is interpreted as if it was being used in delegate-construction expression for `T` and then converted to an expression tree.
+  2. If the target type is `System.Linq.Expressions.Expression(Of T)`, and `T` is a delegate type, then the lambda method is interpreted as if it was being used in delegate-construction expression for `T` and then converted to an expression tree.
     
-    An async or iterator lambda method may only be interpreted as the argument to a delegate-construction expression, if the delegate has no ByRef parameters.
+  An async or iterator lambda method may only be interpreted as the argument to a delegate-construction expression, if the delegate has no ByRef parameters.
     
-    If conversion from any of the delegate's parameter types to the corresponding lambda parameter types is a narrowing conversion, then the reclassification is judged as narrowing; otherwise it is widening.
+  If conversion from any of the delegate's parameter types to the corresponding lambda parameter types is a narrowing conversion, then the reclassification is judged as narrowing; otherwise it is widening.
     
-    __Note.__ The exact translation between lambda methods and expression trees may not be fixed between versions of the compiler and is beyond the scope of this specification. For Microsoft Visual Basic 11.0, all lambda expressions may be converted to expression trees subject to the following restrictions: (1) 1.  Only single-line lambda expressions without ByRef parameters may be converted to expression trees. Of the single-line `Sub` lambdas, only invocation statements may be converted to expression trees. (2) Anonymous type expressions cannot be converted to expression trees if an earlier field initializer is used to initialize a subsequent field initializer, e.g. `New With {.a=1, .b=.a}`. (3) Object initializer expressions cannot be converted to expression trees if a member of the current object being initialized is used in one of the field initializers, e.g. `New C1 With {.a=1, .b=.Method1()}`. (4) Multi-dimensional array creation expressions can only be converted to expression trees if they declare their element type explicitly. (5) Late-binding expressions cannot be converted to expression trees. (6) When a variable or field is passed ByRef to an invocation expression but does not have exactly the same type as the ByRef parameter, or when a property is passed ByRef, normal VB semantics are that a copy of the argument is passed ByRef and its final value is then copied back into the variable or field or property. In expression trees, the copy-back does not happen. (7) All these restrictions apply to nested lambda expressions as well.
+  __Note.__ The exact translation between lambda methods and expression trees may not be fixed between versions of the compiler and is beyond the scope of this specification. For Microsoft Visual Basic 11.0, all lambda expressions may be converted to expression trees subject to the following restrictions: (1) 1.  Only single-line lambda expressions without ByRef parameters may be converted to expression trees. Of the single-line `Sub` lambdas, only invocation statements may be converted to expression trees. (2) Anonymous type expressions cannot be converted to expression trees if an earlier field initializer is used to initialize a subsequent field initializer, e.g. `New With {.a=1, .b=.a}`. (3) Object initializer expressions cannot be converted to expression trees if a member of the current object being initialized is used in one of the field initializers, e.g. `New C1 With {.a=1, .b=.Method1()}`. (4) Multi-dimensional array creation expressions can only be converted to expression trees if they declare their element type explicitly. (5) Late-binding expressions cannot be converted to expression trees. (6) When a variable or field is passed ByRef to an invocation expression but does not have exactly the same type as the ByRef parameter, or when a property is passed ByRef, normal VB semantics are that a copy of the argument is passed ByRef and its final value is then copied back into the variable or field or property. In expression trees, the copy-back does not happen. (7) All these restrictions apply to nested lambda expressions as well.
     
-    If the target type is not known, then the lambda method is interpreted as the argument to a delegate instantiation expression of an anonymous delegate type with the same signature of the lambda method. If strict semantics are being used and the type of any of the parameters are omitted, a compile-time error occurs; otherwise, `Object` is substituted for any missing parameter type. For example:
+  If the target type is not known, then the lambda method is interpreted as the argument to a delegate instantiation expression of an anonymous delegate type with the same signature of the lambda method. If strict semantics are being used and the type of any of the parameters are omitted, a compile-time error occurs; otherwise, `Object` is substituted for any missing parameter type. For example:
     
-    ```vb
-    Module Test
-        Sub Main()
-            ' Type of x will be equivalent to Func(Of Object, Object, Object)
-            Dim x = Function(a, b) a + b
-    
-            ' Type of y will be equivalent to Action(Of Object, Object)
-            Dim y = Sub(a, b) Console.WriteLine(a + b)
-        End Sub
-    End Module
-    ```
+  ```vb
+  Module Test
+      Sub Main()
+          ' Type of x will be equivalent to Func(Of Object, Object, Object)
+          Dim x = Function(a, b) a + b
+  
+          ' Type of y will be equivalent to Action(Of Object, Object)
+          Dim y = Sub(a, b) Console.WriteLine(a + b)
+      End Sub
+  End Module
+  ```
 
-5. A property group can be reclassified as a property access. The property group expression is interpreted as an index expression with empty parentheses (that is, `f` is interpreted as `f()`).
+* A property group can be reclassified as a property access. The property group expression is interpreted as an index expression with empty parentheses (that is, `f` is interpreted as `f()`).
 
-6. A property access can be reclassified as a value. The property access expression is interpreted as an invocation expression of the `Get` accessor of the property. If the property has no getter, then a compile-time error occurs.
+* A property access can be reclassified as a value. The property access expression is interpreted as an invocation expression of the `Get` accessor of the property. If the property has no getter, then a compile-time error occurs.
 
-7. A late-bound access can be reclassified as a late-bound method or late-bound property access. In a situation where a late-bound access can be reclassified both as a method access and as a property access, reclassification to a property access is preferred.
+* A late-bound access can be reclassified as a late-bound method or late-bound property access. In a situation where a late-bound access can be reclassified both as a method access and as a property access, reclassification to a property access is preferred.
 
-8. A late-bound access can be reclassified as a value.
+* A late-bound access can be reclassified as a value.
 
-9. An array literal can be reclassified as a value. The type of the value is determined as follows:
+* An array literal can be reclassified as a value. The type of the value is determined as follows:
 
-    91. If the reclassification occurs in the context of a conversion where the target type is known and the target type is an array type, then the array literal is reclassified as a value of type T(). If the target type is `System.Collections.Generic.IList(Of T)`, `IReadOnlyList(Of T)`, `ICollection(Of T)`, `IReadOnlyCollection(Of T)`, or `IEnumerable(Of T)`, and the array literal has one level of nesting, then the array literal is reclassified as a value of type `T()`.
+  1. If the reclassification occurs in the context of a conversion where the target type is known and the target type is an array type, then the array literal is reclassified as a value of type T(). If the target type is `System.Collections.Generic.IList(Of T)`, `IReadOnlyList(Of T)`, `ICollection(Of T)`, `IReadOnlyCollection(Of T)`, or `IEnumerable(Of T)`, and the array literal has one level of nesting, then the array literal is reclassified as a value of type `T()`.
 
-    92. Otherwise, the array literal is reclassified to a value whose type is an array of rank equal to the level of nesting is used, with element type determined by the dominant type of the elements in the initializer; if no dominant type can be determined, `Object` is used. For example:
+  2. Otherwise, the array literal is reclassified to a value whose type is an array of rank equal to the level of nesting is used, with element type determined by the dominant type of the elements in the initializer; if no dominant type can be determined, `Object` is used. For example:
 
-        ```vb
-        ' x Is GetType(Double(,,))
-        Dim x = { { { 1, 2.0 }, { 3, 4 } }, { { 5, 6 }, { 7, 8 } } }.GetType()
+     ```vb
+     ' x Is GetType(Double(,,))
+     Dim x = { { { 1, 2.0 }, { 3, 4 } }, { { 5, 6 }, { 7, 8 } } }.GetType()
         
-        ' y Is GetType(Integer())
-        Dim y = { 1, 2, 3 }.GetType()
+     ' y Is GetType(Integer())
+     Dim y = { 1, 2, 3 }.GetType()
         
-        ' z Is GetType(Object())
-        Dim z = { 1, "2" }.GetType()
+     ' z Is GetType(Object())
+     Dim z = { 1, "2" }.GetType()
         
-        ' Error: Inconsistent nesting
-        Dim a = { { 10 }, { 20, 30 } }.GetType()
-        ```
+     ' Error: Inconsistent nesting
+     Dim a = { { 10 }, { 20, 30 } }.GetType()
+     ```
 
-    __Note.__ There is a slight change in behavior between version 9.0 and version 10.0 of the language. Prior to 10.0, array element initializers did not affect local variable type inference and now they do. So `Dim a() = { 1, 2, 3 }` would have inferred `Object()` as the type of `a` in version 9.0 of the language and `Integer()` in version 10.0.
+  __Note.__ There is a slight change in behavior between version 9.0 and version 10.0 of the language. Prior to 10.0, array element initializers did not affect local variable type inference and now they do. So `Dim a() = { 1, 2, 3 }` would have inferred `Object()` as the type of `a` in version 9.0 of the language and `Integer()` in version 10.0.
 
-    The reclassification then reinterprets the array literal as an array-creation expression. So the examples:
+  The reclassification then reinterprets the array literal as an array-creation expression. So the examples:
 
-    ```vb
-    Dim x As Double = { 1, 2, 3, 4 }
-    Dim y = { "a", "b" }
-    ```
+  ```vb
+  Dim x As Double = { 1, 2, 3, 4 }
+  Dim y = { "a", "b" }
+  ```
 
-    are equivalent to:
+  are equivalent to:
 
-    ```vb
-    Dim x As Double = New Double() { 1, 2, 3, 4 }
-    Dim y = New String() { "a", "b" }
-    ```
+  ```vb
+  Dim x As Double = New Double() { 1, 2, 3, 4 }
+  Dim y = New String() { "a", "b" }
+  ```
 
-    The reclassification is judged as narrowing if any conversion from an element expression to the array element type is narrowing; otherwise it is judged as widening.
+  The reclassification is judged as narrowing if any conversion from an element expression to the array element type is narrowing; otherwise it is judged as widening.
 
-10. The default value `Nothing` can be reclassified as a value. In a context where the target type is known, the result is the default value of the target type. In a context where the target type is not known, the result is a null value of type `Object`.
+* The default value `Nothing` can be reclassified as a value. In a context where the target type is known, the result is the default value of the target type. In a context where the target type is not known, the result is a null value of type `Object`.
 
 A namespace expression, type expression, event access expression, or void expression cannot be reclassified. Multiple reclassifications can be done at the same time. For example:
 
@@ -184,45 +184,40 @@ In this case, the property group expression `P` is first reclassified from a pro
 
 ## Constant Expressions
 
-A *constant expression* is an expression whose value can be fully evaluated at compile time. The type of a constant expression can be `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, `Long`, `Char`, `Single`, `Double`, `Decimal`, `Date`, `Boolean`, `String`, `Object`, or any enumeration type. The following constructs are permitted in constant expressions:
-
-Literals (including `Nothing`).
-
-References to constant type members or constant locals.
-
-References to members of enumeration types.
-
-Parenthesized subexpressions.
-
-Coercion expressions, provided the target type is one of the types listed above. Coercions to and from `String` are an exception to this rule and are only allowed on null values because `String` conversions are always done in the current culture of the execution environment at run time. Note that constant coercion expressions can only ever use intrinsic conversions.
-
-The `+`, `-` and `Not` unary operators, provided the operand and result is of a type listed above.
-
-The `+`, `-`, `*`, `^`, `Mod`, `/`, `\`, `<<`, `>>`, `&`, `And`, `Or`, `Xor`, `AndAlso`, `OrElse`, `=`, `<`, `>`, `<>`, `<=`, and `=>` binary operators, provided each operand and result is of a type listed above.
-
-The conditional operator If, provided each operand and result is of a type listed above.
-
-The following run-time functions:
-
-`Microsoft.VisualBasic.Strings.ChrW`
-
-`Microsoft.VisualBasic.Strings.Chr`, if the constant value is between 0 and 128
-
-`Microsoft.VisualBasic.Strings.AscW`, if the constant string is not empty
-
-`Microsoft.VisualBasic.Strings.Asc`, if the constant string is not empty
-
-The following constructs are *not* permitted in constant expressions:
-
-Implicit binding through a `With` context.
-
-Constant expressions of an integral type (`ULong`, `Long`, `UInteger`, `Integer`, `UShort`, `Short`, `SByte`, or `Byte`) can be implicitly converted to a narrower integral type, and constant expressions of type `Double` can be implicitly converted to `Single`, provided the value of the constant expression is within the range of the destination type. These narrowing conversions are allowed regardless of whether permissive or strict semantics are being used.
+A *constant expression* is an expression whose value can be fully evaluated at compile time.
 
 ```antlr
 ConstantExpression
     : Expression
     ;
 ```
+
+The type of a constant expression can be `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, `Long`, `Char`, `Single`, `Double`, `Decimal`, `Date`, `Boolean`, `String`, `Object`, or any enumeration type. The following constructs are permitted in constant expressions:
+
+* Literals (including `Nothing`).
+
+* References to constant type members or constant locals.
+
+* References to members of enumeration types.
+
+* Parenthesized subexpressions.
+
+* Coercion expressions, provided the target type is one of the types listed above. Coercions to and from `String` are an exception to this rule and are only allowed on null values because `String` conversions are always done in the current culture of the execution environment at run time. Note that constant coercion expressions can only ever use intrinsic conversions.
+
+* The `+`, `-` and `Not` unary operators, provided the operand and result is of a type listed above.
+
+* The `+`, `-`, `*`, `^`, `Mod`, `/`, `\`, `<<`, `>>`, `&`, `And`, `Or`, `Xor`, `AndAlso`, `OrElse`, `=`, `<`, `>`, `<>`, `<=`, and `=>` binary operators, provided each operand and result is of a type listed above.
+
+* The conditional operator If, provided each operand and result is of a type listed above.
+
+* The following run-time functions: `Microsoft.VisualBasic.Strings.ChrW`; `Microsoft.VisualBasic.Strings.Chr` if the constant value is between 0 and 128; `Microsoft.VisualBasic.Strings.AscW` if the constant string is not empty; `Microsoft.VisualBasic.Strings.Asc` if the constant string is not empty.
+
+The following constructs are *not* permitted in constant expressions:
+
+* Implicit binding through a `With` context.
+
+Constant expressions of an integral type (`ULong`, `Long`, `UInteger`, `Integer`, `UShort`, `Short`, `SByte`, or `Byte`) can be implicitly converted to a narrower integral type, and constant expressions of type `Double` can be implicitly converted to `Single`, provided the value of the constant expression is within the range of the destination type. These narrowing conversions are allowed regardless of whether permissive or strict semantics are being used.
+
 
 ## Late-Bound Expressions
 
@@ -345,7 +340,15 @@ InstanceExpression
 
 ### Simple Name Expressions
 
-A *simple name expression* consists of a single identifier followed by an optional type argument list. The name is resolved and classified by the following "simple name resolution rules":
+A *simple name expression* consists of a single identifier followed by an optional type argument list.
+
+```antlr
+SimpleNameExpression
+    : Identifier ( OpenParenthesis 'Of' TypeArgumentList CloseParenthesis )?
+    ;
+```
+
+The name is resolved and classified by the following "simple name resolution rules":
 
 1.  Starting with the immediately enclosing block and continuing with each enclosing outer block (if any), if the identifier matches the name of a local variable, static variable, constant local, method type parameter, or parameter, then the identifier refers to the matching entity.
 
@@ -387,11 +390,6 @@ A simple name expression that is undefined is a compile-time error.
 
 Normally, a name can only occur once in a particular namespace. However, because namespaces can be declared across multiple .NET assemblies, it is possible to have a situation where two assemblies define a type with the same fully qualified name. In that case, a type declared in the current set of source files is preferred over a type declared in an external .NET assembly. Otherwise, the name is ambiguous and there is no way to disambiguate the name.
 
-```antlr
-SimpleNameExpression
-    : Identifier ( OpenParenthesis 'Of' TypeArgumentList CloseParenthesis )?
-    ;
-```
 
 ### AddressOf Expressions
 
@@ -420,38 +418,7 @@ TypeExpression
 
 ### GetType Expressions
 
-A `GetType` expression consists of the keyword `GetType` and the name of a type. A type expression is classified as a value, and the value of the expression is the reflection (`System.Type`) class that represents that type. If the expression is a type parameter, the expression will return the `System.Type` object that corresponds to the type argument supplied for the type parameter at run-time.
-
-The type name in a `GetType` expression is special in two ways:
-
-The type name is allowed to be `System.Void`, the only place in the language where this type name may be referenced.
-
-The type name may be a constructed generic type with the type arguments omitted. This allows the `GetType` expression to return the `System.Type` object that corresponds to the generic type itself.
-
-The following example demonstrates the `GetType` expression:
-
-```vb
-Module Test
-    Sub Main()
-        Dim t As Type() = { GetType(Integer), GetType(System.Int32), _
-            GetType(String), GetType(Double()) }
-        Dim i As Integer
-
-        For i = 0 To t.Length - 1
-            Console.WriteLine(t(i).Name)
-        Next i
-    End Sub
-End Module
-```
-
-The resulting output is:
-
-```
-Int32
-Int32
-String
-Double[]
-```
+A `GetType` expression consists of the keyword `GetType` and the name of a type.
 
 ```antlr
 GetTypeExpression
@@ -478,6 +445,40 @@ CommaList
     ;
 ```
 
+A `GetType` expression is classified as a value, and its value is the reflection (`System.Type`) class that represents its *GetTypeTypeName*. If the *GetTypeTypeName* is a type parameter, the expression will return the `System.Type` object that corresponds to the type argument supplied for the type parameter at run-time.
+
+The *GetTypeTypeName* is special in two ways:
+
+* It is allowed to be `System.Void`, the only place in the language where this type name may be referenced.
+
+* It may be a constructed generic type with the type arguments omitted. This allows the `GetType` expression to return the `System.Type` object that corresponds to the generic type itself.
+
+The following example demonstrates the `GetType` expression:
+
+```vb
+Module Test
+    Sub Main()
+        Dim t As Type() = { GetType(Integer), GetType(System.Int32), _
+            GetType(String), GetType(Double()) }
+        Dim i As Integer
+
+        For i = 0 To t.Length - 1
+            Console.WriteLine(t(i).Name)
+        Next i
+    End Sub
+End Module
+```
+
+The resulting output is:
+
+```
+Int32
+Int32
+String
+Double[]
+```
+
+
 ### TypeOf...Is Expressions
 
 A `TypeOf...Is` expression is used to check whether the run-time type of a value is compatible with a given type. The first operand must be classified as a value, cannot be a reclassified lambda method, and must be of a reference type or an unconstrained type parameter type. The second operand must be a type name. The result of the expression is classified as a value and is a `Boolean` value. The expression evaluates to `True` if the run-time type of the operand has an identity, default, reference, array, value type, or type parameter conversion to the type, `False` otherwise. A compile-time error occurs if no conversion exists between the type of the expression and the specific type.
@@ -490,9 +491,7 @@ TypeOfIsExpression
 
 ### Is Expressions
 
-An `Is` or `IsNot` expression is used to do a reference equality comparison. Each expression must be classified as a value and the type of each expression must be a reference type, an unconstrained type parameter type, or a nullable value type. If the type of one expression is an unconstrained type parameter type or nullable value type, however, the other expression must be the literal `Nothing`.
-
-The result is classified as a value and is typed as `Boolean`. An `Is` operation evaluates to `True` if both values refer to the same instance or both values are `Nothing`, or `False` otherwise. An `IsNot` operation evaluates to `False` if both values refer to the same instance or both values are `Nothing`, or `True` otherwise.
+An `Is` or `IsNot` expression is used to do a reference equality comparison.
 
 ```antlr
 IsExpression
@@ -501,9 +500,22 @@ IsExpression
     ;
 ```
 
+Each expression must be classified as a value and the type of each expression must be a reference type, an unconstrained type parameter type, or a nullable value type. If the type of one expression is an unconstrained type parameter type or nullable value type, however, the other expression must be the literal `Nothing`.
+
+The result is classified as a value and is typed as `Boolean`. An `Is` operation evaluates to `True` if both values refer to the same instance or both values are `Nothing`, or `False` otherwise. An `IsNot` operation evaluates to `False` if both values refer to the same instance or both values are `Nothing`, or `True` otherwise.
+
+
 ### GetXmlNamespace Expressions
 
-A `GetXmlNamespace` expression consists of the keyword `GetXmlNamespace` and the name of an XML namespace declared by the source file or compilation environment. An XML namespace expression is classified as a value, and the value of the expression is an instance of `System.Xml.Linq.XNamespace` that represents that XML namespace. If that type is not available, then a compile-time error will occur.
+A `GetXmlNamespace` expression consists of the keyword `GetXmlNamespace` and the name of an XML namespace declared by the source file or compilation environment.
+
+```antlr
+GetXmlNamespaceExpression
+    : 'GetXmlNamespace' OpenParenthesis XMLNamespaceName? CloseParenthesis
+    ;
+```
+
+An `GetXmlNamespace` expression is classified as a value, and its value is an instance of `System.Xml.Linq.XNamespace` that represents the *XMLNamespaceName*. If that type is not available, then a compile-time error will occur.
 
 For example:
 
@@ -545,15 +557,27 @@ End Module
 
 The XML namespace expression can also be omitted, in which case the expression returns the object that represents the default XML namespace.
 
-```antlr
-GetXmlNamespaceExpression
-    : 'GetXmlNamespace' OpenParenthesis XMLNamespaceName? CloseParenthesis
-    ;
-```
 
 ## Member Access Expressions
 
-A member access expression is used to access a member of an entity. A member access of the form `E.I(Of A)`, where `E` is an expression, a non-array type name, the keyword `Global`, or omitted and `I` is an identifier with an optional type argument list `A`, is evaluated and classified as follows:
+A member access expression is used to access a member of an entity.
+
+```antlr
+MemberAccessExpression
+    : MemberAccessBase? Period IdentifierOrKeyword
+      ( OpenParenthesis 'Of' TypeArgumentList CloseParenthesis )?
+    ;
+
+MemberAccessBase
+    : Expression
+    | NonArrayTypeName
+    | 'Global'
+    | 'MyClass'
+    | 'MyBase'
+    ;
+```
+
+A member access of the form `E.I(Of A)`, where `E` is an expression, a non-array type name, the keyword `Global`, or omitted and `I` is an identifier with an optional type argument list `A`, is evaluated and classified as follows:
 
 1. If `E` is omitted, then the expression from the immediately containing `With` statement is substituted for `E` and the member access is performed. If there is no containing `With` statement, a compile-time error occurs.
 
@@ -682,20 +706,6 @@ End Module
 
 It prints `The value of F is: 10` because the function `ReturnC` does not need to be called to provide an instance of `C` to access the shared member `F`.
 
-```antlr
-MemberAccessExpression
-    : MemberAccessBase? Period IdentifierOrKeyword
-      ( OpenParenthesis 'Of' TypeArgumentList CloseParenthesis )?
-    ;
-
-MemberAccessBase
-    : Expression
-    | NonArrayTypeName
-    | 'Global'
-    | 'MyClass'
-    | 'MyBase'
-    ;
-```
 
 ### Identical Type and Member Names
 
@@ -807,13 +817,13 @@ Note that the meaning of `E.I` were `E` represents a class and `I` represents a 
 
 The `Microsoft.VisualBasic.MyGroupCollectionAttribute` attribute indicates the group class for a family of default instances. The attribute has four parameters:
 
-The parameter `TypeToCollect` specifies the base class for the group. All instantiable classes without open type parameters that derive from a type with this name (regardless of type parameters) will automatically have a default instance.
+* The parameter `TypeToCollect` specifies the base class for the group. All instantiable classes without open type parameters that derive from a type with this name (regardless of type parameters) will automatically have a default instance.
 
-The parameter `CreateInstanceMethodName` specifies the method to call in the group class to create a new instance in a default instance property.
+* The parameter `CreateInstanceMethodName` specifies the method to call in the group class to create a new instance in a default instance property.
 
-The parameter `DisposeInstanceMethodName` specifies the method to call in the group class to dispose of a default instance property if the default instance property is assigned the value `Nothing`.
+* The parameter `DisposeInstanceMethodName` specifies the method to call in the group class to dispose of a default instance property if the default instance property is assigned the value `Nothing`.
 
-The parameter `DefaultInstanceAlias` specifics the expression `E'` to substitute for the class name if the default instances are accessible directly through their type name. If this parameter is `Nothing` or an empty string, default instances on this group type are not accessible directly through their type's name. (__Note.__ In all current implementations of the Visual Basic language, the `DefaultInstanceAlias` parameter is ignored, except in compiler-provided code.)
+* The parameter `DefaultInstanceAlias` specifics the expression `E'` to substitute for the class name if the default instances are accessible directly through their type name. If this parameter is `Nothing` or an empty string, default instances on this group type are not accessible directly through their type's name. (__Note.__ In all current implementations of the Visual Basic language, the `DefaultInstanceAlias` parameter is ignored, except in compiler-provided code.)
 
 Multiple types can be collected into the same group by separating the names of the types and methods in the first three parameters using commas. There must be the same number of items in each parameter, and the list elements are matched in order. For example, the following attribute declaration collects types that derive from `C1`, `C2` or `C3` into a single group:
 
@@ -1084,7 +1094,15 @@ End Module
 
 ## Dictionary Member Access Expressions
 
-A *dictionary member access expression* is used to look up a member of a collection. A dictionary member access takes the form of `E!I`, where `E` is an expression that is classified as a value and `I` is an identifier. The type of the expression must have a default property indexed by a single `String` parameter. The dictionary member access expression `E!I` is transformed into the expression `E.D("I")`, where `D` is the default property of `E`. For example:
+A *dictionary member access expression* is used to look up a member of a collection. A dictionary member access takes the form of `E!I`, where `E` is an expression that is classified as a value and `I` is an identifier.
+
+```antlr
+DictionaryAccessExpression
+    : Expression? '!' IdentifierOrKeyword
+    ;
+```
+
+The type of the expression must have a default property indexed by a single `String` parameter. The dictionary member access expression `E!I` is transformed into the expression `E.D("I")`, where `D` is the default property of `E`. For example:
 
 ```vb
 Class Keys
@@ -1108,15 +1126,33 @@ End Module
 
 If an exclamation point is specified with no expression, the expression from the immediately containing `With` statement is assumed. If there is no containing `With` statement, a compile-time error occurs.
 
-```antlr
-DictionaryAccessExpression
-    : Expression? '!' IdentifierOrKeyword
-    ;
-```
 
 ## Invocation Expressions
 
-An invocation expression consists of an invocation target and an optional argument list. The target expression must be classified as a method group or a value whose type is a delegate type. If the target expression is a value whose type is a delegate type, then the target of the invocation expression becomes the method group for the `Invoke` member of the delegate type and the target expression becomes the associated target expression of the method group.
+An invocation expression consists of an invocation target and an optional argument list.
+
+```antlr
+InvocationExpression
+    : Expression ( OpenParenthesis ArgumentList? CloseParenthesis )?
+    ;
+
+ArgumentList
+    : PositionalArgumentList
+    | PositionalArgumentList Comma NamedArgumentList
+    | NamedArgumentList
+    ;
+
+PositionalArgumentList
+    : Expression? ( Comma Expression? )*
+    ;
+
+NamedArgumentList
+    : IdentifierOrKeyword ColonEquals Expression
+      ( Comma IdentifierOrKeyword ColonEquals Expression )*
+    ;
+```
+
+The target expression must be classified as a method group or a value whose type is a delegate type. If the target expression is a value whose type is a delegate type, then the target of the invocation expression becomes the method group for the `Invoke` member of the delegate type and the target expression becomes the associated target expression of the method group.
 
 An argument list has two sections: positional arguments and named arguments. *Positional arguments* are expressions and must precede any named arguments. *Named arguments* start with an identifier that can match keywords, followed by `:=` and an expression.
 
@@ -1143,26 +1179,6 @@ Otherwise, overload resolution is applied to the methods to pick the most applic
 
 For an early-bound invocation expression, the arguments are evaluated in the order in which the corresponding parameters are declared in the target method. For a late-bound member access expression, they are evaluated in the order in which they appear in the member access expression: see Section [Late-Bound Expressions](expressions.md#late-bound-expressions).
 
-```antlr
-InvocationExpression
-    : Expression ( OpenParenthesis ArgumentList? CloseParenthesis )?
-    ;
-
-ArgumentList
-    : PositionalArgumentList
-    | PositionalArgumentList Comma NamedArgumentList
-    | NamedArgumentList
-    ;
-
-PositionalArgumentList
-    : Expression? ( Comma Expression? )*
-    ;
-
-NamedArgumentList
-    : IdentifierOrKeyword ColonEquals Expression
-      ( Comma IdentifierOrKeyword ColonEquals Expression )*
-    ;
-```
 
 ### Overloaded Method Resolution
 
@@ -1516,24 +1532,16 @@ __Note.__ Two members can end up in a method group with the same signature due t
 
 A member `M` is considered *more specific* than `N` if their signatures are different and at least one parameter type in `M` is more specific than a parameter type in `N`, and no parameter type in `N` is more specific than a parameter type in `M`. Given a pair of parameters `Mj` and `Nj` that matches an argument `Aj`, the type of `Mj` is considered *more specific* than the type of `Nj` if one of the following conditions is true:
 
-1.  There exists a widening conversion from the type of `Mj` to the type `Nj`, or
-    
-    (__Note.__ Because parameters types are being compared without regard to the actual argument in this case, the widening conversion from constant expressions to a numeric type the value fits into is not considered in this case.)
+* There exists a widening conversion from the type of `Mj` to the type `Nj`. (__Note.__ Because parameters types are being compared without regard to the actual argument in this case, the widening conversion from constant expressions to a numeric type the value fits into is not considered in this case.)
 
-2.  `Aj` is the literal `0`, `Mj` is a numeric type and `Nj` is an enumerated type, or
-    
-    (__Note.__ This rule is necessary because the literal `0` widens to any enumerated type. Since an enumerated type widens to its underlying type, this means that overload resolution on `0` will, by default, prefer enumerated types over numeric types. We received a lot of feedback that this behavior was counterintuitive.)
+* `Aj` is the literal `0`, `Mj` is a numeric type and `Nj` is an enumerated type. (__Note.__ This rule is necessary because the literal `0` widens to any enumerated type. Since an enumerated type widens to its underlying type, this means that overload resolution on `0` will, by default, prefer enumerated types over numeric types. We received a lot of feedback that this behavior was counterintuitive.)
 
-3.  `Mj` and `Nj` are both numeric types, and `Mj` comes earlier than `Nj` in the list
-`Byte`, `SByte`, `Short`, `UShort`, `Integer`, `UInteger`, `Long`, `ULong`, `Decimal`, `Single`, `Double`
-    
-    (__Note.__ The rule about the numeric types is useful because the signed and unsigned numeric types of a particular size only have narrowing conversions between them. The above rule breaks the tie between the two types in favor of the more "natural" numeric type. This is particularly important when doing overload resolution on a type that widens to both the signed and unsigned numeric types of a particular size, for example, a numeric literal that fits into both.)
+* `Mj` and `Nj` are both numeric types, and `Mj` comes earlier than `Nj` in the list
+`Byte`, `SByte`, `Short`, `UShort`, `Integer`, `UInteger`, `Long`, `ULong`, `Decimal`, `Single`, `Double`. (__Note.__ The rule about the numeric types is useful because the signed and unsigned numeric types of a particular size only have narrowing conversions between them. The above rule breaks the tie between the two types in favor of the more "natural" numeric type. This is particularly important when doing overload resolution on a type that widens to both the signed and unsigned numeric types of a particular size, for example, a numeric literal that fits into both.)
 
-4.  `Mj` and `Nj` are delegate function types and the return type of `Mj` is more specific than the return type of `Nj` If `Aj` is classified as a lambda method, and `Mj` or `Nj` is `System.Linq.Expressions.Expression(Of T)`, then the type argument of the type (assuming it is a delegate type) is substituted for the type being compared.
+* `Mj` and `Nj` are delegate function types and the return type of `Mj` is more specific than the return type of `Nj` If `Aj` is classified as a lambda method, and `Mj` or `Nj` is `System.Linq.Expressions.Expression(Of T)`, then the type argument of the type (assuming it is a delegate type) is substituted for the type being compared.
 
-5.  `Mj` is identical to the type of `Aj`, and `Nj` is not.
-    
-    (__Note.__ It is interesting to note that the previous rule differs slightly from C#, in that C# requires that the delegate function types have identical parameter lists before comparing return types, while Visual Basic does not.)
+* `Mj` is identical to the type of `Aj`, and `Nj` is not. (__Note.__ It is interesting to note that the previous rule differs slightly from C#, in that C# requires that the delegate function types have identical parameter lists before comparing return types, while Visual Basic does not.)
 
 #### Genericity
 
@@ -1601,9 +1609,11 @@ End Module
 
 A member `M` is determined to have *greater depth of genericity* than a member `N` if, for each pair of matching parameters  `Mj` and `Nj`, `Mj` has greater or equal *depth of genericity* than `Nj`, and at least one `Mj` is has greater depth of genericity. Depth of genericity is defined as follows:
 
-1. Anything other than a type parameter has greater depth of genericity than a type parameter;
-2. Recursively, a constructed type has greater depth of genericity than another constructed type (with the same number of type arguments) if at least one type argument has greater depth of genericity and no type argument has less depth than the corresponding type argument in the other.
-3. An array type has greater depth of genericity than another array type (with the same number of dimensions) if the element type of the first has greater depth of genericity than the element type of the second.
+* Anything other than a type parameter has greater depth of genericity than a type parameter;
+
+* Recursively, a constructed type has greater depth of genericity than another constructed type (with the same number of type arguments) if at least one type argument has greater depth of genericity and no type argument has less depth than the corresponding type argument in the other.
+
+* An array type has greater depth of genericity than another array type (with the same number of dimensions) if the element type of the first has greater depth of genericity than the element type of the second.
 
 For example:
 
@@ -1695,9 +1705,11 @@ Otherwise, if the matching argument expression is classified as a variable, valu
 
 For optional parameters where an argument has not been provided, the compiler picks arguments as described below. In all cases it tests against the parameter type after generic type substitution.
 
-1. If the optional parameter has the attribute `System.Runtime.CompilerServices.CallerLineNumber`, and the invocation is from a location in source code, and a numeric literal representing that location's line number has an intrinsic conversion to the parameter type, then the numeric literal is used. If the invocation spans multiple lines, then the choice of which line to use is implementation-dependent.
-2. If the optional parameter has the attribute `System.Runtime.CompilerServices.CallerFilePath`, and the invocation is from a location in source code, and a string literal representing that location's file path has an intrinsic conversion to the parameter type, then the string literal is used. The format of the file path is implementation-dependent.
-3. If the optional parameter has the attribute `System.Runtime.CompilerServices.CallerMemberName`, and the invocation is within the body of a type member or in an attribute applied to any part of that type member, and a string literal representing that member name has an intrinsic conversion to the parameter type, then the string literal is used. For invocations that are part of property accessors or custom event handlers, then the member name used is that of the property or event itself. For invocations that are part of an operator or constructor, then an implementation-specific name is used.
+* If the optional parameter has the attribute `System.Runtime.CompilerServices.CallerLineNumber`, and the invocation is from a location in source code, and a numeric literal representing that location's line number has an intrinsic conversion to the parameter type, then the numeric literal is used. If the invocation spans multiple lines, then the choice of which line to use is implementation-dependent.
+
+* If the optional parameter has the attribute `System.Runtime.CompilerServices.CallerFilePath`, and the invocation is from a location in source code, and a string literal representing that location's file path has an intrinsic conversion to the parameter type, then the string literal is used. The format of the file path is implementation-dependent.
+
+* If the optional parameter has the attribute `System.Runtime.CompilerServices.CallerMemberName`, and the invocation is within the body of a type member or in an attribute applied to any part of that type member, and a string literal representing that member name has an intrinsic conversion to the parameter type, then the string literal is used. For invocations that are part of property accessors or custom event handlers, then the member name used is that of the property or event itself. For invocations that are part of an operator or constructor, then an implementation-specific name is used.
 
 If none of the above apply, then the optional parameter's default value is used (or `Nothing` if no default value is supplied). And if more than one of the above apply, then the choice of which to use is implementation-dependent.
 
@@ -1776,86 +1788,72 @@ Through type argument inference, the type arguments `Integer` and `String` are d
 
 Type argument inference occurs *before* expression reclassification is performed on lambda methods or method pointers in the argument list, since reclassification of those two kinds of expressions may require the type of the parameter to be known.  Given a set of arguments `A1,...,An`, a set of matching parameters `P1,...,Pn` and a set of method type parameters `T1,...,Tn`, the dependencies between the arguments and method type parameters are first collected as follows:
 
-If `An` is the `Nothing` literal, no dependencies are generated.
+* If `An` is the `Nothing` literal, no dependencies are generated.
 
-If `An` is a lambda method and the type of `Pn` is a constructed delegate type or `System.Linq.Expressions.Expression(Of T)`, where `T` is a constructed delegate type,
+* If `An` is a lambda method and the type of `Pn` is a constructed delegate type or `System.Linq.Expressions.Expression(Of T)`, where `T` is a constructed delegate type,
 
-If the type of a lambda method parameter will be inferred from the type of the corresponding parameter `Pn`, and the type of the parameter depends on a method type parameter `Tn`, then `An` has a dependency on `Tn`.
+* If the type of a lambda method parameter will be inferred from the type of the corresponding parameter `Pn`, and the type of the parameter depends on a method type parameter `Tn`, then `An` has a dependency on `Tn`.
 
-If the type of a lambda method parameter is specified and the type of the corresponding parameter `Pn` depends on a method type parameter `Tn`, then `Tn` has a dependency on `An`.
+* If the type of a lambda method parameter is specified and the type of the corresponding parameter `Pn` depends on a method type parameter `Tn`, then `Tn` has a dependency on `An`.
 
-If the return type of `Pn` depends on a method type parameter `Tn`, then `Tn` has a dependency on `An`.
+* If the return type of `Pn` depends on a method type parameter `Tn`, then `Tn` has a dependency on `An`.
 
-If `An` is a method pointer and the type of `Pn` is a constructed delegate type,
+* If `An` is a method pointer and the type of `Pn` is a constructed delegate type,
 
-If the return type of `Pn` depends on a method type parameter `Tn`, then `Tn` has a dependency on `An`.
+* If the return type of `Pn` depends on a method type parameter `Tn`, then `Tn` has a dependency on `An`.
 
-If `Pn` is a constructed type and the type of `Pn` depends on a method type parameter `Tn`, then `Tn` has a dependency on `An`.
+* If `Pn` is a constructed type and the type of `Pn` depends on a method type parameter `Tn`, then `Tn` has a dependency on `An`.
 
-Otherwise, no dependency is generated.
+* Otherwise, no dependency is generated.
 
 After collecting dependencies, any arguments that have no dependencies are eliminated. If any method type parameters have no outgoing dependencies (i.e. the method type parameter does not depend on an argument), then type inference fails. Otherwise, the remaining arguments and method type parameters are grouped into strongly connected components. A strongly connected component is a set of arguments and method type parameters, where any element in the component is reachable via dependencies on other elements.
 
 The strongly connected components are then topologically sorted and processed in topological order:
 
-If the strongly typed component contains only one element,
+* If the strongly typed component contains only one element,
 
-If the element has already been marked complete, skip it.
+  * If the element has already been marked complete, skip it.
 
-If the element is an argument, then add type hints from the argument to the method type parameters that depend on it and mark the element as complete. If the argument is a lambda method with parameters that still need inferred types, then infer `Object` for the types of those parameters.
+  * If the element is an argument, then add type hints from the argument to the method type parameters that depend on it and mark the element as complete. If the argument is a lambda method with parameters that still need inferred types, then infer `Object` for the types of those parameters.
 
-If the element is a method type parameter, then infer the method type parameter to be the dominant type among the argument type hints and mark the element as complete. If a type hint has an array element restriction on it, then only conversions that are valid between arrays of the given type are considered (i.e. covariant and intrinsic array conversions). If a type hint has a generic argument restriction on it, then only identity conversions are considered. If no dominant type can be chosen, inference fails. If any lambda method argument types depend on this method type parameter, the type is propagated to the lambda method.
+  * If the element is a method type parameter, then infer the method type parameter to be the dominant type among the argument type hints and mark the element as complete. If a type hint has an array element restriction on it, then only conversions that are valid between arrays of the given type are considered (i.e. covariant and intrinsic array conversions). If a type hint has a generic argument restriction on it, then only identity conversions are considered. If no dominant type can be chosen, inference fails. If any lambda method argument types depend on this method type parameter, the type is propagated to the lambda method.
 
-If the strongly typed component contains more than one element, then the component contains a cycle.
+* If the strongly typed component contains more than one element, then the component contains a cycle.
 
-For each method type parameter that is an element in the component, if the method type parameter depends on an argument that is not marked complete, convert that dependency into an assertion that will be checked at the end of the inference process.
+  * For each method type parameter that is an element in the component, if the method type parameter depends on an argument that is not marked complete, convert that dependency into an assertion that will be checked at the end of the inference process.
 
-Restart the inference process at the point at which the strongly typed components were determined.
+  * Restart the inference process at the point at which the strongly typed components were determined.
 
 If type inference succeeds for all of the method type parameters, then any dependencies that were changed into assertions are checked. An assertion succeeds if the type of the argument is implicitly convertible to the inferred type of the method type parameter. If an assertion fails, then type argument inference fails.
 
 Given an argument type `Ta` for an argument `A` and a parameter type `Tp` for a parameter `P`, type hints are generated as follows:
 
-If `Tp` does not involve any method type parameters then no hints are generated.
+* If `Tp` does not involve any method type parameters then no hints are generated.
 
-If `Tp` and `Ta` are array types of the same rank, then replace `Ta` and `Tp` with the element types of `Ta` and `Tp` and restart this process with an array element restriction.
+* If `Tp` and `Ta` are array types of the same rank, then replace `Ta` and `Tp` with the element types of `Ta` and `Tp` and restart this process with an array element restriction.
 
-If `Tp` is a method type parameter, then `Ta` is added as a type hint with the current restriction, if any.
+* If `Tp` is a method type parameter, then `Ta` is added as a type hint with the current restriction, if any.
 
-If `A` is a lambda method and `Tp` is a constructed delegate type or `System.Linq.Expressions.Expression(Of T)`, where `T` is a constructed delegate type, for each lambda method parameter type `TL` and corresponding delegate parameter type `TD`, replace `Ta` with `TL` and `Tp` with `TD` and restart the process with no restriction. Then, replace `Ta` with the return type of the lambda method and:
+* If `A` is a lambda method and `Tp` is a constructed delegate type or `System.Linq.Expressions.Expression(Of T)`, where `T` is a constructed delegate type, for each lambda method parameter type `TL` and corresponding delegate parameter type `TD`, replace `Ta` with `TL` and `Tp` with `TD` and restart the process with no restriction. Then, replace `Ta` with the return type of the lambda method and:
 
-* if `A` is a regular lambda method, replace `Tp` with the return type of the delegate type;
-* if `A` is an async lambda method and the return type of the delegate type has form `Task(Of T)` for some `T`, replace `Tp` with that `T`;
-* if `A` is an iterator lambda method and the return type of the delegate type has form `IEnumerator(Of T)` or `IEnumerable(Of T)` for some `T`, replace `Tp` with that `T`.
-* Next, restart the process with no restriction.
+  * if `A` is a regular lambda method, replace `Tp` with the return type of the delegate type;
+  * if `A` is an async lambda method and the return type of the delegate type has form `Task(Of T)` for some `T`, replace `Tp` with that `T`;
+  * if `A` is an iterator lambda method and the return type of the delegate type has form `IEnumerator(Of T)` or `IEnumerable(Of T)` for some `T`, replace `Tp` with that `T`.
+  * Next, restart the process with no restriction.
 
-If `A` is a method pointer and `Tp` is a constructed delegate type, use the parameter types of `Tp` to determine which method pointed is most applicable to `Tp`. If there is a method that is most applicable, replace `Ta` with the return type of the method and `Tp` with the return type of the delegate type and restart the process with no restriction.
+* If `A` is a method pointer and `Tp` is a constructed delegate type, use the parameter types of `Tp` to determine which method pointed is most applicable to `Tp`. If there is a method that is most applicable, replace `Ta` with the return type of the method and `Tp` with the return type of the delegate type and restart the process with no restriction.
 
-Otherwise, `Tp` must be a constructed type. Given `TG`, the generic type of `Tp`,
+* Otherwise, `Tp` must be a constructed type. Given `TG`, the generic type of `Tp`,
 
-If `Ta` is `TG`, inherits from `TG`, or implements the type `TG` exactly once, then for each matching type argument `Tax` from `Ta` and `Tpx` from `Tp`, replace `Ta` with `Tax` and `Tp` with `Tpx` and restart the process with a generic argument restriction.
+  * If `Ta` is `TG`, inherits from `TG`, or implements the type `TG` exactly once, then for each matching type argument `Tax` from `Ta` and `Tpx` from `Tp`, replace `Ta` with `Tax` and `Tp` with `Tpx` and restart the process with a generic argument restriction.
 
-Otherwise, type inference fails for the generic method.
+  * Otherwise, type inference fails for the generic method.
 
 The success of type inference does not, in and of itself, guarantee that the method is applicable.
 
 ## Index Expressions
 
-An *index expression* results in an array element or reclassifies a property group into a property access. An index expression consists of, in order, an expression, an opening parenthesis, an index argument list, and a closing parenthesis. The target of the index expression must be classified as either a property group or a value. An index expression is processed as follows:
-
-If the target expression is classified as a value and if its type is not an array type, `Object`, or `System.Array`, the type must have a default property. The index is performed on a property group that represents all of the default properties of the type. Although it is not valid to declare a parameterless default property in Visual Basic, other languages may allow declaring such a property. Consequently, indexing a property with no arguments is allowed.
-
-If the expression results in a value of an array type, the number of arguments in the argument list must be the same as the rank of the array type and may not include named arguments. If any of the indexes are invalid at run time, a `System.IndexOutOfRangeException` exception is thrown. Each expression must be implicitly convertible to type `Integer`. The result of the index expression is the variable at the specified index and is classified as a variable.
-
-If the expression is classified as a property group, overload resolution is used to determine whether one of the properties is applicable to the index argument list. If the property group only contains one property that has a `Get` accessor and if that accessor takes no arguments, then the property group is interpreted as an index expression with an empty argument list. The result is used as the target of the current index expression. If no properties are applicable, then a compile-time error occurs. Otherwise, the expression results in a property access with the associated target expression (if any) of the property group.
-
-If the expression is classified as a late-bound property group or as a value whose type is `Object` or `System.Array`, the processing of the index expression is deferred until run time and the indexing is late-bound. The expression results in a late-bound property access typed as `Object`. The associated target expression is either the target expression, if it is a value, or the associated target expression of the property group. At run time the expression is processed as follows:
-
-If the expression is classified as a late-bound property group, the expression may result in a method group, a property group, or a value (if the member is an instance or shared variable). If the result is a method group or property group, overload resolution is applied to the group to determine the correct method for the argument list. If overload resolution fails, a `System.Reflection.AmbiguousMatchException` exception is thrown. Then the result is processed either as a property access or as an invocation and the result is returned. If the invocation is of a subroutine, the result is `Nothing`.
-
-If the run-time type of the target expression is an array type or `System.Array`, the result of the index expression is the value of the variable at the specified index.
-
-Otherwise, the run-time type of the expression must have a default property and the index is performed on the property group that represents all of the default properties on the type. If the type has no default property, then a `System.MissingMemberException` exception is thrown.
+An *index expression* results in an array element or reclassifies a property group into a property access. An index expression consists of, in order, an expression, an opening parenthesis, an index argument list, and a closing parenthesis.
 
 ```antlr
 IndexExpression
@@ -1863,19 +1861,34 @@ IndexExpression
     ;
 ```
 
+The target of the index expression must be classified as either a property group or a value. An index expression is processed as follows:
+
+* If the target expression is classified as a value and if its type is not an array type, `Object`, or `System.Array`, the type must have a default property. The index is performed on a property group that represents all of the default properties of the type. Although it is not valid to declare a parameterless default property in Visual Basic, other languages may allow declaring such a property. Consequently, indexing a property with no arguments is allowed.
+
+* If the expression results in a value of an array type, the number of arguments in the argument list must be the same as the rank of the array type and may not include named arguments. If any of the indexes are invalid at run time, a `System.IndexOutOfRangeException` exception is thrown. Each expression must be implicitly convertible to type `Integer`. The result of the index expression is the variable at the specified index and is classified as a variable.
+
+* If the expression is classified as a property group, overload resolution is used to determine whether one of the properties is applicable to the index argument list. If the property group only contains one property that has a `Get` accessor and if that accessor takes no arguments, then the property group is interpreted as an index expression with an empty argument list. The result is used as the target of the current index expression. If no properties are applicable, then a compile-time error occurs. Otherwise, the expression results in a property access with the associated target expression (if any) of the property group.
+
+* If the expression is classified as a late-bound property group or as a value whose type is `Object` or `System.Array`, the processing of the index expression is deferred until run time and the indexing is late-bound. The expression results in a late-bound property access typed as `Object`. The associated target expression is either the target expression, if it is a value, or the associated target expression of the property group. At run time the expression is processed as follows:
+
+* If the expression is classified as a late-bound property group, the expression may result in a method group, a property group, or a value (if the member is an instance or shared variable). If the result is a method group or property group, overload resolution is applied to the group to determine the correct method for the argument list. If overload resolution fails, a `System.Reflection.AmbiguousMatchException` exception is thrown. Then the result is processed either as a property access or as an invocation and the result is returned. If the invocation is of a subroutine, the result is `Nothing`.
+
+* If the run-time type of the target expression is an array type or `System.Array`, the result of the index expression is the value of the variable at the specified index.
+
+* Otherwise, the run-time type of the expression must have a default property and the index is performed on the property group that represents all of the default properties on the type. If the type has no default property, then a `System.MissingMemberException` exception is thrown.
+
+
 ## New Expressions
 
 The `New` operator is used to create new instances of types. There are four forms of `New` expressions:
 
-Object-creation expressions are used to create new instances of class types and value types.
+* Object-creation expressions are used to create new instances of class types and value types.
 
-Array-creation expressions are used to create new instances of array types.
+* Array-creation expressions are used to create new instances of array types.
 
-Delegate-creation expressions (which do not have a distinct syntax from object-creation expressions) are used to create new instances of delegate types.
+* Delegate-creation expressions (which do not have a distinct syntax from object-creation expressions) are used to create new instances of delegate types.
 
-Anonymous object-creation expressions are used to create new instances of anonymous class types.
-
-A `New` expression is classified as a value and the result is the new instance of the type.
+* Anonymous object-creation expressions are used to create new instances of anonymous class types.
 
 ```antlr
 NewExpression
@@ -1885,9 +1898,55 @@ NewExpression
     ;
 ```
 
+A `New` expression is classified as a value and the result is the new instance of the type.
+
+
 ### Object-Creation Expressions
 
-An object-creation expression is used to create a new instance of a class type or a structure type. The type of an object creation expression must be a class type, a structure type, or a type parameter with a `New` constraint and cannot be a `MustInherit` class. Given an object creation expression of the form `New T(A)`, where `T` is a class type or structure type and `A` is an optional argument list, overload resolution determines the correct constructor of `T` to call. A type parameter with a `New` constraint is considered to have a single, parameterless constructor. If no constructor is callable, a compile-time error occurs; otherwise the expression results in the creation of a new instance of `T` using the chosen constructor. If there are no arguments, the parentheses may be omitted.
+An object-creation expression is used to create a new instance of a class type or a structure type.
+
+```antlr
+ObjectCreationExpression
+    : 'New' NonArrayTypeName ( OpenParenthesis ArgumentList? CloseParenthesis )?
+      ObjectCreationExpressionInitializer?
+    ;
+
+ObjectCreationExpressionInitializer
+    : ObjectMemberInitializer
+    | ObjectCollectionInitializer
+    ;
+
+ObjectMemberInitializer
+    : 'With' OpenCurlyBrace FieldInitializerList CloseCurlyBrace
+    ;
+
+FieldInitializerList
+    : FieldInitializer ( Comma FieldInitializer )*
+    ;
+
+FieldInitializer
+    : 'Key'? ('.' IdentifierOrKeyword Equals )? Expression
+    ;
+
+ObjectCollectionInitializer
+    : 'From' CollectionInitializer
+    ;
+
+CollectionInitializer
+    : OpenCurlyBrace CollectionElementList? CloseCurlyBrace
+    ;
+
+CollectionElementList
+    : CollectionElement ( Comma CollectionElement )*
+    ;
+
+CollectionElement
+    : Expression
+    | CollectionInitializer
+    ;
+```
+
+The type of an object creation expression must be a class type, a structure type, or a type parameter with a `New` constraint and cannot be a `MustInherit` class. Given an object creation expression of the form `New T(A)`, where `T` is a class type or structure type and `A` is an optional argument list, overload resolution determines the correct constructor of `T` to call. A type parameter with a `New` constraint is considered to have a single, parameterless constructor. If no constructor is callable, a compile-time error occurs; otherwise the expression results in the creation of a new instance of `T` using the chosen constructor. If there are no arguments, the parentheses may be omitted.
 
 Where an instance is allocated depends on whether the instance is a class type or a value type. `New` instances of class types are created on the system heap, while new instances of value types are created directly on the stack.
 
@@ -2022,46 +2081,6 @@ Dim dict = New Dictionary(Of Integer, Integer())() From _
         { {  1, { 2, 3 } }, { 3, { 4, 5 } } }
 ```
 
-```antlr
-ObjectCreationExpression
-    : 'New' NonArrayTypeName ( OpenParenthesis ArgumentList? CloseParenthesis )?
-      ObjectCreationExpressionInitializer?
-    ;
-
-ObjectCreationExpressionInitializer
-    : ObjectMemberInitializer
-    | ObjectCollectionInitializer
-    ;
-
-ObjectMemberInitializer
-    : 'With' OpenCurlyBrace FieldInitializerList CloseCurlyBrace
-    ;
-
-FieldInitializerList
-    : FieldInitializer ( Comma FieldInitializer )*
-    ;
-
-FieldInitializer
-    : 'Key'? ('.' IdentifierOrKeyword Equals )? Expression
-    ;
-
-ObjectCollectionInitializer
-    : 'From' CollectionInitializer
-    ;
-
-CollectionInitializer
-    : OpenCurlyBrace CollectionElementList? CloseCurlyBrace
-    ;
-
-CollectionElementList
-    : CollectionElement ( Comma CollectionElement )*
-    ;
-
-CollectionElement
-    : Expression
-    | CollectionInitializer
-    ;
-```
 
 ### Array Expressions
 
@@ -2118,7 +2137,24 @@ An array instance's rank and length of each dimension are constant for the entir
 
 #### Array Literals
 
-An array literal denotes an array whose element type, rank, and bounds are inferred from a combination of the expression context and a collection initializer. This is explained in Section [Expression Reclassification](expressions.md#expression-reclassification). For example:
+An array literal denotes an array whose element type, rank, and bounds are inferred from a combination of the expression context and a collection initializer. This is explained in Section [Expression Reclassification](expressions.md#expression-reclassification).
+
+```antlr
+ArrayExpression
+    : ArrayCreationExpression
+    | ArrayLiteralExpression
+    ;
+
+ArrayCreationExpression
+    : 'New' NonArrayTypeName ArrayNameModifier CollectionInitializer
+    ;
+
+ArrayLiteralExpression
+    : CollectionInitializer
+    ;
+```
+
+For example:
 
 ```vb
 ' array of integers
@@ -2147,20 +2183,6 @@ The format and requirements for the collection initializer in an array literal i
 
 __Note.__ An array literal does not create the array in and of itself; instead, it is the reclassification of the expression into a value that causes the array to be created. For instance, the conversion `CType(new Integer() {1,2,3}, Short())` is not possible because there is no conversion from `Integer()` to `Short()`; but the expression `CType({1,2,3},Short())` is possible because it first reclassifies the array literal into the array creation expression `New Short() {1,2,3}`.
 
-```antlr
-ArrayExpression
-    : ArrayCreationExpression
-    | ArrayLiteralExpression
-    ;
-
-ArrayCreationExpression
-    : 'New' NonArrayTypeName ArrayNameModifier CollectionInitializer
-    ;
-
-ArrayLiteralExpression
-    : CollectionInitializer
-    ;
-```
 
 ### Delegate-Creation Expressions
 
@@ -2168,15 +2190,15 @@ A delegate-creation expression is used to create a new instance of a delegate ty
 
 If the argument is a method pointer, one of the methods referenced by the method pointer must be applicable to the signature of the delegate type. A method `M` is applicable to a delegate type `D` if:
 
-`M` is not `Partial` or has a body.
+* `M` is not `Partial` or has a body.
 
-Both `M` and `D` are functions, or `D` is a subroutine.
+* Both `M` and `D` are functions, or `D` is a subroutine.
 
-`M` and `D` have the same number of parameters.
+* `M` and `D` have the same number of parameters.
 
-The parameter types of `M` each have a conversion from the type of the corresponding parameter type of `D`, and their modifiers (i.e. `ByRef`, `ByVal`) match.
+* The parameter types of `M` each have a conversion from the type of the corresponding parameter type of `D`, and their modifiers (i.e. `ByRef`, `ByVal`) match.
 
-The return type of `M`, if any, has a conversion to the return type of `D`.
+* The return type of `M`, if any, has a conversion to the return type of `D`.
 
 If the method pointer references a late-bound access, then the late-bound access is assumed to be to a function that has the same number of parameters as the delegate type.
 
@@ -2220,9 +2242,9 @@ End Module
 
 Had the second `Square` method not been present, the first `Square` method would have been chosen. If strict semantics are specified by the compilation environment or by `Option Strict`, then a compile-time error occurs if the most specific method referenced by the method pointer is narrower than the delegate signature. A method `M` is considered narrower than a delegate type `D` if:
 
-A parameter type of `M` has a widening conversion to the corresponding parameter type of `D`.
+* A parameter type of `M` has a widening conversion to the corresponding parameter type of `D`.
 
-Or, the return type, if any, of `M` has a narrowing conversion to the return type of `D`.
+* Or, the return type, if any, of `M` has a narrowing conversion to the return type of `D`.
 
 If type arguments are associated with the method pointer, only methods with the same number of type arguments are considered. If no type arguments are associated with the method pointer, type inference is used when matching signatures against a generic method. Unlike other normal type inference, the return type of the delegate is used when inferring type arguments, but return types are still not considered when determining the least generic overload. The following example shows both ways of supplying a type argument to a delegate-creation expression:
 
@@ -2266,11 +2288,11 @@ End Module
 
 If the argument to the delegate-creation expression is a lambda method, the lambda method must be applicable to the signature of the delegate type. A lambda method `L` is applicable to a delegate type `D` if:
 
-If `L` has parameters, `D` has the same number of parameters. (If `L` has no parameters, the parameters of `D` are ignored.)
+* If `L` has parameters, `D` has the same number of parameters. (If `L` has no parameters, the parameters of `D` are ignored.)
 
-The parameter types of `L` each have a conversion to the type of the corresponding parameter type of `D`, and their modifiers (i.e. `ByRef`, `ByVal`) match.
+* The parameter types of `L` each have a conversion to the type of the corresponding parameter type of `D`, and their modifiers (i.e. `ByRef`, `ByVal`) match.
 
-If `D` is a function, the return type of `L` has a conversion to the return type of `D`. (If `D` is a subroutine, the return value of `L` is ignored.)
+* If `D` is a function, the return type of `L` has a conversion to the return type of `D`. (If `D` is a subroutine, the return value of `L` is ignored.)
 
 If the parameter type of a parameter of `L` is omitted, then the type of the corresponding parameter in `D` is inferred; if the parameter of `L` has array or nullable name modifiers, a compile-time error results. Once all of the parameter types of `L` are available, then the type of the expression in the lambda method is inferred. For example:
 
@@ -2311,7 +2333,15 @@ The result of a delegate-creation expression is a delegate instance that refers 
 
 ### Anonymous Object-Creation Expressions
 
-An object-creation expression with member initializers can also omit the type name entirely. In that case, an anonymous type is constructed based on the types and names of the members initialized as a part of the expression. For example:
+An object-creation expression with member initializers can also omit the type name entirely.
+
+```antlr
+AnonymousObjectCreationExpression
+    : 'New' ObjectMemberInitializer
+    ;
+```
+
+In that case, an anonymous type is constructed based on the types and names of the members initialized as a part of the expression. For example:
 
 ```vb
 Module Test
@@ -2401,21 +2431,21 @@ End Class
 
 To simplify the situation where an anonymous type is created from the fields of another type, field names can be inferred directly from expressions in the following cases:
 
-A simple name expression `x` infers the name `x`.
+* A simple name expression `x` infers the name `x`.
 
-A member access expression `x.y` infers the name `y`.
+* A member access expression `x.y` infers the name `y`.
 
-A dictionary lookup expression `x!y` infers the name `y`.
+* A dictionary lookup expression `x!y` infers the name `y`.
 
-An invocation or index expression with no arguments `x()` infers the name `x`.
+* An invocation or index expression with no arguments `x()` infers the name `x`.
 
-An XML member access expression `x.<y>`, `x...<y>`, `x.@y` infers the name `y`.
+* An XML member access expression `x.<y>`, `x...<y>`, `x.@y` infers the name `y`.
 
-An XML member access expression that is the target of a member access expression `x.<y>.z` infers the name `z`.
+* An XML member access expression that is the target of a member access expression `x.<y>.z` infers the name `z`.
 
-An XML member access expression that is the target of an invocation or index expression with no arguments `x.<y>.z()` infers the name `z`.
+* An XML member access expression that is the target of an invocation or index expression with no arguments `x.<y>.z()` infers the name `z`.
 
-An XML member access expression that is the target of an invocation or index expression `x.<y>(0)` infers the name `y`.
+* An XML member access expression that is the target of an invocation or index expression `x.<y>(0)` infers the name `y`.
 
 The initializer is interpreted as an assignment of the expression to the inferred name. For example, the following initializers are equivalent:
 
@@ -2456,25 +2486,33 @@ If two anonymous class creation expressions occur within the same method and yie
 
 __Note.__ It is possible that a compiler may choose to unify anonymous types further, such as at the assembly level, but this cannot be relied upon at this time.
 
-```antlr
-AnonymousObjectCreationExpression
-    : 'New' ObjectMemberInitializer
-    ;
-```
 
 ## Cast Expressions
 
 A cast expression coerces an expression to a given type. Specific cast keywords coerce expressions into the primitive types. Three general cast keywords, `CType`, `TryCast` and `DirectCast`, coerce an expression into a type.
 
-`DirectCast` and `TryCast` have special behaviors. Because of this, they only support native conversions. Additionally, the target type in a `TryCast` expression cannot be a value type. User-defined conversion operators are not considered when `DirectCast` or `TryCast` is used.
+```antlr
+CastExpression
+    : 'DirectCast' OpenParenthesis Expression Comma TypeName CloseParenthesis
+    | 'TryCast' OpenParenthesis Expression Comma TypeName CloseParenthesis
+    | 'CType' OpenParenthesis Expression Comma TypeName CloseParenthesis
+    | CastTarget OpenParenthesis Expression CloseParenthesis
+    ;
 
-__Note.__ The conversion set that `DirectCast` and `TryCast` support are restricted because they implement "native CLR" conversions. The purpose of `DirectCast` is to provide the functionality of the "unbox" instruction, while the purpose of `TryCast` is to provide the functionality of the "isinst" instruction. Since they map onto CLR instructions, supporting conversions not directly supported by the CLR would defeat the intended purpose.
+CastTarget
+    : 'CBool' | 'CByte' | 'CChar'  | 'CDate'  | 'CDec' | 'CDbl' | 'CInt'
+    | 'CLng'  | 'CObj'  | 'CSByte' | 'CShort' | 'CSng' | 'CStr' | 'CUInt'
+    | 'CULng' | 'CUShort'
+    ;
+```
 
-`DirectCast` converts expressions that are typed as `Object` differently than `CType`. When converting an expression of type `Object` whose run-time type is a primitive value type, `DirectCast` throws a `System.InvalidCastException` exception if the specified type is not the same as the run-time type of the expression or a `System.NullReferenceException` if the expression evaluates to `Nothing`.
+`DirectCast` and `TryCast` have special behaviors. Because of this, they only support native conversions. Additionally, the target type in a `TryCast` expression cannot be a value type. User-defined conversion operators are not considered when `DirectCast` or `TryCast` is used. (__Note.__ The conversion set that `DirectCast` and `TryCast` support are restricted because they implement "native CLR" conversions. The purpose of `DirectCast` is to provide the functionality of the "unbox" instruction, while the purpose of `TryCast` is to provide the functionality of the "isinst" instruction. Since they map onto CLR instructions, supporting conversions not directly supported by the CLR would defeat the intended purpose.)
 
-__Note.__ As noted above, `DirectCast` maps directly onto the CLR instruction "unbox" when the type of the expression is `Object`. In contrast, `CType` turns into a call to a runtime helper to do the conversion so that conversions between primitive types can be supported. In the case when an `Object` expression is being converted to a primitive value type and the type of the actual instance match the target type, `DirectCast` will be significantly faster than `CType`.
+`DirectCast` converts expressions that are typed as `Object` differently than `CType`. When converting an expression of type `Object` whose run-time type is a primitive value type, `DirectCast` throws a `System.InvalidCastException` exception if the specified type is not the same as the run-time type of the expression or a `System.NullReferenceException` if the expression evaluates to `Nothing`. (__Note.__ As noted above, `DirectCast` maps directly onto the CLR instruction "unbox" when the type of the expression is `Object`. In contrast, `CType` turns into a call to a runtime helper to do the conversion so that conversions between primitive types can be supported. In the case when an `Object` expression is being converted to a primitive value type and the type of the actual instance match the target type, `DirectCast` will be significantly faster than `CType`.)
 
-`TryCast` converts expressions but does not throw an exception if the expression cannot be converted to the target type. Instead, `TryCast` will result in `Nothing` if the expression cannot be converted at runtime. For example:
+`TryCast` converts expressions but does not throw an exception if the expression cannot be converted to the target type. Instead, `TryCast` will result in `Nothing` if the expression cannot be converted at runtime. (__Note.__ As noted above, `TryCast` maps directly onto the CLR instruction "isinst". By combining the type check and the conversion into a single operation, `TryCast` can be cheaper than doing a `TypeOf ... Is` and then a `CType`.)
+
+For example:
 
 ```vb
 Interface ITest
@@ -2492,24 +2530,8 @@ Module Test
 End Module
 ```
 
-__Note.__ As noted above, `TryCast` maps directly onto the CLR instruction "isinst". By combining the type check and the conversion into a single operation, `TryCast` can be cheaper than doing a `TypeOf ... Is` and then a `CType`.
-
 If no conversion exists from the type of the expression to the specified type, a compile-time error occurs. Otherwise, the expression is classified as a value and the result is the value produced by the conversion.
 
-```antlr
-CastExpression
-    : 'DirectCast' OpenParenthesis Expression Comma TypeName CloseParenthesis
-    | 'TryCast' OpenParenthesis Expression Comma TypeName CloseParenthesis
-    | 'CType' OpenParenthesis Expression Comma TypeName CloseParenthesis
-    | CastTarget OpenParenthesis Expression CloseParenthesis
-    ;
-
-CastTarget
-    : 'CBool' | 'CByte' | 'CChar' | 'CDate' | 'CDec' | 'CDbl' | 'CInt'
-    | 'CLng' | 'CObj' | 'CSByte' | 'CShort' | 'CSng' | 'CStr' | 'CUInt'
-    | 'CULng' | 'CUShort'
-    ;
-```
 
 ## Operator Expressions
 
@@ -2583,9 +2605,9 @@ If no wider numeric type is available to hold the number, a `System.OverflowExce
 
 Given an operator type and a set of operands, operator resolution determines which operator to use for the operands. When resolving operators, user-defined operators will be considered first, using the following steps:
 
-First, all of the candidate operators are collected. The candidate operators are all of the user-defined operators of the particular operator type in the source type and all of the user-defined operators of the particular type in the target type. If the source type and destination type are related, common operators are only considered once.
+1. First, all of the candidate operators are collected. The candidate operators are all of the user-defined operators of the particular operator type in the source type and all of the user-defined operators of the particular type in the target type. If the source type and destination type are related, common operators are only considered once.
 
-Then, overload resolution is applied to the operators and operands to select the most specific operator. In the case of binary operators, this may result in a late-bound call.
+2. Then, overload resolution is applied to the operators and operands to select the most specific operator. In the case of binary operators, this may result in a late-bound call.
 
 When collecting the candidate operators for a type `T?`, the operators of type `T` are used instead. Any of `T`'s user-defined operators that involve only non-nullable value types are also lifted. A lifted operator uses the nullable version of any value types, with the exception the return types of `IsTrue` and `IsFalse` (which must be `Boolean`). Lifted operators are evaluated by converting the operands to their non-nullable version, then evaluating the user-defined operator and then converting the result type to its nullable version. If ether operand is `Nothing`, the result of the expression is a value of `Nothing` typed as the nullable version of the result type. For example:
 
@@ -2639,11 +2661,11 @@ As with conversions, user-defined operators are always preferred over lifted ope
 
 When resolving overloaded operators, there may be differences between classes defined in Visual Basic and those defined in other languages:
 
-In other languages, `Not`, `And`, and `Or` may be overloaded both as logical operators and bitwise operators. Upon import from an external assembly, either form is accepted as a valid overload for these operators. However, for a type which defines both logical and bitwise operators, only the bitwise implementation will be considered.
+* In other languages, `Not`, `And`, and `Or` may be overloaded both as logical operators and bitwise operators. Upon import from an external assembly, either form is accepted as a valid overload for these operators. However, for a type which defines both logical and bitwise operators, only the bitwise implementation will be considered.
 
-In other languages, `>>` and `<<` may be overloaded both as signed operators and unsigned operators. Upon import from an external assembly, either form is accepted as a valid overload. However, for a type which defines both signed and unsigned operators, only the signed implementation will be considered.
+* In other languages, `>>` and `<<` may be overloaded both as signed operators and unsigned operators. Upon import from an external assembly, either form is accepted as a valid overload. However, for a type which defines both signed and unsigned operators, only the signed implementation will be considered.
 
-If no user-defined operator is most specific to the operands, then intrinsic operators will be considered. If no intrinsic operator is defined for the operands and either operand has type Object then the operator will be resolved late-bound; otherwise,  a compile-time error results.
+* If no user-defined operator is most specific to the operands, then intrinsic operators will be considered. If no intrinsic operator is defined for the operands and either operand has type Object then the operator will be resolved late-bound; otherwise,  a compile-time error results.
 
 In prior versions of Visual Basic, if there was exactly one operand of type Object, and no applicable user-defined operators, and no applicable intrinsic operators, then it was an error. As of Visual Basic 11, it is now resolved late-bound. For example:
 
@@ -2669,17 +2691,17 @@ Console.WriteLine(v1 + v2)
 
 Each operator lists the intrinsic types it is defined for and the type of the operation performed given the operand types. The result of type of a intrinsic operation follows these general rules:
 
-If all operands are of the same type, and the operator is defined for the type, then no conversion occurs and the operator for that type is used.
+* If all operands are of the same type, and the operator is defined for the type, then no conversion occurs and the operator for that type is used.
 
-Any operand whose type is not defined for the operator is converted using the following steps and the operator is resolved against the new types:
+* Any operand whose type is not defined for the operator is converted using the following steps and the operator is resolved against the new types:
 
-The operand is converted to the next widest type that is defined for both the operator and the operand and to which it is implicitly convertible.
+  * The operand is converted to the next widest type that is defined for both the operator and the operand and to which it is implicitly convertible.
 
-If there is no such type, then the operand is converted to the next narrowest type that is defined for both the operator and the operand and to which it is implicitly convertible.
+  * If there is no such type, then the operand is converted to the next narrowest type that is defined for both the operator and the operand and to which it is implicitly convertible.
 
-If there is no such type or the conversion cannot occur, a compile-time error occurs.
+  * If there is no such type or the conversion cannot occur, a compile-time error occurs.
 
-Otherwise, the operands are converted to the wider of the operand types and the operator for that type is used. If the narrower operand type cannot be implicitly converted to the wider operator type, a compile-time error occurs.
+* Otherwise, the operands are converted to the wider of the operand types and the operator for that type is used. If the narrower operand type cannot be implicitly converted to the wider operator type, a compile-time error occurs.
 
 Despite these general rules, however, there are a number of special cases called out in the operator results tables.
 
@@ -2688,8 +2710,6 @@ __Note.__ For formatting reasons, the operator type tables abbreviate the predef
 ## Arithmetic Operators
 
 The `*`, `/`, `\`, `^`, `Mod`, `+`, and `-` operators are the *arithmetic operators*.
-
-Floating-point arithmetic operations may be performed with higher precision than the result type of the operation. For example, some hardware architectures support an "extended" or "long double" floating-point type with greater range and precision than the `Double` type, and implicitly perform all floating-point operations using this higher-precision type. Hardware architectures can be made to perform floating-point operations with less precision only at excessive cost in performance; rather than require an implementation to forfeit both performance and precision, Visual Basic allows the higher-precision type to be used for all floating-point operations. Other than delivering more precise results, this rarely has any measurable effects. However, in expressions of the form `x * y / z`, where the multiplication produces a result that is outside the `Double` range, but the subsequent division brings the temporary result back into the `Double` range, the fact that the expression is evaluated in a higher-range format may cause a finite result to be produced instead of infinity.
 
 ```antlr
 ArithmeticOperatorExpression
@@ -2704,7 +2724,16 @@ ArithmeticOperatorExpression
     ;
 ```
 
+Floating-point arithmetic operations may be performed with higher precision than the result type of the operation. For example, some hardware architectures support an "extended" or "long double" floating-point type with greater range and precision than the `Double` type, and implicitly perform all floating-point operations using this higher-precision type. Hardware architectures can be made to perform floating-point operations with less precision only at excessive cost in performance; rather than require an implementation to forfeit both performance and precision, Visual Basic allows the higher-precision type to be used for all floating-point operations. Other than delivering more precise results, this rarely has any measurable effects. However, in expressions of the form `x * y / z`, where the multiplication produces a result that is outside the `Double` range, but the subsequent division brings the temporary result back into the `Double` range, the fact that the expression is evaluated in a higher-range format may cause a finite result to be produced instead of infinity.
+
+
 ### Unary Plus Operator
+
+```antlr
+UnaryPlusExpression
+    : '+' Expression
+    ;
+```
 
 The unary plus operator is defined for the `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, `Long`, `Single`, `Double`, and `Decimal` types.
 
@@ -2715,13 +2744,14 @@ __Operation Type:__
 |----|----|----|----|----|----|----|----|----|----|----|----|-----|-----|----|----|
 | Sh | SB | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do | Ob | 
 
-```antlr
-UnaryPlusExpression
-    : '+' Expression
-    ;
-```
 
 ### Unary Minus Operator
+
+```antlr
+UnaryMinusExpression
+    : '-' Expression
+    ;
+```
 
 The unary minus operator is defined for the following types:
 
@@ -2737,28 +2767,30 @@ __Operation Type:__
 |----|----|----|----|----|----|----|----|----|----|----|----|-----|-----|----|----|
 | Sh | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do | Ob | 
 
-```antlr
-UnaryMinusExpression
-    : '-' Expression
-    ;
-```
 
 ### Addition Operator
 
-The addition operator computes the sum of the two operands. The addition operator is defined for the following types:
+The addition operator computes the sum of the two operands.
 
-`Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, and `Long`. If integer overflow checking is on and the sum is outside the range of the result type, a `System.OverflowException` exception is thrown. Otherwise, overflows are not reported, and any significant high-order bits of the result are discarded.
+```antlr
+AdditionOperatorExpression
+    : Expression '+' LineTerminator? Expression
+    ;
+```
 
-`Single` and `Double`. The sum is computed according to the rules of IEEE 754 arithmetic.
+The addition operator is defined for the following types:
 
-`Decimal`. If the resulting value is too large to represent in the decimal format, a `System.OverflowException` exception is thrown. If the result value is too small to represent in the decimal format, the result is 0.
+* `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, and `Long`. If integer overflow checking is on and the sum is outside the range of the result type, a `System.OverflowException` exception is thrown. Otherwise, overflows are not reported, and any significant high-order bits of the result are discarded.
 
-`String`. The two `String` operands are concatenated together.
+* `Single` and `Double`. The sum is computed according to the rules of IEEE 754 arithmetic.
 
-__Note.__ The `System.DateTime` type defines overloaded addition operators. Because `System.DateTime` is equivalent to the intrinsic `Date` type, these operators is also available on the `Date` type.
+* `Decimal`. If the resulting value is too large to represent in the decimal format, a `System.OverflowException` exception is thrown. If the result value is too small to represent in the decimal format, the result is 0.
+
+* `String`. The two `String` operands are concatenated together.
+
+* `Date`. The `System.DateTime` type defines overloaded addition operators. Because `System.DateTime` is equivalent to the intrinsic `Date` type, these operators is also available on the `Date` type.
 
 __Operation Type:__
-
 
 |        | __Bo__ | __SB__ | __By__ | __Sh__ | __US__ | __In__ | __UI__ | __Lo__ | __UL__ | __De__ | __Si__ | __Do__ | __Da__  | __Ch__  | __St__ | __Ob__ | 
 |--------|----|----|----|----|----|----|----|----|----|----|----|----|-----|-----|----|----|
@@ -2779,44 +2811,10 @@ __Operation Type:__
 | __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | St | Ob | 
 | __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     |    | Ob | 
 
-```antlr
-AdditionOperatorExpression
-    : Expression '+' LineTerminator? Expression
-    ;
-```
 
 ### Subtraction Operator
 
-The subtraction operator subtracts the second operand from the first operand. The subtraction operator is defined for the following types:
-
-`Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, and `Long`. If integer overflow checking is on and the difference is outside the range of the result type, a `System.OverflowException` exception is thrown. Otherwise, overflows are not reported, and any significant high-order bits of the result are discarded.
-
-`Single` and `Double`. The difference is computed according to the rules of IEEE 754 arithmetic.
-
-`Decimal`. If the resulting value is too large to represent in the decimal format, a `System.OverflowException` exception is thrown. If the result value is too small to represent in the decimal format, the result is 0.
-
-__Note.__ The `System.DateTime` type defines overloaded subtraction operators. Because `System.DateTime` is equivalent to the intrinsic `Date` type, these operators is also available on the `Date` type.
-
-__Operation Type:__
-
-|        | __Bo__ | __SB__ | __By__ | __Sh__ | __US__ | __In__ | __UI__ | __Lo__ | __UL__ | __De__ | __Si__ | __Do__ | __Da__  | __Ch__  | __St__ | __Ob__ |
-|--------|----|----|----|----|----|----|----|----|----|----|----|----|-----|-----|-----|-----|
-| __Bo__ | Sh | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
-| __SB__ |    | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
-| __By__ |    |    | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do  | Ob  | 
-| __Sh__ |    |    |    | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
-| __US__ |    |    |    |    | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do  | Ob  | 
-| __In__ |    |    |    |    |    | In | Lo | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
-| __UI__ |    |    |    |    |    |    | UI | Lo | UL | De | Si | Do | Err | Err | Do  | Ob  | 
-| __Lo__ |    |    |    |    |    |    |    | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
-| __UL__ |    |    |    |    |    |    |    |    | UL | De | Si | Do | Err | Err | Do  | Ob  | 
-| __De__ |    |    |    |    |    |    |    |    |    | De | Si | Do | Err | Err | Do  | Ob  | 
-| __Si__ |    |    |    |    |    |    |    |    |    |    | Si | Do | Err | Err | Do  | Ob  | 
-| __Do__ |    |    |    |    |    |    |    |    |    |    |    | Do | Err | Err | Do  | Ob  | 
-| __Da__ |    |    |    |    |    |    |    |    |    |    |    |    | Err | Err | Err | Err | 
-| __Ch__ |    |    |    |    |    |    |    |    |    |    |    |    |     | Err | Err | Err | 
-| __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | Do  | Ob  | 
-| __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     |     | Ob  | 
+The subtraction operator subtracts the second operand from the first operand.
 
 ```antlr
 SubtractionOperatorExpression
@@ -2824,15 +2822,15 @@ SubtractionOperatorExpression
     ;
 ```
 
-### Multiplication Operator
+The subtraction operator is defined for the following types:
 
-The multiplication operator computes the product of two operands. The multiplication operator is defined for the following types:
+* `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, and `Long`. If integer overflow checking is on and the difference is outside the range of the result type, a `System.OverflowException` exception is thrown. Otherwise, overflows are not reported, and any significant high-order bits of the result are discarded.
 
-`Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, and `Long`. If integer overflow checking is on and the product is outside the range of the result type, a `System.OverflowException` exception is thrown. Otherwise, overflows are not reported, and any significant high-order bits of the result are discarded.
+* `Single` and `Double`. The difference is computed according to the rules of IEEE 754 arithmetic.
 
-`Single` and `Double`. The product is computed according to the rules of IEEE 754 arithmetic.
+* `Decimal`. If the resulting value is too large to represent in the decimal format, a `System.OverflowException` exception is thrown. If the result value is too small to represent in the decimal format, the result is 0.
 
-`Decimal`. If the resulting value is too large to represent in the decimal format, a `System.OverflowException` exception is thrown. If the result value is too small to represent in the decimal format, the result is 0.
+* `Date`. The `System.DateTime` type defines overloaded subtraction operators. Because `System.DateTime` is equivalent to the intrinsic `Date` type, these operators is also available on the `Date` type.
 
 __Operation Type:__
 
@@ -2855,21 +2853,71 @@ __Operation Type:__
 | __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | Do  | Ob  | 
 | __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     |     | Ob  | 
 
+
+### Multiplication Operator
+
+The multiplication operator computes the product of two operands.
+
 ```antlr
 MultiplicationOperatorExpression
     : Expression '*' LineTerminator? Expression
     ;
 ```
 
+The multiplication operator is defined for the following types:
+
+* `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, and `Long`. If integer overflow checking is on and the product is outside the range of the result type, a `System.OverflowException` exception is thrown. Otherwise, overflows are not reported, and any significant high-order bits of the result are discarded.
+
+* `Single` and `Double`. The product is computed according to the rules of IEEE 754 arithmetic.
+
+* `Decimal`. If the resulting value is too large to represent in the decimal format, a `System.OverflowException` exception is thrown. If the result value is too small to represent in the decimal format, the result is 0.
+
+__Operation Type:__
+
+|        | __Bo__ | __SB__ | __By__ | __Sh__ | __US__ | __In__ | __UI__ | __Lo__ | __UL__ | __De__ | __Si__ | __Do__ | __Da__  | __Ch__  | __St__ | __Ob__ |
+|--------|----|----|----|----|----|----|----|----|----|----|----|----|-----|-----|-----|-----|
+| __Bo__ | Sh | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
+| __SB__ |    | SB | Sh | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
+| __By__ |    |    | By | Sh | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do  | Ob  | 
+| __Sh__ |    |    |    | Sh | In | In | Lo | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
+| __US__ |    |    |    |    | US | In | UI | Lo | UL | De | Si | Do | Err | Err | Do  | Ob  | 
+| __In__ |    |    |    |    |    | In | Lo | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
+| __UI__ |    |    |    |    |    |    | UI | Lo | UL | De | Si | Do | Err | Err | Do  | Ob  | 
+| __Lo__ |    |    |    |    |    |    |    | Lo | De | De | Si | Do | Err | Err | Do  | Ob  | 
+| __UL__ |    |    |    |    |    |    |    |    | UL | De | Si | Do | Err | Err | Do  | Ob  | 
+| __De__ |    |    |    |    |    |    |    |    |    | De | Si | Do | Err | Err | Do  | Ob  | 
+| __Si__ |    |    |    |    |    |    |    |    |    |    | Si | Do | Err | Err | Do  | Ob  | 
+| __Do__ |    |    |    |    |    |    |    |    |    |    |    | Do | Err | Err | Do  | Ob  | 
+| __Da__ |    |    |    |    |    |    |    |    |    |    |    |    | Err | Err | Err | Err | 
+| __Ch__ |    |    |    |    |    |    |    |    |    |    |    |    |     | Err | Err | Err | 
+| __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | Do  | Ob  | 
+| __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     |     | Ob  | 
+
+
 ### Division Operators
 
 Division operators compute the quotient of two operands. There are two division operators: the regular (floating-point) division operator and the integer division operator.
 
+```antlr
+DivisionOperatorExpression
+    : FPDivisionOperatorExpression
+    | IntegerDivisionOperatorExpression
+    ;
+
+FPDivisionOperatorExpression
+    : Expression '/' LineTerminator? Expression
+    ;
+
+IntegerDivisionOperatorExpression
+    : Expression '\\' LineTerminator? Expression
+    ;
+```
+
 The regular division operator is defined for the following types:
 
-`Single` and `Double`. The quotient is computed according to the rules of IEEE 754 arithmetic.
+* `Single` and `Double`. The quotient is computed according to the rules of IEEE 754 arithmetic.
 
-`Decimal`. If the value of the right operand is zero, a `System.DivideByZeroException` exception is thrown. If the resulting value is too large to represent in the decimal format, a `System.OverflowException` exception is thrown. If the result value is too small to represent in the decimal format, the result is zero. The scale of the result, before any rounding, is the closest scale to the preferred scale which will preserve a result equal to the exact result.  The preferred scale is the scale of the first operand less the scale of the second operand.
+* `Decimal`. If the value of the right operand is zero, a `System.DivideByZeroException` exception is thrown. If the resulting value is too large to represent in the decimal format, a `System.OverflowException` exception is thrown. If the result value is too small to represent in the decimal format, the result is zero. The scale of the result, before any rounding, is the closest scale to the preferred scale which will preserve a result equal to the exact result.  The preferred scale is the scale of the first operand less the scale of the second operand.
 
 According to normal operator resolution rules, regular division purely between operands of types such as `Byte`, `Short`, `Integer`, and `Long` would cause both operands to be converted to type `Decimal`. However, when doing operator resolution on the division operator when neither type is `Decimal`, `Double` is considered narrower than `Decimal`. This convention is followed because `Double` division is more efficient than `Decimal` division.
 
@@ -2920,30 +2968,24 @@ __Operation Type:__
 | __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | Lo  | Ob  | 
 | __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     |     | Ob  | 
 
-```antlr
-DivisionOperatorExpression
-    : FPDivisionOperatorExpression
-    | IntegerDivisionOperatorExpression
-    ;
-
-FPDivisionOperatorExpression
-    : Expression '/' LineTerminator? Expression
-    ;
-
-IntegerDivisionOperatorExpression
-    : Expression '\\' LineTerminator? Expression
-    ;
-```
 
 ### Mod Operator
 
-The `Mod` (modulo) operator computes the remainder of the division between two operands. The `Mod` operator is defined for the following types:
+The `Mod` (modulo) operator computes the remainder of the division between two operands.
 
-`Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong` and `Long`. The result of `x Mod y` is the value produced by `x - (x \ y) * y`. If `y` is zero, a `System.DivideByZeroException` exception is thrown. The modulo operator never causes an overflow.
+```antlr
+ModuloOperatorExpression
+    : Expression 'Mod' LineTerminator? Expression
+    ;
+```
 
-`Single` and `Double`. The remainder is computed according to the rules of IEEE 754 arithmetic.
+The `Mod` operator is defined for the following types:
 
-`Decimal`. If the value of the right operand is zero, a `System.DivideByZeroException` exception is thrown. If the resulting value is too large to represent in the decimal format, a `System.OverflowException` exception is thrown. If the result value is too small to represent in the decimal format, the result is zero.
+* `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong` and `Long`. The result of `x Mod y` is the value produced by `x - (x \ y) * y`. If `y` is zero, a `System.DivideByZeroException` exception is thrown. The modulo operator never causes an overflow.
+
+* `Single` and `Double`. The remainder is computed according to the rules of IEEE 754 arithmetic.
+
+* `Decimal`. If the value of the right operand is zero, a `System.DivideByZeroException` exception is thrown. If the resulting value is too large to represent in the decimal format, a `System.OverflowException` exception is thrown. If the result value is too small to represent in the decimal format, the result is zero.
 
 __Operation Type:__
 
@@ -2966,15 +3008,18 @@ __Operation Type:__
 | __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | Do  | Ob  | 
 | __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     |     | Ob  | 
 
-```antlr
-ModuloOperatorExpression
-    : Expression 'Mod' LineTerminator? Expression
-    ;
-```
 
 ### Exponentiation Operator
 
-The exponentiation operator computes the first operand raised to the power of the second operand. The exponentiation operator is defined for type `Double`. The value is computed according to the rules of IEEE 754 arithmetic.
+The exponentiation operator computes the first operand raised to the power of the second operand.
+
+```antlr
+ExponentOperatorExpression
+    : Expression '^' LineTerminator? Expression
+    ;
+```
+
+The exponentiation operator is defined for type `Double`. The value is computed according to the rules of IEEE 754 arithmetic.
 
 __Operation Type:__
 
@@ -2997,45 +3042,53 @@ __Operation Type:__
 | __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | Do  | Ob  | 
 | __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     |     | Ob  | 
 
-```antlr
-ExponentOperatorExpression
-    : Expression '^' LineTerminator? Expression
-    ;
-```
 
 ## Relational Operators
 
-The *relational operators* compare values to one other. The comparison operators are `=`, `<>`, `<`, `>`, `<=`, and `>=`. All of the relational operators result in a `Boolean` value.
+The *relational operators* compare values to one other. The comparison operators are `=`, `<>`, `<`, `>`, `<=`, and `>=`.
+
+```antlr
+RelationalOperatorExpression
+    : Expression '=' LineTerminator? Expression
+    | Expression '<' '>' LineTerminator? Expression
+    | Expression '<' LineTerminator? Expression
+    | Expression '>' LineTerminator? Expression
+    | Expression '<' '=' LineTerminator? Expression
+    | Expression '>' '=' LineTerminator? Expression
+    ;
+```
+
+All of the relational operators result in a `Boolean` value.
 
 The relational operators have the following general meaning:
 
-The `=` operator tests whether the two operands are equal.
+* The `=` operator tests whether the two operands are equal.
 
-The `<>` operator tests whether the two operands are not equal.
+* The `<>` operator tests whether the two operands are not equal.
 
-The `<` operator tests whether the first operand is less than the second operand.
+* The `<` operator tests whether the first operand is less than the second operand.
 
-The `>` operator tests whether the first operand is greater than the second operand.
+* The `>` operator tests whether the first operand is greater than the second operand.
 
-The `<=` operator tests whether the first operand is less than or equal to the second operand.
+* The `<=` operator tests whether the first operand is less than or equal to the second operand.
 
-The `>=` operator tests whether the first operand is greater than or equal to the second operand.
+* The `>=` operator tests whether the first operand is greater than or equal to the second operand.
 
 The relational operators are defined for the following types:
 
-`Boolean`. The operators compare the truth values of the two operands. `True` is considered to be less than `False`, which matches with their numeric values.
+* `Boolean`. The operators compare the truth values of the two operands. `True` is considered to be less than `False`, which matches with their numeric values.
 
-`Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, and `Long`. The operators compare the numeric values of the two integral operands.
+* `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, and `Long`. The operators compare the numeric values of the two integral operands.
 
-`Single` and `Double`. The operators compare the operands according to the rules of the IEEE 754 standard.
+* `Single` and `Double`. The operators compare the operands according to the rules of the IEEE 754 standard.
 
-`Decimal`. The operators compare the numeric values of the two decimal operands.
+* `Decimal`. The operators compare the numeric values of the two decimal operands.
 
-`Date`. The operators return the result of comparing the two date/time values.
+* `Date`. The operators return the result of comparing the two date/time values.
 
-`Char`. The operators return the result of comparing the two Unicode values.
+* `Char`. The operators return the result of comparing the two Unicode values.
 
-`String`. The operators return the result of comparing the two values using either a binary comparison or a text comparison. The comparison used is determined by the compilation environment and the `Option Compare` statement. A binary comparison determines whether the numeric Unicode value of each character in each string is the same. A text comparison does a Unicode text comparison based on the current culture in use on the .NET Framework. When doing a string comparison, a null value is equivalent to the string literal `""`.
+* `String`. The operators return the result of comparing the two values using either a binary comparison or a text comparison. The comparison used is determined by the compilation environment and the `Option Compare` statement. A binary comparison determines whether the numeric Unicode value of each character in each string is the same. A text comparison does a Unicode text comparison based on the current culture in use on the .NET Framework. When doing a string comparison, a null value is equivalent to the string literal `""`.
 
 __Operation Type:__
         
@@ -3058,36 +3111,34 @@ __Operation Type:__
 | __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | St | Ob | 
 | __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     |    | Ob | 
 
-```antlr
-RelationalOperatorExpression
-    : Expression '=' LineTerminator? Expression
-    | Expression '<' '>' LineTerminator? Expression
-    | Expression '<' LineTerminator? Expression
-    | Expression '>' LineTerminator? Expression
-    | Expression '<' '=' LineTerminator? Expression
-    | Expression '>' '=' LineTerminator? Expression
-    ;
-```
 
 ## Like Operator
 
-The `Like` operator is defined for the `String` type and determines whether a string matches a given pattern. The first operand is the string being matched, and the second operand is the pattern to match against. The pattern is made up of Unicode characters. The following character sequences have special meanings:
+The `Like` operator determines whether a string matches a given pattern.
 
-The character `?` matches any single character.
+```antlr
+LikeOperatorExpression
+    : Expression 'Like' LineTerminator? Expression
+    ;
+```
 
-The character `*` matches zero or more characters.
+The `Like` operator is defined for the `String` type. The first operand is the string being matched, and the second operand is the pattern to match against. The pattern is made up of Unicode characters. The following character sequences have special meanings:
 
-The character `#` matches any single digit (0-9).
+* The character `?` matches any single character.
 
-A list of characters surrounded by brackets (`[ab...]`) matches any single character in the list.
+* The character `*` matches zero or more characters.
 
-A list of characters surrounded by brackets and prefixed by an exclamation point (`[!ab...]`) matches any single character not in the character list.
+* The character `#` matches any single digit (0-9).
 
-Two characters in a character list separated by a hyphen (`-`) specify a range of Unicode characters starting with the first character and ending with the second character. If the second character is not later in the sort order than the first character, a run-time exception occurs. A hyphen that appears at the beginning or end of a character list specifies itself.
+* A list of characters surrounded by brackets (`[ab...]`) matches any single character in the list.
 
-__Note.__ To match the special characters left bracket (`[`), question mark (`?`), number sign (`#`), and asterisk (`*`), brackets must enclose them. The right bracket (`]`) cannot be used within a group to match itself, but it can be used outside a group as an individual character. The character sequence `[]` is considered to be the string literal `""`. 
+* A list of characters surrounded by brackets and prefixed by an exclamation point (`[!ab...]`) matches any single character not in the character list.
 
-Also note that character comparisons and ordering for character lists are dependent on the type of comparisons being used. If binary comparisons are being used, character comparisons and ordering are based on the numeric Unicode values. If text comparisons are being used, character comparisons and ordering are based on the current locale being used on the .NET Framework.
+* Two characters in a character list separated by a hyphen (`-`) specify a range of Unicode characters starting with the first character and ending with the second character. If the second character is not later in the sort order than the first character, a run-time exception occurs. A hyphen that appears at the beginning or end of a character list specifies itself.
+
+To match the special characters left bracket (`[`), question mark (`?`), number sign (`#`), and asterisk (`*`), brackets must enclose them. The right bracket (`]`) cannot be used within a group to match itself, but it can be used outside a group as an individual character. The character sequence `[]` is considered to be the string literal `""`. 
+
+Note that character comparisons and ordering for character lists are dependent on the type of comparisons being used. If binary comparisons are being used, character comparisons and ordering are based on the numeric Unicode values. If text comparisons are being used, character comparisons and ordering are based on the current locale being used on the .NET Framework.
 
 In some languages, special characters in the alphabet represent two separate characters and vice versa. For example, several languages use the character `æ` to represent the characters `a` and `e` when they appear together, while the characters `^` and `O` can be used to represent the character `Ô`. When using text comparisons, the `Like` operator recognizes such cultural equivalences. In that case, an occurrence of the single special character in either pattern or string matches the equivalent two-character sequence in the other string. Similarly, a single special character in pattern enclosed in brackets (by itself, in a list, or in a range) matches the equivalent two-character sequence in the string and vice versa.
 
@@ -3114,15 +3165,16 @@ __Operation Type:__
 | __St__ |    |    |    |    |    |    |    |    |    |    |    |    |    |    | St | Ob | 
 | __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    | Ob | 
 
-```antlr
-LikeOperatorExpression
-    : Expression 'Like' LineTerminator? Expression
-    ;
-```
 
 ## Concatenation Operator
 
-The *concatenation operator* is defined for all of the intrinsic types, including the nullable versions of the intrinsic value types. It is also defined for concatenation between the types mentioned above and `System.DBNull`, which is treated as a `Nothing` string The concatenation operator converts all of its operands to `String`; in the expression, all conversions to `String` are considered to be widening, regardless of whether strict semantics are used. A `System.DBNull` value is converted to the literal `Nothing` typed as `String`. A nullable value type whose value is `Nothing` is also converted to the literal `Nothing` typed as `String`, rather than throwing a run-time error.
+```antlr
+ConcatenationOperatorExpression
+    : Expression '&' LineTerminator? Expression
+    ;
+```
+
+The *concatenation operator* is defined for all of the intrinsic types, including the nullable versions of the intrinsic value types. It is also defined for concatenation between the types mentioned above and `System.DBNull`, which is treated as a `Nothing` string. The concatenation operator converts all of its operands to `String`; in the expression, all conversions to `String` are considered to be widening, regardless of whether strict semantics are used. A `System.DBNull` value is converted to the literal `Nothing` typed as `String`. A nullable value type whose value is `Nothing` is also converted to the literal `Nothing` typed as `String`, rather than throwing a run-time error.
 
 A concatenation operation results in a string that is the concatenation of the two operands in order from left to right. The value `Nothing` is treated as if it were the empty string literal `""`.
 
@@ -3147,41 +3199,47 @@ __Operation Type:__
 | __St__ |    |    |    |    |    |    |    |    |    |    |    |    |    |    | St | Ob | 
 | __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    | Ob | 
 
-```antlr
-ConcatenationOperatorExpression
-    : Expression '&' LineTerminator? Expression
-    ;
-```
 
 ## Logical Operators
 
-The `And`, `Not`, `Or`, and `Xor` operators, which are called the logical operators, are evaluated as follows:
+The `And`, `Not`, `Or`, and `Xor` operators are called the logical operators.
 
-For the `Boolean` type:
+```antlr
+LogicalOperatorExpression
+    : 'Not' Expression
+    | Expression 'And' LineTerminator? Expression
+    | Expression 'Or' LineTerminator? Expression
+    | Expression 'Xor' LineTerminator? Expression
+    ;
+```
 
-A logical `And` operation is performed on its two operands.
+The logical operators are evaluated as follows:
 
-A logical `Not` operation is performed on its operand.
+* For the `Boolean` type:
 
-A logical `Or` operation is performed on its two operands.
+  * A logical `And` operation is performed on its two operands.
 
-A logical exclusive-`Or` operation is performed on its two operands.
+  * A logical `Not` operation is performed on its operand.
 
-For `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, `Long`, and all enumerated types, the specified operation is performed on each bit of the binary representation of the two operand(s):
+  * A logical `Or` operation is performed on its two operands.
 
-`And`: The result bit is 1 if both bits are 1; otherwise the result bit is 0.
+  * A logical exclusive-`Or` operation is performed on its two operands.
 
-`Not`: The result bit is 1 if the bit is 0; otherwise the result bit is 1.
+* For `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, `Long`, and all enumerated types, the specified operation is performed on each bit of the binary representation of the two operand(s):
 
-`Or`: The result bit is 1 if either bit is 1; otherwise the result bit is 0.
+  * `And`: The result bit is 1 if both bits are 1; otherwise the result bit is 0.
 
-`Xor`: The result bit is 1 if either bit is 1 but not both bits; otherwise the result bit is 0 (that is, 1 `Xor` 0 = 1, 1 `Xor` 1 = 0).
+  * `Not`: The result bit is 1 if the bit is 0; otherwise the result bit is 1.
 
-When the logical operators `And` and `Or` are lifted for the type `Boolean?`, they are extended to encompass three-valued Boolean logic as such:
+  * `Or`: The result bit is 1 if either bit is 1; otherwise the result bit is 0.
 
-`And` evaluates to true if both operands are true; false if one of the operands is false; `Nothing` otherwise.
+  * `Xor`: The result bit is 1 if either bit is 1 but not both bits; otherwise the result bit is 0 (that is, 1 `Xor` 0 = 1, 1 `Xor` 1 = 0).
 
-`Or` evaluates to true if either operand is true; false is both operands are false; `Nothing` otherwise.
+* When the logical operators `And` and `Or` are lifted for the type `Boolean?`, they are extended to encompass three-valued Boolean logic as such:
+
+  * `And` evaluates to true if both operands are true; false if one of the operands is false; `Nothing` otherwise.
+
+  * `Or` evaluates to true if either operand is true; false is both operands are false; `Nothing` otherwise.
 
 For example:
 
@@ -3231,24 +3289,25 @@ __And, Or, Xor Operation Type:__
 | __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | Lo  | Ob  | 
 | __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     |     | Ob  | 
 
-```antlr
-LogicalOperatorExpression
-    : 'Not' Expression
-    | Expression 'And' LineTerminator? Expression
-    | Expression 'Or' LineTerminator? Expression
-    | Expression 'Xor' LineTerminator? Expression
-    ;
-```
 
 ### Short-circuiting Logical Operators
 
-The `AndAlso` and `OrElse` operators are the short-circuiting versions of the `And` and `Or` logical operators. Because of their short circuiting behavior, the second operand is not evaluated at run time if the operator result is known after evaluating the first operand.
+The `AndAlso` and `OrElse` operators are the short-circuiting versions of the `And` and `Or` logical operators.
+
+```antlr
+ShortCircuitLogicalOperatorExpression
+    : Expression 'AndAlso' LineTerminator? Expression
+    | Expression 'OrElse' LineTerminator? Expression
+    ;
+```
+
+Because of their short circuiting behavior, the second operand is not evaluated at run time if the operator result is known after evaluating the first operand.
 
 The short-circuiting logical operators are evaluated as follows:
 
-If the first operand in an `AndAlso` operation evaluates to `False` or returns True from its `IsFalse` operator, the expression returns its first operand. Otherwise, the second operand is evaluated and a logical `And` operation is performed on the two results.
+* If the first operand in an `AndAlso` operation evaluates to `False` or returns True from its `IsFalse` operator, the expression returns its first operand. Otherwise, the second operand is evaluated and a logical `And` operation is performed on the two results.
 
-If the first operand in an `OrElse` operation evaluates to `True` or returns True from its `IsTrue` operator, the expression returns its first operand. Otherwise, the second operand is evaluated and a logical `Or` operation is performed on its two results.
+* If the first operand in an `OrElse` operation evaluates to `True` or returns True from its `IsTrue` operator, the expression returns its first operand. Otherwise, the second operand is evaluated and a logical `Or` operation is performed on its two results.
 
 The `AndAlso` and `OrElse` operators are defined for the type `Boolean`, or for any type `T` that overloads the following operators:
 
@@ -3334,16 +3393,19 @@ __Operation Type:__
 | __St__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     | Bo  | Ob  | 
 | __Ob__ |    |    |    |    |    |    |    |    |    |    |    |    |     |     |     | Ob  | 
 
-```antlr
-ShortCircuitLogicalOperatorExpression
-    : Expression 'AndAlso' LineTerminator? Expression
-    | Expression 'OrElse' LineTerminator? Expression
-    ;
-```
 
 ## Shift Operators
 
-The binary operators `<<` and `>>` perform bit shifting operations. The operators are defined for the `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong` and `Long` types. Unlike the other binary operators, the result type of a shift operation is determined as if the operator was a unary operator with just the left operand. The type of the right operand must be implicitly convertible to `Integer` and is not used in determining the result type of the operation.
+The binary operators `<<` and `>>` perform bit shifting operations.
+
+```antlr
+ShiftOperatorExpression
+    : Expression '<' '<' LineTerminator? Expression
+    | Expression '>' '>' LineTerminator? Expression
+    ;
+```
+
+The operators are defined for the `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong` and `Long` types. Unlike the other binary operators, the result type of a shift operation is determined as if the operator was a unary operator with just the left operand. The type of the right operand must be implicitly convertible to `Integer` and is not used in determining the result type of the operation.
 
 The `<<` operator causes the bits in the first operand to be shifted left the number of places specified by the shift amount. The high-order bits outside the range of the result type are discarded and the low-order vacated bit positions are zero-filled.
 
@@ -3367,28 +3429,30 @@ __Operation Type:__
 |----|----|----|----|----|----|----|----|----|----|----|----|-----|-----|----|----|
 | Sh | SB | By | Sh | US | In | UI | Lo | UL | Lo | Lo | Lo | Err | Err | Lo | Ob | 
 
-```antlr
-ShiftOperatorExpression
-    : Expression '<' '<' LineTerminator? Expression
-    | Expression '>' '>' LineTerminator? Expression
-    ;
-```
 
 ## Boolean Expressions
 
-A Boolean expression is an expression that can be tested to see if it is true or if it is false. A type `T` can be used in a Boolean expression if, in order of preference:
+A Boolean expression is an expression that can be tested to see if it is true or if it is false.
 
-`T` is `Boolean` or `Boolean?`
+```antlr
+BooleanExpression
+    : Expression
+    ;
+```
 
-`T` has a widening conversion to `Boolean`
+A type `T` can be used in a Boolean expression if, in order of preference:
 
-`T` has a widening conversion to `Boolean?`
+* `T` is `Boolean` or `Boolean?`
 
-`T` defines two pseudo operators, `IsTrue` and `IsFalse`.
+* `T` has a widening conversion to `Boolean`
 
-`T` has a narrowing conversion to `Boolean?` that does not involve a conversion from `Boolean` to `Boolean?`.
+* `T` has a widening conversion to `Boolean?`
 
-`T` has a narrowing conversion to `Boolean`.
+* `T` defines two pseudo operators, `IsTrue` and `IsFalse`.
+
+* `T` has a narrowing conversion to `Boolean?` that does not involve a conversion from `Boolean` to `Boolean?`.
+
+* `T` has a narrowing conversion to `Boolean`.
 
 __Note.__ It is interesting to note that if `Option Strict` is off, an expression that has a narrowing conversion to `Boolean` will be accepted without a compile-time error but the language will still prefer an `IsTrue` operator if it exists. This is because `Option Strict` only changes what is and isn't accepted by the language, and never changes the actual meaning of an expression. Thus, `IsTrue` has to always be preferred over a narrowing conversion, regardless of `Option Strict`.
 
@@ -3433,15 +3497,45 @@ Dim i As Integer? = Nothing
 If i Then Console.WriteLine()
 ```
 
-```antlr
-BooleanExpression
-    : Expression
-    ;
-```
 
 ## Lambda Expressions
 
-A *lambda expression* defines an anonymous method called a *lambda method*. Lambda methods make it easy to pass "in-line" methods to other methods that take delegate types. The example:
+A *lambda expression* defines an anonymous method called a *lambda method*. Lambda methods make it easy to pass "in-line" methods to other methods that take delegate types.
+
+```antlr
+LambdaExpression
+    : SingleLineLambda
+    | MultiLineLambda
+    ;
+
+SingleLineLambda
+    : LambdaModifier* 'Function' ( OpenParenthesis ParameterList? CloseParenthesis )? Expression
+    | 'Sub' ( OpenParenthesis ParameterList? CloseParenthesis )? Statement
+    ;
+
+MultiLineLambda
+    : MultiLineFunctionLambda
+    | MultiLineSubLambda
+    ;
+
+MultiLineFunctionLambda
+    : LambdaModifier* 'Function' ( OpenParenthesis ParameterList? CloseParenthesis )? ( 'As' TypeName )? LineTerminator
+      Block
+      'End' 'Function'
+    ;
+
+MultiLineSubLambda
+    : LambdaModifier* 'Sub' ( OpenParenthesis ParameterList? CloseParenthesis )? LineTerminator
+      Block
+      'End' 'Sub'
+    ;
+
+LambdaModifier
+    : 'Async' | 'Iterator'
+    ;
+```
+
+The example:
 
 ```vb
 Module Test
@@ -3513,11 +3607,13 @@ Dim y = Sub(x As Integer)
           End Sub
 ```
 
-Multi-line `Function` lambda expressions can declare a return type but cannot put attributes on it. If a multi-line `Function` lambda expression does not declare a return type but the return type can be inferred from the context in which the lambda expression is used , then that return type is used. Otherwise the return type of the function is calculated as follows.
+Multi-line `Function` lambda expressions can declare a return type but cannot put attributes on it. If a multi-line `Function` lambda expression does not declare a return type but the return type can be inferred from the context in which the lambda expression is used , then that return type is used. Otherwise the return type of the function is calculated as follows:
 
-1. In a regular lambda expression, the return type is the dominant type of the expressions in all the `Return` statements in the statement block.
-2. In an async lambda expression, the return type is `Task(Of T)` where `T` is the dominant type of the expressions in all the `Return` statements in the statement block.
-3. In an iterator lambda expression, the return type is `IEnumerable(Of T)` where `T` is the dominant type of the expressions in all the `Yield` statements in the statement block.
+* In a regular lambda expression, the return type is the dominant type of the expressions in all the `Return` statements in the statement block.
+
+* In an async lambda expression, the return type is `Task(Of T)` where `T` is the dominant type of the expressions in all the `Return` statements in the statement block.
+
+* In an iterator lambda expression, the return type is `IEnumerable(Of T)` where `T` is the dominant type of the expressions in all the `Yield` statements in the statement block.
 
 For example:
 
@@ -3551,26 +3647,26 @@ There is no implicit return variable, as there is no name for the variable.
 
 The statement blocks inside multi-line lambda expressions have the following restrictions:
 
-`On Error` and `Resume` statements are not allowed, although `Try` statements are allowed.
+* `On Error` and `Resume` statements are not allowed, although `Try` statements are allowed.
 
-Static locals cannot be declared in multi-line lambda expressions.
+* Static locals cannot be declared in multi-line lambda expressions.
 
-It is not possible to branch into or out of the statement block of a multi-line lambda expression, although the normal branching rules apply within it. For example:
+* It is not possible to branch into or out of the statement block of a multi-line lambda expression, although the normal branching rules apply within it. For example:
 
-```vb
-Label1:
-Dim x = Sub()
-               ' Error: Cannot branch out
-               GoTo Label1
+  ```vb
+  Label1:
+  Dim x = Sub()
+                 ' Error: Cannot branch out
+                 GoTo Label1
 
-               ' OK: Wholly within the lamba.
-               GoTo Label2:
-          Label2:
-          End Sub
+                 ' OK: Wholly within the lamba.
+                 GoTo Label2:
+            Label2:
+            End Sub
 
-' Error: Cannot branch in
-GoTo Label2
-```
+  ' Error: Cannot branch in
+  GoTo Label2
+  ```
 
 A lambda expression is roughly equivalent to an anonymous method declared on the containing type. The initial example is roughly equivalent to:
 
@@ -3600,38 +3696,6 @@ Module Test
 End Module
 ```
 
-```antlr
-LambdaExpression
-    : SingleLineLambda
-    | MultiLineLambda
-    ;
-
-SingleLineLambda
-    : LambdaModifier* 'Function' ( OpenParenthesis ParameterList? CloseParenthesis )? Expression
-    | 'Sub' ( OpenParenthesis ParameterList? CloseParenthesis )? Statement
-    ;
-
-MultiLineLambda
-    : MultiLineFunctionLambda
-    | MultiLineSubLambda
-    ;
-
-MultiLineFunctionLambda
-    : LambdaModifier* 'Function' ( OpenParenthesis ParameterList? CloseParenthesis )? ( 'As' TypeName )? LineTerminator
-      Block
-      'End' 'Function'
-    ;
-
-MultiLineSubLambda
-    : LambdaModifier* 'Sub' ( OpenParenthesis ParameterList? CloseParenthesis )? LineTerminator
-      Block
-      'End' 'Sub'
-    ;
-
-LambdaModifier
-    : 'Async' | 'Iterator'
-    ;
-```
 
 ### Closures
 
@@ -3748,9 +3812,9 @@ End Module
 
 Because they cannot be captured into a closure, the following cannot appear inside of a lambda expression:
 
-Reference parameters.
+* Reference parameters.
 
-Instance expressions (`Me`, `MyClass`, `MyBase`), if the type of `Me` is not a class.
+* Instance expressions (`Me`, `MyClass`, `MyBase`), if the type of `Me` is not a class.
 
 The members of an anonymous type-creation expression, if the lambda expression is part of the expression. For example:
 
@@ -3822,7 +3886,27 @@ JoinOrGroupJoinQueryOperator
 
 ### Range Variables
 
-Some query operators introduce a special kind of variable called a *range variable*. Range variables are not real variables; instead, they represent the individual values during the evaluation of the query over the input collections. Range variables are scoped from the introducing query operator to the end of a query expression, or to a query operator such as `Select` that hides them. For example, in the following query
+Some query operators introduce a special kind of variable called a *range variable*. Range variables are not real variables; instead, they represent the individual values during the evaluation of the query over the input collections.
+
+```antlr
+CollectionRangeVariableDeclarationList
+    : CollectionRangeVariableDeclaration ( Comma CollectionRangeVariableDeclaration )*
+    ;
+
+CollectionRangeVariableDeclaration
+    : Identifier ( 'As' TypeName )? 'In' LineTerminator? Expression
+    ;
+
+ExpressionRangeVariableDeclarationList
+    : ExpressionRangeVariableDeclaration ( Comma ExpressionRangeVariableDeclaration )*
+    ;
+
+ExpressionRangeVariableDeclaration
+    : Identifier ( 'As' TypeName )? Equals Expression
+    ;
+```
+
+Range variables are scoped from the introducing query operator to the end of a query expression, or to a query operator such as `Select` that hides them. For example, in the following query
 
 ```vb
 Dim waCusts = _
@@ -3849,23 +3933,6 @@ Only in a Let operator may an expression range variable have its type specified.
 
 A range variable must follow the rules for declaring local variables in respect to shadowing. Thus, a range variable cannot hide the name of a local variable or parameter in the enclosing method or another range variable (unless the query operator specifically hides all current range variables in scope).
 
-```antlr
-CollectionRangeVariableDeclarationList
-    : CollectionRangeVariableDeclaration ( Comma CollectionRangeVariableDeclaration )*
-    ;
-
-CollectionRangeVariableDeclaration
-    : Identifier ( 'As' TypeName )? 'In' LineTerminator? Expression
-    ;
-
-ExpressionRangeVariableDeclarationList
-    : ExpressionRangeVariableDeclaration ( Comma ExpressionRangeVariableDeclaration )*
-    ;
-
-ExpressionRangeVariableDeclaration
-    : Identifier ( 'As' TypeName )? Equals Expression
-    ;
-```
 
 ### Queryable Types
 
@@ -3877,68 +3944,66 @@ Function Select(selector As Func(Of T, R)) As CR
 
 The following applies to the methods:
 
-The method must be an instance or extension member of the collection type and must be accessible.
+* The method must be an instance or extension member of the collection type and must be accessible.
 
-The method may be generic, provided that is possible to infer all type arguments.
+* The method may be generic, provided that is possible to infer all type arguments.
 
-The method may be overloaded, in which case overload resolution is used to determine the exactly method to use.
+* The method may be overloaded, in which case overload resolution is used to determine the exactly method to use.
 
-Another delegate type may be used in place of the delegate `Func` type, provided that it has the same signature, including return type, as the matching `Func` type.
+* Another delegate type may be used in place of the delegate `Func` type, provided that it has the same signature, including return type, as the matching `Func` type.
 
-The type `System.Linq.Expressions.Expression(Of D)` may be used in place of the delegate `Func` type, provided that `D` is a delegate type that has the same signature, including return type, as the matching `Func` type.
+* The type `System.Linq.Expressions.Expression(Of D)` may be used in place of the delegate `Func` type, provided that `D` is a delegate type that has the same signature, including return type, as the matching `Func` type.
 
-The type `T` represents the element type of the input collection. All of the methods defined by a collection type must have the same input element type for the collection type to be queryable.
+* The type `T` represents the element type of the input collection. All of the methods defined by a collection type must have the same input element type for the collection type to be queryable.
 
-The type `S` represents the element type of the second input collection in the case of query operators that perform joins.
+* The type `S` represents the element type of the second input collection in the case of query operators that perform joins.
 
-The type `K` represents a key type in the case of query operators that have a set of range variables that act as keys.
+* The type `K` represents a key type in the case of query operators that have a set of range variables that act as keys.
 
-The type `N` represents a type that is used as a numeric type (although it could still be a user-defined type and not an intrinsic numeric type).
+* The type `N` represents a type that is used as a numeric type (although it could still be a user-defined type and not an intrinsic numeric type).
 
-The type `B` represents a type that can be used in a Boolean expression.
+* The type `B` represents a type that can be used in a Boolean expression.
 
-The type `R` represents the element type of the result collection, if the query operator produces a result collection. `R` depends on the number of range variables in scope at the conclusion of the query operator. If a single range variable is in scope, then `R` is the type of that range variable. In the example
+* The type `R` represents the element type of the result collection, if the query operator produces a result collection. `R` depends on the number of range variables in scope at the conclusion of the query operator. If a single range variable is in scope, then `R` is the type of that range variable. In the example
 
-```vb
-Dim custNames = _
-      From c In Customers _
-      Select c.Name
-```
+  ```vb
+  Dim custNames = From c In Customers
+                  Select c.Name
+  ```
 
-the result of the query will be a collection type with an element type of `String`. If multiple range variables are in scope, then `R` is an anonymous type that contains all of the range variables in scope as `Key` fields. In the example:
+  the result of the query will be a collection type with an element type of `String`. If multiple range variables are in scope, then `R` is an anonymous type that contains all of the range variables in scope as `Key` fields. In the example:
 
-```vb
-Dim custAndOrderNames = _
-      From c In Customers, o In c.Orders _
-      Select Name = c.Name, ProductName = o.ProductName
-```
+  ```vb
+  Dim custNames = From c In Customers, o In c.Orders 
+                  Select Name = c.Name, ProductName = o.ProductName
+  ```
 
-the result of the query will be a collection type with an element type of an anonymous type with a read-only property named `Name` of type `String` and a read-only property named `ProductName` of type `String`.
+  the result of the query will be a collection type with an element type of an anonymous type with a read-only property named `Name` of type `String` and a read-only property named `ProductName` of type `String`.
 
-Within a query expression, anonymous types generated to contain range variables are *transparent*, which means that range variables are always available without qualification. For example, in the previous example the range variables `c` and `o` could be accessed without qualification in the `Select` query operator, even though the input collection's element type was an anonymous type.
+  Within a query expression, anonymous types generated to contain range variables are *transparent*, which means that range variables are always available without qualification. For example, in the previous example the range variables `c` and `o` could be accessed without qualification in the `Select` query operator, even though the input collection's element type was an anonymous type.
 
-The type `CX` represents a collection type, not necessarily the input collection type, whose element type is some type `X`.
+* The type `CX` represents a collection type, not necessarily the input collection type, whose element type is some type `X`.
 
 A queryable collection type must satisfy one of the following conditions, in order of preference:
 
-It must define a conforming `Select` method.
+* It must define a conforming `Select` method.
 
-It must have have one of the following methods
+* It must have have one of the following methods
 
-```vb
-Function AsEnumerable() As CT
-Function AsQueryable() As CT
-```
+  ```vb
+  Function AsEnumerable() As CT
+  Function AsQueryable() As CT
+  ```
 
-which can be called to obtain a queryable collection. If both methods are provided, `AsQueryable` is preferred over `AsEnumerable`.
+  which can be called to obtain a queryable collection. If both methods are provided, `AsQueryable` is preferred over `AsEnumerable`.
 
-It must have a method
+* It must have a method
 
-```vb
-Function Cast(Of T)() As CT
-```
+  ```vb
+  Function Cast(Of T)() As CT
+  ```
 
-which can be called with the type of the range variable to produce a queryable collection.
+  which can be called with the type of the range variable to produce a queryable collection.
 
 Because determining the element type of a collection occurs independently of an actual method invocation, the applicability of specific methods cannot be determined. Thus, when determining the element type of a collection if there are instance methods that match well-known methods, then any extension methods that match well-known methods are ignored.
 
@@ -3992,7 +4057,15 @@ If the collection type does not have an `ElementAtOrDefault` member, a compile-t
 
 ### From Query Operator
 
-The `From` query operator introduces a collection range variable that represents the individual members of a collection to be queried. For example, the query expression:
+The `From` query operator introduces a collection range variable that represents the individual members of a collection to be queried.
+
+```antlr
+FromQueryOperator
+    : LineTerminator? 'From' LineTerminator? CollectionRangeVariableDeclarationList
+    ;
+```
+
+For example, the query expression:
 
 ```vb
 From c As Customer In Customers ...
@@ -4067,15 +4140,27 @@ Dim zs = _
 
 __Note.__ `From` is not a reserved word.
 
-```antlr
-FromQueryOperator
-    : LineTerminator? 'From' LineTerminator? CollectionRangeVariableDeclarationList
-    ;
-```
 
 ### Join Query Operator
 
-The `Join` query operator joins existing range variables with a new collection range variable, producing a single collection whose elements have been joined together based on an equality expression. For example:
+The `Join` query operator joins existing range variables with a new collection range variable, producing a single collection whose elements have been joined together based on an equality expression.
+
+```antlr
+JoinQueryOperator
+    : LineTerminator? 'Join' LineTerminator? CollectionRangeVariableDeclaration
+      JoinOrGroupJoinQueryOperator? LineTerminator? 'On' LineTerminator? JoinConditionList
+    ;
+
+JoinConditionList
+    : JoinCondition ( 'And' LineTerminator? JoinCondition )*
+    ;
+
+JoinCondition
+    : Expression 'Equals' LineTerminator? Expression
+    ;
+```
+
+For example:
 
 ```vb
 Dim customersAndOrders = _
@@ -4085,19 +4170,19 @@ Dim customersAndOrders = _
 
 The equality expression is more restricted than a regular equality expression:
 
-Both expressions must be classified as a value.
+* Both expressions must be classified as a value.
 
-Both expressions must reference at least one range variable.
+* Both expressions must reference at least one range variable.
 
-The range variable declared in the join query operator must be referenced by one of the expressions, and that expression must not reference any other range variables.
+* The range variable declared in the join query operator must be referenced by one of the expressions, and that expression must not reference any other range variables.
 
 If the types of the two expressions are not the exact same type, then
 
-If the equality operator is defined for the two types, both expressions are implicitly convertible to it, and it is not `Object`, then convert both expressions to that type.
+* If the equality operator is defined for the two types, both expressions are implicitly convertible to it, and it is not `Object`, then convert both expressions to that type.
 
-Otherwise, if there is a dominant type that both expressions can be implicitly converted to, then convert both expressions to that type.
+* Otherwise, if there is a dominant type that both expressions can be implicitly converted to, then convert both expressions to that type.
 
-Otherwise, a compile-time error occurs.
+* Otherwise, a compile-time error occurs.
 
 The expressions are compared using hash values (i.e. by calling `GetHashCode()`) rather than by using equality operators for efficiency. A `Join` query operator may do multiple joins or equality conditions in the same operator. A `Join` query operator is only supported if the collection type contains a method:
 
@@ -4133,24 +4218,18 @@ Dim zs = _
 
 __Note.__ `Join`, `On` and `Equals` are not reserved words.
 
-```antlr
-JoinQueryOperator
-    : LineTerminator? 'Join' LineTerminator? CollectionRangeVariableDeclaration
-      JoinOrGroupJoinQueryOperator? LineTerminator? 'On' LineTerminator? JoinConditionList
-    ;
-
-JoinConditionList
-    : JoinCondition ( 'And' LineTerminator? JoinCondition )*
-    ;
-
-JoinCondition
-    : Expression 'Equals' LineTerminator? Expression
-    ;
-```
 
 ### Let Query Operator
 
-The `Let` query operator introduces an expression range variable. This allows calculating an intermediate value once that will be used multiple times in later query operators. For example:
+The `Let` query operator introduces an expression range variable. This allows calculating an intermediate value once that will be used multiple times in later query operators.
+
+```antlr
+LetQueryOperator
+    : LineTerminator? 'Let' LineTerminator? ExpressionRangeVariableDeclarationList
+    ;
+```
+
+For example:
 
 ```vb
 Dim taxedPrices = _
@@ -4192,15 +4271,18 @@ Dim zs = _
     xs.Select(Function(x As Integer) New With {x, .y = x * 10})...
 ```
 
-```antlr
-LetQueryOperator
-    : LineTerminator? 'Let' LineTerminator? ExpressionRangeVariableDeclarationList
-    ;
-```
 
 ### Select Query Operator
 
-The `Select` query operator is like the `Let` query operator in that it introduces expression range variables; however, a `Select` query operator hides the currently available range variables instead of adding to them. Also, the type of an expression range variable introduced by a `Select` query operator is always inferred using local variable type inference rules; an explicit type cannot be specified, and if no type can be inferred, a compile-time error occurs. For example, in the query:
+The `Select` query operator is like the `Let` query operator in that it introduces expression range variables; however, a `Select` query operator hides the currently available range variables instead of adding to them. Also, the type of an expression range variable introduced by a `Select` query operator is always inferred using local variable type inference rules; an explicit type cannot be specified, and if no type can be inferred, a compile-time error occurs.
+
+```antlr
+SelectQueryOperator
+    : LineTerminator? 'Select' LineTerminator? ExpressionRangeVariableDeclarationList
+    ;
+```
+
+For example, in the query:
 
 ```vb
 Dim smiths = _
@@ -4267,15 +4349,18 @@ Dim zs = _
     xs.Select(Function(x As Integer) New With {x, .y = x * 10})...
 ```
 
-```antlr
-SelectQueryOperator
-    : LineTerminator? 'Select' LineTerminator? ExpressionRangeVariableDeclarationList
-    ;
-```
 
 ### Distinct Query Operator
 
-The `Distinct` query operator restricts the values in a collection only to those with distinct values, as determined by comparing the element type for equality. For example, the query:
+The `Distinct` query operator restricts the values in a collection only to those with distinct values, as determined by comparing the element type for equality.
+
+```antlr
+DistinctQueryOperator
+    : LineTerminator? 'Distinct' LineTerminator?
+    ;
+```
+
+For example, the query:
 
 ```vb
 Dim distinctCustomerPrice = _
@@ -4308,15 +4393,18 @@ Dim zs = xs.Distinct()...
 
 __Note.__ `Distinct` is not a reserved word.
 
-```antlr
-DistinctQueryOperator
-    : LineTerminator? 'Distinct' LineTerminator?
-    ;
-```
 
 ### Where Query Operator
 
-The `Where` query operator restricts the values in a collection to those that satisfy a given condition. A `Where` query operator takes a Boolean expression that is evaluated for each set of range variable values; if the value of the expression is true, then the values appear in the output collection, otherwise the values are skipped. For example, the query expression:
+The `Where` query operator restricts the values in a collection to those that satisfy a given condition.
+
+```antlr
+WhereQueryOperator
+    : LineTerminator? 'Where' LineTerminator? BooleanExpression
+    ;
+```
+
+A `Where` query operator takes a Boolean expression that is evaluated for each set of range variable values; if the value of the expression is true, then the values appear in the output collection, otherwise the values are skipped. For example, the query expression:
 
 ```vb
 From cust In Customers, ord In Orders _
@@ -4361,13 +4449,17 @@ Dim zs = _
 
 __Note.__ `Where` is not a reserved word.
 
-```antlr
-WhereQueryOperator
-    : LineTerminator? 'Where' LineTerminator? BooleanExpression
-    ;
-```
 
 ### Partition Query Operators
+
+```antlr
+PartitionQueryOperator
+    : LineTerminator? 'Take' LineTerminator? Expression
+    | LineTerminator? 'Take' 'While' LineTerminator? BooleanExpression
+    | LineTerminator? 'Skip' LineTerminator? Expression
+    | LineTerminator? 'Skip' 'While' LineTerminator? BooleanExpression
+    ;
+```
 
 The `Take` query operator results in the first `n` elements of a collection. When used with the `While` modifier, the `Take` operator results in the first `n` elements of a collection that satisfy a Boolean expression. The `Skip` operator skips the first `n` elements of a collection and then returns the remainder of the collection.  When used in conjunction with the `While` modifier, the `Skip` operator skips the first `n` elements of a collection that satisfy a Boolean expression and then returns the rest of the collection. The expressions in a `Take` or `Skip` query operator must be classified as a value.
 
@@ -4420,18 +4512,30 @@ Dim zs = _
 
 __Note.__ `Take` and `Skip` are not reserved words.
 
-```antlr
-PartitionQueryOperator
-    : LineTerminator? 'Take' LineTerminator? Expression
-    | LineTerminator? 'Take' 'While' LineTerminator? BooleanExpression
-    | LineTerminator? 'Skip' LineTerminator? Expression
-    | LineTerminator? 'Skip' 'While' LineTerminator? BooleanExpression
-    ;
-```
 
 ### Order By Query Operator
 
-The `Order By` query operator orders the values that appear in the range variables. An `Order By` query operator takes expressions that specify the key values that should be used to order the iteration variables. For example, the following query returns products sorted by price:
+The `Order By` query operator orders the values that appear in the range variables. 
+
+```antlr
+OrderByQueryOperator
+    : LineTerminator? 'Order' 'By' LineTerminator? OrderExpressionList
+    ;
+
+OrderExpressionList
+    : OrderExpression ( Comma OrderExpression )*
+    ;
+
+OrderExpression
+    : Expression Ordering?
+    ;
+
+Ordering
+    : 'Ascending' | 'Descending'
+    ;
+```
+
+An `Order By` query operator takes expressions that specify the key values that should be used to order the iteration variables. For example, the following query returns products sorted by price:
 
 ```vb
 Dim productsByPrice = _
@@ -4493,27 +4597,20 @@ __Note.__ Because query operators simply map syntax to methods that implement a 
 
 __Note.__ `Order` and `By` are not reserved words.
 
-```antlr
-OrderByQueryOperator
-    : LineTerminator? 'Order' 'By' LineTerminator? OrderExpressionList
-    ;
-
-OrderExpressionList
-    : OrderExpression ( Comma OrderExpression )*
-    ;
-
-OrderExpression
-    : Expression Ordering?
-    ;
-
-Ordering
-    : 'Ascending' | 'Descending'
-    ;
-```
 
 ### Group By Query Operator
 
-The `Group By` query operator groups the range variables in scope based on one or more expressions, and then produces new range variables based on those groupings. For example, the following query groups all customers by `State`, and then computes the count and average age of each group:
+The `Group By` query operator groups the range variables in scope based on one or more expressions, and then produces new range variables based on those groupings.
+
+```antlr
+GroupByQueryOperator
+    : LineTerminator? 'Group' ( LineTerminator? ExpressionRangeVariableDeclarationList )?
+      LineTerminator? 'By' LineTerminator? ExpressionRangeVariableDeclarationList
+      LineTerminator? 'Into' LineTerminator? ExpressionRangeVariableDeclarationList
+    ;
+```
+
+For example, the following query groups all customers by `State`, and then computes the count and average age of each group:
 
 ```vb
 Dim averageAges = _
@@ -4633,17 +4730,19 @@ Dim zs = _
 
 __Note.__ `Group`, `By`, and `Into` are not reserved words.
 
+
+### Aggregate Query Operator
+
+The `Aggregate` query operator performs a similar function as the `Group By` operator, except it allows aggregating over groups that have already been formed. Because the group has already been formed, the `Into` clause of an `Aggregate` query operator does not hide the range variables in scope (in this way, `Aggregate` is more like a `Let`, and `Group By` is more like a `Select`).
+
 ```antlr
-GroupByQueryOperator
-    : LineTerminator? 'Group' ( LineTerminator? ExpressionRangeVariableDeclarationList )?
-      LineTerminator? 'By' LineTerminator? ExpressionRangeVariableDeclarationList
+AggregateQueryOperator
+    : LineTerminator? 'Aggregate' LineTerminator? CollectionRangeVariableDeclaration QueryOperator*
       LineTerminator? 'Into' LineTerminator? ExpressionRangeVariableDeclarationList
     ;
 ```
 
-### Aggregate Query Operator
-
-The `Aggregate` query operator performs a similar function as the `Group By` operator, except it allows aggregating over groups that have already been formed. Because the group has already been formed, the `Into` clause of an `Aggregate` query operator does not hide the range variables in scope (in this way, `Aggregate` is more like a `Let`, and `Group By` is more like a `Select`). For example, the following query aggregates the total of all the orders placed by customers in Washington:
+For example, the following query aggregates the total of all the orders placed by customers in Washington:
 
 ```vb
 Dim orderTotals = _
@@ -4695,16 +4794,20 @@ Dim zs = _
 
 __Note.__ `Aggregate` and `Into` are not reserved words.
 
+
+### Group Join Query Operator
+
+The `Group Join` query operator combines the functions of the `Join` and `Group By` query operators into a single operator. `Group Join` joins two collections based on matching keys extracted from the elements, grouping together all of the elements on the right side of the join that match a particular element on the left side of the join. Thus, the operator produces a set of hierarchical results.
+
 ```antlr
-AggregateQueryOperator
-    : LineTerminator? 'Aggregate' LineTerminator? CollectionRangeVariableDeclaration QueryOperator*
+GroupJoinQueryOperator
+    : LineTerminator? 'Group' 'Join' LineTerminator? CollectionRangeVariableDeclaration
+      JoinOrGroupJoinQueryOperator? LineTerminator? 'On' LineTerminator? JoinConditionList
       LineTerminator? 'Into' LineTerminator? ExpressionRangeVariableDeclarationList
     ;
 ```
 
-### Group Join Query Operator
-
-The `Group Join` query operator combines the functions of the `Join` and `Group By` query operators into a single operator. `Group Join` joins two collections based on matching keys extracted from the elements, grouping together all of the elements on the right side of the join that match a particular element on the left side of the join. Thus, the operator produces a set of hierarchical results. For example, the following query produces elements that contain a single customer's name, a group of all of their orders, and the total amount of all of those orders:
+For example, the following query produces elements that contain a single customer's name, a group of all of their orders, and the total amount of all of those orders:
 
 ```vb
 Dim custsWithOrders = _
@@ -4749,17 +4852,19 @@ Dim zs = _
 
 __Note.__ `Group`, `Join`, and `Into` are not reserved words.
 
-```antlr
-GroupJoinQueryOperator
-    : LineTerminator? 'Group' 'Join' LineTerminator? CollectionRangeVariableDeclaration
-      JoinOrGroupJoinQueryOperator? LineTerminator? 'On' LineTerminator? JoinConditionList
-      LineTerminator? 'Into' LineTerminator? ExpressionRangeVariableDeclarationList
-    ;
-```
 
 ## Conditional Expressions
 
-A conditional `If` expression tests an expression and returns a value. Unlike the `IIF` runtime function, however, a conditional expression only evaluates its operands if necessary. Thus, for example, the expression `If(c Is Nothing, c.Name, "Unknown")` will not throw an exception if the value of `c` is `Nothing`. The conditional expression has two forms: one that takes two operands and one that takes three operands.
+A conditional `If` expression tests an expression and returns a value.
+
+```antlr
+ConditionalExpression
+    : 'If' OpenParenthesis BooleanExpression Comma Expression Comma Expression CloseParenthesis
+    | 'If' OpenParenthesis Expression Comma Expression CloseParenthesis
+    ;
+```
+
+Unlike the `IIF` runtime function, however, a conditional expression only evaluates its operands if necessary. Thus, for example, the expression `If(c Is Nothing, c.Name, "Unknown")` will not throw an exception if the value of `c` is `Nothing`. The conditional expression has two forms: one that takes two operands and one that takes three operands.
 
 If three operands are provided, all three expressions must be classified as values, and the first operand must be a Boolean expression. If the result is of the expression is true, then the second expression will be the result of the operator, otherwise the third expression will be the result of the operator. The result type of the expression is the dominant type between the types of the second and third expression. If there is no dominant type, then a compile-time error occurs.
 
@@ -4779,16 +4884,22 @@ End Module
 
 In both forms of the expression, if an operand is `Nothing`, its type is not used to determine the dominant type. In the case of the expression `If(<expression>, Nothing, Nothing)`, the dominant type is considered to be `Object`.
 
-```antlr
-ConditionalExpression
-    : 'If' OpenParenthesis BooleanExpression Comma Expression Comma Expression CloseParenthesis
-    | 'If' OpenParenthesis Expression Comma Expression CloseParenthesis
-    ;
-```
 
 ## XML Literal Expressions
 
-An XML literal expression represents an XML (eXtensible Markup Language) 1.0 value. The result of an XML literal expression is a value typed as one of the types from the `System.Xml.Linq` namespace. If the types in that namespace are not available, then an XML literal expression will cause a compile-time error. The values are generated through constructor calls translated from the XML literal expression. For example, the code:
+An XML literal expression represents an XML (eXtensible Markup Language) 1.0 value.
+
+```antlr
+XMLLiteralExpression
+    : XMLDocument
+    | XMLElement
+    | XMLProcessingInstruction
+    | XMLComment
+    | XMLCDATASection
+    ;
+```
+
+The result of an XML literal expression is a value typed as one of the types from the `System.Xml.Linq` namespace. If the types in that namespace are not available, then an XML literal expression will cause a compile-time error. The values are generated through constructor calls translated from the XML literal expression. For example, the code:
 
 ```vb
 Dim book As System.Xml.Linq.XElement = _
@@ -4808,43 +4919,8 @@ An XML literal expression can take the form of an XML document, an XML element, 
 
 __Note.__ This specification contains only enough of a description of XML to describe the behavior of the Visual Basic language. More information on XML can be found at http://www.w3.org/TR/REC-xml/.
 
-```antlr
-XMLLiteralExpression
-    : XMLDocument
-    | XMLElement
-    | XMLProcessingInstruction
-    | XMLComment
-    | XMLCDATASection
-    ;
-```
 
 ### Lexical rules
-
-XML literal expressions are interpreted using the lexical rules of XML instead of the lexical rules of regular Visual Basic code. The two sets of rules generally differ in the following ways:
-
-White space is significant in XML. As a result, the grammar for XML literal expressions explicitly states where white space is allowed. Whitespace is not preserved, except when it occurs in the context of character data within an element. For example:
-
-```vb
-' The following element preserves no whitespace
-Dim e1 = _
-    <customer>
-        <name>Bob</>
-    </>
-
-' The following element preserves all of the whitespace
-Dim e2 = _
-    <customer>
-        Bob
-    </>
-```
-
-XML end-of-line whitespace is normalized according to the XML specification.
-
-XML is case-sensitive. Keywords must match casing exactly, or else a compile-time error will occur.
-
-Line terminators are considered white space in XML. As a result, no line-continuation characters are needed in XML literal expressions.
-
-XML does not accept full-width characters. If full-width characters are used, a compile-time error will occur.
 
 ```antlr
 XMLCharacter
@@ -4909,9 +4985,44 @@ XMLExtender
     ;
 ```
 
+XML literal expressions are interpreted using the lexical rules of XML instead of the lexical rules of regular Visual Basic code. The two sets of rules generally differ in the following ways:
+
+* White space is significant in XML. As a result, the grammar for XML literal expressions explicitly states where white space is allowed. Whitespace is not preserved, except when it occurs in the context of character data within an element. For example:
+
+  ```vb
+  ' The following element preserves no whitespace
+  Dim e1 = _
+      <customer>
+          <name>Bob</>
+      </>
+
+  ' The following element preserves all of the whitespace
+  Dim e2 = _
+      <customer>
+          Bob
+      </>
+  ```
+
+* XML end-of-line whitespace is normalized according to the XML specification.
+
+* XML is case-sensitive. Keywords must match casing exactly, or else a compile-time error will occur.
+
+* Line terminators are considered white space in XML. As a result, no line-continuation characters are needed in XML literal expressions.
+
+* XML does not accept full-width characters. If full-width characters are used, a compile-time error will occur.
+
+
 ### Embedded expressions
 
-XML literal expressions can contain *embedded expressions*. An embedded expression is a Visual Basic expression that is evaluated and used to fill in one or more values at the location of embedded expression. For example, the following code places the string `John Smith` as the value of the XML element:
+XML literal expressions can contain *embedded expressions*. An embedded expression is a Visual Basic expression that is evaluated and used to fill in one or more values at the location of embedded expression.
+
+```antlr
+XMLEmbeddedExpression
+    : '<' '%' '=' LineTerminator? Expression LineTerminator? '%' '>'
+    ;
+```
+
+For example, the following code places the string `John Smith` as the value of the XML element:
 
 ```vb
 Dim name as String = "John Smith"
@@ -4935,31 +5046,8 @@ Dim element As System.Xml.Linq.XElement = _
                      Smith</>
 ```
 
-```antlr
-XMLEmbeddedExpression
-    : '<' '%' '=' LineTerminator? Expression LineTerminator? '%' '>'
-    ;
-```
 
 ### XML Documents
-
-An XML document results in a value typed as `System.Xml.Linq.XDocument`. Unlike the XML 1.0 specification, XML documents in XML literal expressions are required to specify the XML document prologue; XML literal expressions without the XML document prologue are interpreted as their individual entity. For example:
-
-```vb
-Dim doc As System.Xml.Linq.XDocument = _
-    <?xml version="1.0"?>
-    <?instruction?>
-    <customer>Bob</>
-
-Dim pi As System.Xml.Linq.XProcessingInstruction = _
-    <?instruction?>
-```
-
-An XML document can contain an embedded expression whose type can be any type; at runtime, however, the object must satisfy the requirements of the `XDocument` constructor or a run-time error will occur.
-
-Unlike regular XML, XML document expressions do not support DTDs (Document Type Declarations). Also, the encoding attribute, if supplied, will be ignored since the encoding of the Xml literal expression is always the same as the encoding of the source file itself.
-
-__Note.__ Although the encoding attribute is ignored, it is still valid attribute in order to maintain the ability to include any valid Xml 1.0 documents in source code.
 
 ```antlr
 XMLDocument
@@ -5051,61 +5139,26 @@ XMLDocumentBody
     ;
 ```
 
+An XML document results in a value typed as `System.Xml.Linq.XDocument`. Unlike the XML 1.0 specification, XML documents in XML literal expressions are required to specify the XML document prologue; XML literal expressions without the XML document prologue are interpreted as their individual entity. For example:
+
+```vb
+Dim doc As System.Xml.Linq.XDocument = _
+    <?xml version="1.0"?>
+    <?instruction?>
+    <customer>Bob</>
+
+Dim pi As System.Xml.Linq.XProcessingInstruction = _
+    <?instruction?>
+```
+
+An XML document can contain an embedded expression whose type can be any type; at runtime, however, the object must satisfy the requirements of the `XDocument` constructor or a run-time error will occur.
+
+Unlike regular XML, XML document expressions do not support DTDs (Document Type Declarations). Also, the encoding attribute, if supplied, will be ignored since the encoding of the Xml literal expression is always the same as the encoding of the source file itself.
+
+__Note.__ Although the encoding attribute is ignored, it is still valid attribute in order to maintain the ability to include any valid Xml 1.0 documents in source code.
+
+
 ### XML Elements
-
-An XML element results in a value typed as `System.Xml.Linq.XElement`. Unlike regular XML, XML elements can omit the name in the closing tag and the current most-nested element will be closed. For example:
-
-```vb
-Dim name = <name>Bob</>
-```
-
-Attribute declarations in an XML element result in values typed as `System.Xml.Linq.XAttribute`. Attribute values are normalized according to the XML specification. When the value of an attribute is `Nothing` the attribute will not be created, so the attribute value expression will not have to be checked for `Nothing`. For example:
-
-```vb
-Dim expr = Nothing
-
-' Throws null argument exception
-Dim direct = New System.Xml.Linq.XElement( _
-    "Name", _
-    New System.Xml.Linq.XAttribute("Length", expr))
-
-' Doesn't throw exception, the result is <Name/>
-Dim literal = <Name Length=<%= expr %>/>
-```
-
-XML elements and attributes can contain nested expressions in the following places:
-
-The name of the element, in which case the embedded expression must be a value of a type implicitly convertible to `System.Xml.Linq.XName`. For example:
-
-```vb
-Dim name = <<%= "name" %>>Bob</>
-```
-
-The name of an attribute of the element, in which case the embedded expression must be a value of a type implicitly convertible to `System.Xml.Linq.XName`. For example:
-
-```vb
-Dim name = <name <%= "length" %>="3">Bob</>
-```
-
-The value of an attribute of the element, in which case the embedded expression can be a value of any type. For example:
-
-```vb
-Dim name = <name length=<%= 3 %>>Bob</>
-```
-
-An attribute of the element, in which case the embedded expression can be a value of any type. For example:
-
-```vb
-Dim name = <name <%= new XAttribute("length", 3) %>>Bob</>
-```
-
-The content of the element, in which case the embedded expression can be a value of any type. For example:
-
-```vb
-Dim name = <name><%= "Bob" %></>
-```
-
-If the type of the embedded expression is `Object()`, the array will be passed as a paramarray to the `XElement` constructor.
 
 ```antlr
 XMLElement
@@ -5192,9 +5245,112 @@ XMLCharacterReference
     ;
 ```
 
+An XML element results in a value typed as `System.Xml.Linq.XElement`. Unlike regular XML, XML elements can omit the name in the closing tag and the current most-nested element will be closed. For example:
+
+```vb
+Dim name = <name>Bob</>
+```
+
+Attribute declarations in an XML element result in values typed as `System.Xml.Linq.XAttribute`. Attribute values are normalized according to the XML specification. When the value of an attribute is `Nothing` the attribute will not be created, so the attribute value expression will not have to be checked for `Nothing`. For example:
+
+```vb
+Dim expr = Nothing
+
+' Throws null argument exception
+Dim direct = New System.Xml.Linq.XElement( _
+    "Name", _
+    New System.Xml.Linq.XAttribute("Length", expr))
+
+' Doesn't throw exception, the result is <Name/>
+Dim literal = <Name Length=<%= expr %>/>
+```
+
+XML elements and attributes can contain nested expressions in the following places:
+
+The name of the element, in which case the embedded expression must be a value of a type implicitly convertible to `System.Xml.Linq.XName`. For example:
+
+```vb
+Dim name = <<%= "name" %>>Bob</>
+```
+
+The name of an attribute of the element, in which case the embedded expression must be a value of a type implicitly convertible to `System.Xml.Linq.XName`. For example:
+
+```vb
+Dim name = <name <%= "length" %>="3">Bob</>
+```
+
+The value of an attribute of the element, in which case the embedded expression can be a value of any type. For example:
+
+```vb
+Dim name = <name length=<%= 3 %>>Bob</>
+```
+
+An attribute of the element, in which case the embedded expression can be a value of any type. For example:
+
+```vb
+Dim name = <name <%= new XAttribute("length", 3) %>>Bob</>
+```
+
+The content of the element, in which case the embedded expression can be a value of any type. For example:
+
+```vb
+Dim name = <name><%= "Bob" %></>
+```
+
+If the type of the embedded expression is `Object()`, the array will be passed as a paramarray to the `XElement` constructor.
+
+
 ### XML Namespaces
 
-XML elements can contain XML namespace declarations, as defined by the XML namespaces 1.0 specification. The restrictions on defining the namespaces `xml` and `xmlns` are enforced and will produce compile-time errors. XML namespace declarations cannot have an embedded expression for their value; the value supplied must be a non-empty string literal. For example:
+XML elements can contain XML namespace declarations, as defined by the XML namespaces 1.0 specification.
+
+```antlr
+XMLNamespaceAttributeName
+    : XMLPrefixedNamespaceAttributeName
+    | XMLDefaultNamespaceAttributeName
+    ;
+
+XMLPrefixedNamespaceAttributeName
+    : 'xmlns' ':' XMLNamespaceName
+    ;
+
+XMLDefaultNamespaceAttributeName
+    : 'xmlns'
+    ;
+
+XMLNamespaceName
+    : XMLNamespaceNameStartCharacter XMLNamespaceNameCharacter*
+    ;
+
+XMLNamespaceNameStartCharacter
+    : '<Any XMLNameCharacter except :>'
+    ;
+
+XMLNamespaceNameCharacter
+    : XMLLetter
+    | '_'
+    ;
+
+XMLQualifiedNameOrExpression
+    : XMLQualifiedName
+    | XMLEmbeddedExpression
+    ;
+
+XMLQualifiedName
+    : XMLPrefixedName
+    | XMLUnprefixedName
+    ;
+
+XMLPrefixedName
+    : XMLNamespaceName ':' XMLNamespaceName
+    ;
+
+XMLUnprefixedName
+    : XMLNamespaceName
+    ;
+```
+
+The restrictions on defining the namespaces `xml` and `xmlns` are enforced and will produce compile-time errors. XML namespace declarations cannot have an embedded expression for their value; the value supplied must be a non-empty string literal. For example:
 
 ```vb
 ' Declares a valid namespace
@@ -5249,51 +5405,6 @@ Dim customer = _
 
 __Note.__ This is because the embedded expression can be anything, including a function call. If the function call contained an XML literal expression, it is not clear whether programmers would expect the XML namespace to be applied or ignored.
 
-```antlr
-XMLNamespaceAttributeName
-    : XMLPrefixedNamespaceAttributeName
-    | XMLDefaultNamespaceAttributeName
-    ;
-
-XMLPrefixedNamespaceAttributeName
-    : 'xmlns' ':' XMLNamespaceName
-    ;
-
-XMLDefaultNamespaceAttributeName
-    : 'xmlns'
-    ;
-
-XMLNamespaceName
-    : XMLNamespaceNameStartCharacter XMLNamespaceNameCharacter*
-    ;
-
-XMLNamespaceNameStartCharacter
-    : '<Any XMLNameCharacter except :>'
-    ;
-
-XMLNamespaceNameCharacter
-    : XMLLetter
-    | '_'
-    ;
-
-XMLQualifiedNameOrExpression
-    : XMLQualifiedName
-    | XMLEmbeddedExpression
-    ;
-
-XMLQualifiedName
-    : XMLPrefixedName
-    | XMLUnprefixedName
-    ;
-
-XMLPrefixedName
-    : XMLNamespaceName ':' XMLNamespaceName
-    ;
-
-XMLUnprefixedName
-    : XMLNamespaceName
-    ;
-```
 
 ### XML Processing Instructions
 
@@ -5344,86 +5455,97 @@ XMLCDATASectionString
 
 ## XML Member Access Expressions
 
-An XML member access expression accesses the members of an XML value. There are three types of XML member access expressions:
+An XML member access expression accesses the members of an XML value.
 
-Element access, in which an XML name follows a single dot. For example:
-
-```vb
-Dim customer = _
-    <customer>
-        <name>Bob</>
-    </>
-Dim customerName = customer.<name>.Value
+```antlr
+XMLMemberAccessExpression
+    : Expression '.' LineTerminator? '<' XMLQualifiedName '>'
+    | Expression '.' LineTerminator? '@' LineTerminator? '<' XMLQualifiedName '>'
+    | Expression '.' LineTerminator? '@' LineTerminator? IdentifierOrKeyword
+    | Expression '.' '.' '.' LineTerminator? '<' XMLQualifiedName '>'
+    ;
 ```
 
-Element access maps to the function:
+There are three types of XML member access expressions:
 
-```vb
-Function Elements(name As System.Xml.Linq.XName) As _
-    System.Collections.Generic.IEnumerable(Of _
-        System.Xml.Linq.XNode)
-```
+* *Element access*, in which an XML name follows a single dot. For example:
 
-So the above example is equivalent to:
+  ```vb
+  Dim customer = _
+      <customer>
+          <name>Bob</>
+      </>
+  Dim customerName = customer.<name>.Value
+  ```
 
-```vb
-Dim customerName = customer.Elements("name").Value
-```
+  Element access maps to the function:
 
-Attribute access, in which a Visual Basic identifier follows a dot and an at sign, or an XML name follows a dot and an at sign. For example:
+  ```vb
+  Function Elements(name As System.Xml.Linq.XName) As _
+      System.Collections.Generic.IEnumerable(Of _
+          System.Xml.Linq.XNode)
+  ```
 
-```vb
-Dim customer = <customer age="30"/>
-Dim customerAge = customer.@age
-```
+  So the above example is equivalent to:
 
-Attribute access maps to the function:
+  ```vb
+  Dim customerName = customer.Elements("name").Value
+  ```
 
-```vb
-Function AttributeValue(name As System.Xml.Linq.XName) as String
-```
+* *Attribute access*, in which a Visual Basic identifier follows a dot and an at sign, or an XML name follows a dot and an at sign. For example:
 
-So the above example is equivalent to:
+  ```vb
+  Dim customer = <customer age="30"/>
+  Dim customerAge = customer.@age
+  ```
 
-```vb
-Dim customerAge = customer.AttributeValue("age")
-```
+  Attribute access maps to the function:
 
-__Note.__ The `AttributeValue` extension method (as well as the related extension property `Value`) is not currently defined in any assembly. If the extension members are needed, they are automatically defined in the assembly being produced.
+  ```vb
+  Function AttributeValue(name As System.Xml.Linq.XName) as String
+  ```
 
-Descendents access, in which an XML names follows three dots. For example:
+  So the above example is equivalent to:
 
-```vb
-Dim company = _
-    <company>
-        <customers>
-            <customer>Bob</>
-            <customer>Mary</>
-            <customer>Joe</>
-        </>
-    </>
-Dim customers = company...<customer>
-```
+  ```vb
+  Dim customerAge = customer.AttributeValue("age")
+  ```
 
-Descendents access maps to the function:
+  __Note.__ The `AttributeValue` extension method (as well as the related extension property `Value`) is not currently defined in any assembly. If the extension members are needed, they are automatically defined in the assembly being produced.
 
-```vb
-Function Descendents(name As System.Xml.Linq.XName) As _
-    System.Collections.Generic.IEnumerable(Of _
-        System.Xml.Linq.XElement)
-```
+* *Descendents access*, in which an XML names follows three dots. For example:
 
-So the above example is equivalent to:
+  ```vb
+  Dim company = _
+      <company>
+          <customers>
+              <customer>Bob</>
+              <customer>Mary</>
+              <customer>Joe</>
+          </>
+      </>
+  Dim customers = company...<customer>
+  ```
 
-```vb
-Dim customers = company.Descendants("customer")
-```
+  Descendents access maps to the function:
+
+  ```vb
+  Function Descendents(name As System.Xml.Linq.XName) As _
+      System.Collections.Generic.IEnumerable(Of _
+          System.Xml.Linq.XElement)
+  ```
+
+  So the above example is equivalent to:
+
+  ```vb
+  Dim customers = company.Descendants("customer")
+  ```
 
 The base expression of an XML member access expression must be a value and must be of the type:
 
-If an element or descendents access,  `System.Xml.Linq.XContainer` or a derived type, or `System.Collections.Generic.IEnumerable(Of T)` or a derived type, where `T` is `System.Xml.Linq.XContainer` or a derived type.
+* If an element or descendents access,  `System.Xml.Linq.XContainer` or a derived type, or `System.Collections.Generic.IEnumerable(Of T)` or a derived type, where `T` is `System.Xml.Linq.XContainer` or a derived type.
 
-If an attribute access,  `System.Xml.Linq.XElement` or a derived type, or `System.Collections.Generic.IEnumerable(Of T)` or a derived type, where `T` is `System.Xml.Linq.XElement` or a derived type.
+* If an attribute access, `System.Xml.Linq.XElement` or a derived type, or `System.Collections.Generic.IEnumerable(Of T)` or a derived type, where `T` is `System.Xml.Linq.XElement` or a derived type.
 
 Names in XML member access expressions cannot be empty. They can be namespace qualified, using any namespaces defined by imports. For example:
 
@@ -5456,30 +5578,28 @@ Dim names = customer...< name >
 
 If the types in the `System.Xml.Linq` namespace are not available, then an XML member access expression will cause a compile-time error.
 
-```antlr
-XMLMemberAccessExpression
-    : Expression '.' LineTerminator? '<' XMLQualifiedName '>'
-    | Expression '.' LineTerminator? '@' LineTerminator? '<' XMLQualifiedName '>'
-    | Expression '.' LineTerminator? '@' LineTerminator? IdentifierOrKeyword
-    | Expression '.' '.' '.' LineTerminator? '<' XMLQualifiedName '>'
-    ;
-```
 
 ## Await Operator
 
 The await operator is related to async methods, which are described in Section [Async Methods](statements.md#async-methods).
 
+```antlr
+AwaitOperatorExpression
+    : 'Await' Expression
+    ;
+```
+
 `Await` is a reserved word if the immediately enclosing method or lambda expression in which it appears has an `Async` modifier, and if the `Await` appears after that `Async` modifier; it is unreserved elsewhere. It is also unreserved in preprocessor directives. The await operator is only allowed in the body of a method or lambda expressions where it is a reserved word. Within the immediately enclosing method or lambda, an await expression may not occur inside the body of a `Catch` or `Finally` block, nor inside the body of a `SyncLock` statement, nor inside a query expression.
 
 The await operator takes a single expression which must be classified as a value and whose type must be an *awaitable* type, or `Object`. If its type is `Object` then all processing is deferred until run-time. A type `C` is said to be awaitable if all of the following are true:
 
-1. `C` contains an accessible instance or extension method named `GetAwaiter` which has no arguments and which returns some type `E`;
+* `C` contains an accessible instance or extension method named `GetAwaiter` which has no arguments and which returns some type `E`;
 
-2. `E` contains a readable instance or extension property named `IsCompleted` which takes no arguments and has type Boolean;
+* `E` contains a readable instance or extension property named `IsCompleted` which takes no arguments and has type Boolean;
 
-3. `E` contains an accessible instance or extension method named `GetResult` which takes no arguments;
+* `E` contains an accessible instance or extension method named `GetResult` which takes no arguments;
 
-4. `E` implements either `System.Runtime.CompilerServices.INotifyCompletion` or `ICriticalNotifyCompletion`.
+* `E` implements either `System.Runtime.CompilerServices.INotifyCompletion` or `ICriticalNotifyCompletion`.
 
 If `GetResult` was a `Sub`, then the await expression is classified as void. Otherwise, the await expression is classified as a value and its type is the return type of the `GetResult` method.
 
@@ -5553,8 +5673,3 @@ If the await operand has type Object, then this behavior is deferred until runti
 
 The resumption delegate passed in 3.a may only be invoked once. If it is invoked more than once, the behavior is undefined.
 
-```antlr
-AwaitOperatorExpression
-    : 'Await' Expression
-    ;
-```

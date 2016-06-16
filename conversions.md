@@ -65,27 +65,27 @@ End Module
 
 Numeric conversions are processed at run-time as follows:
 
-For a conversion from a numeric type to a wider numeric type, the value is simply converted to the wider type. Conversions from `UInteger`, `Integer`, `ULong`, `Long`, or `Decimal` to `Single` or `Double` are rounded to the nearest `Single` or `Double` value. While this conversion may cause a loss of precision, it will never cause a loss of magnitude.
+* For a conversion from a numeric type to a wider numeric type, the value is simply converted to the wider type. Conversions from `UInteger`, `Integer`, `ULong`, `Long`, or `Decimal` to `Single` or `Double` are rounded to the nearest `Single` or `Double` value. While this conversion may cause a loss of precision, it will never cause a loss of magnitude.
 
-For a conversion from an integral type to another integral type, or from `Single`, `Double`, or `Decimal` to an integral type, the result depends on whether integer overflow checking is on:
+* For a conversion from an integral type to another integral type, or from `Single`, `Double`, or `Decimal` to an integral type, the result depends on whether integer overflow checking is on:
 
-*If integer overflow is being checked:*
+  *If integer overflow is being checked:*
 
-If the source is an integral type, the conversion succeeds if the source argument is within the range of the destination type. The conversion throws a `System.OverflowException` exception if the source argument is outside the range of the destination type.
+  * If the source is an integral type, the conversion succeeds if the source argument is within the range of the destination type. The conversion throws a `System.OverflowException` exception if the source argument is outside the range of the destination type.
 
-If the source is `Single`, `Double`, or `Decimal`, the source value is rounded up or down to the nearest integral value, and this integral value becomes the result of the conversion. If the source value is equally close to two integral values, the value is rounded to the value that has an even number in the least significant digit position. If the resulting integral value is outside the range of the destination type, a `System.OverflowException` exception is thrown.
+  * If the source is `Single`, `Double`, or `Decimal`, the source value is rounded up or down to the nearest integral value, and this integral value becomes the result of the conversion. If the source value is equally close to two integral values, the value is rounded to the value that has an even number in the least significant digit position. If the resulting integral value is outside the range of the destination type, a `System.OverflowException` exception is thrown.
 
-*If integer overflow is not being checked:*
+  *If integer overflow is not being checked:*
 
-If the source is an integral type, the conversion always succeeds and simply consists of discarding the most significant bits of the source value.
+  * If the source is an integral type, the conversion always succeeds and simply consists of discarding the most significant bits of the source value.
 
-If the source is `Single`, `Double`, or `Decimal`, the conversion always succeeds and simply consists of rounding the source value towards the nearest integral value. If the source value is equally close to two integral values, the value is always rounded to the value that has an even number in the least significant digit position.
+  * If the source is `Single`, `Double`, or `Decimal`, the conversion always succeeds and simply consists of rounding the source value towards the nearest integral value. If the source value is equally close to two integral values, the value is always rounded to the value that has an even number in the least significant digit position.
 
-For a conversion from `Double` to `Single`, the `Double` value is rounded to the nearest `Single` value. If the `Double` value is too small to represent as a `Single`, the result becomes positive zero or negative zero. If the `Double` value is too large to represent as a `Single`, the result becomes positive infinity or negative infinity. If the `Double` value is `NaN`, the result is also `NaN`.
+* For a conversion from `Double` to `Single`, the `Double` value is rounded to the nearest `Single` value. If the `Double` value is too small to represent as a `Single`, the result becomes positive zero or negative zero. If the `Double` value is too large to represent as a `Single`, the result becomes positive infinity or negative infinity. If the `Double` value is `NaN`, the result is also `NaN`.
 
-For a conversion from `Single` or `Double` to `Decimal`, the source value is converted to `Decimal` representation and rounded to the nearest number after the 28th decimal place if required. If the source value is too small to represent as a `Decimal`, the result becomes zero. If the source value is `NaN`, infinity, or too large to represent as a `Decimal`, a `System.OverflowException` exception is thrown.
+* For a conversion from `Single` or `Double` to `Decimal`, the source value is converted to `Decimal` representation and rounded to the nearest number after the 28th decimal place if required. If the source value is too small to represent as a `Decimal`, the result becomes zero. If the source value is `NaN`, infinity, or too large to represent as a `Decimal`, a `System.OverflowException` exception is thrown.
 
-For a conversion from `Double` to `Single`, the `Double` value is rounded to the nearest `Single` value. If the `Double` value is too small to represent as a `Single`, the result becomes positive zero or negative zero. If the `Double` value is too large to represent as a `Single`, the result becomes positive infinity or negative infinity. If the `Double` value is `NaN`, the result is also `NaN`.
+* For a conversion from `Double` to `Single`, the `Double` value is rounded to the nearest `Single` value. If the `Double` value is too small to represent as a `Single`, the result becomes positive zero or negative zero. If the `Double` value is too large to represent as a `Single`, the result becomes positive infinity or negative infinity. If the `Double` value is `NaN`, the result is also `NaN`.
 
 ## Reference Conversions
 
@@ -109,15 +109,15 @@ would allow a conversion from `F(Of Object, Integer)` to `F(Of String, Integer)`
 
 A generic delegate or interface type `S(Of S1,...,Sn)` is said to be *variant compatible* with a generic interface or delegate type `T(Of T1,...,Tn)` if:
 
-`S` and `T` are both constructed from the same generic type `U(Of U1,...,Un)`.
+* `S` and `T` are both constructed from the same generic type `U(Of U1,...,Un)`.
 
-For each type parameter `Ux`:
+* For each type parameter `Ux`:
 
-If the type parameter was declared without variance then `Sx` and `Tx` must be the same type.
+  * If the type parameter was declared without variance then `Sx` and `Tx` must be the same type.
 
-If the type parameter was declared `In` then there must be a widening identity, default, reference, array, or type parameter conversion from `Sx` to `Tx`.
+  * If the type parameter was declared `In` then there must be a widening identity, default, reference, array, or type parameter conversion from `Sx` to `Tx`.
 
-If the type parameter was declared `Out` then there must be a widening identity, default, reference, array, or type parameter conversion from `Tx` to `Sx`.
+  * If the type parameter was declared `Out` then there must be a widening identity, default, reference, array, or type parameter conversion from `Tx` to `Sx`.
 
 When converting from a class to a generic interface with variant type parameters, if the class implements more than one variant compatible interface the conversion is ambiguous if there is not a non-variant conversion. For example:
 
@@ -411,11 +411,11 @@ The first call to `Increment` modifies the value in the variable `x`. This is no
 
 A value type `T` can convert to and from the nullable version of the type, `T?`. The conversion from `T?` to `T` throws a `System.InvalidOperationException` exception if the value being converted is `Nothing`. Also, `T?` has a conversion to a type `S` if `T` has an intrinsic conversion to `S`. And if `S` is a value type, then the following intrinsic conversions exist between `T?` and `S?`:
 
-A conversion of the same classification (narrowing or widening) from `T?` to `S?`.
+* A conversion of the same classification (narrowing or widening) from `T?` to `S?`.
 
-A conversion of the same classification (narrowing or widening) from `T` to `S?`.
+* A conversion of the same classification (narrowing or widening) from `T` to `S?`.
 
-A narrowing conversion from `S?` to `T`.
+* A narrowing conversion from `S?` to `T`.
 
 For example, an intrinsic widening conversion exists from `Integer?` to `Long?` because an intrinsic widening conversion exists from `Integer` to `Long`:
 
@@ -473,115 +473,115 @@ Widening conversions never overflow but may entail a loss of precision. The foll
 
 __Identity/Default conversions__
 
-From a type to itself.
+* From a type to itself.
 
-From an anonymous delegate type generated for a lambda method reclassification to any delegate type with an identical signature.
+* From an anonymous delegate type generated for a lambda method reclassification to any delegate type with an identical signature.
 
-From the literal `Nothing` to a type.
+* From the literal `Nothing` to a type.
 
 __Numeric conversions__
 
-From `Byte` to `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, `Long`, `Decimal`, `Single`, or `Double`.
+* From `Byte` to `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, `Long`, `Decimal`, `Single`, or `Double`.
 
-From `SByte` to `Short`, `Integer`, `Long`, `Decimal`, `Single`, or `Double`.
+* From `SByte` to `Short`, `Integer`, `Long`, `Decimal`, `Single`, or `Double`.
 
-From `UShort` to `UInteger`, `Integer`, `ULong`, `Long`, `Decimal`, `Single`, or `Double`.
+* From `UShort` to `UInteger`, `Integer`, `ULong`, `Long`, `Decimal`, `Single`, or `Double`.
 
-From `Short` to `Integer`, `Long`, `Decimal`, `Single` or `Double`.
+* From `Short` to `Integer`, `Long`, `Decimal`, `Single` or `Double`.
 
-From `UInteger` to `ULong`, `Long`, `Decimal`, `Single`, or `Double`.
+* From `UInteger` to `ULong`, `Long`, `Decimal`, `Single`, or `Double`.
 
-From `Integer` to `Long`, `Decimal`, `Single` or `Double`.
+* From `Integer` to `Long`, `Decimal`, `Single` or `Double`.
 
-From `ULong` to `Decimal`, `Single`, or `Double`.
+* From `ULong` to `Decimal`, `Single`, or `Double`.
 
-From `Long` to `Decimal`, `Single` or `Double`.
+* From `Long` to `Decimal`, `Single` or `Double`.
 
-From `Decimal` to `Single` or `Double`.
+* From `Decimal` to `Single` or `Double`.
 
-From `Single` to `Double`.
+* From `Single` to `Double`.
 
-From the literal `0` to an enumerated type. (__Note.__ The conversion from `0` to any enumerated type is widening to simplify testing flags. For example, if `Values` is an enumerated type with a value `One`, you could test a variable `v` of type `Values` by saying `(v And Values.One) = 0`.)
+* From the literal `0` to an enumerated type. (__Note.__ The conversion from `0` to any enumerated type is widening to simplify testing flags. For example, if `Values` is an enumerated type with a value `One`, you could test a variable `v` of type `Values` by saying `(v And Values.One) = 0`.)
 
-From an enumerated type to its underlying numeric type, or to a numeric type that its underlying numeric type has a widening conversion to.
+* From an enumerated type to its underlying numeric type, or to a numeric type that its underlying numeric type has a widening conversion to.
 
-From a constant expression of type `ULong`, `Long`, `UInteger`, `Integer`, `UShort`, `Short`, `Byte`, or `SByte` to a narrower type, provided the value of the constant expression is within the range of the destination type. (__Note.__ Conversions from `UInteger` or `Integer` to `Single`, `ULong` or `Long` to `Single` or `Double`, or `Decimal` to `Single` or `Double` may cause a loss of precision, but will never cause a loss of magnitude. The other widening numeric conversions never lose any information.)
+* From a constant expression of type `ULong`, `Long`, `UInteger`, `Integer`, `UShort`, `Short`, `Byte`, or `SByte` to a narrower type, provided the value of the constant expression is within the range of the destination type. (__Note.__ Conversions from `UInteger` or `Integer` to `Single`, `ULong` or `Long` to `Single` or `Double`, or `Decimal` to `Single` or `Double` may cause a loss of precision, but will never cause a loss of magnitude. The other widening numeric conversions never lose any information.)
 
 __Reference conversions__
 
-From a reference type to a base type.
+* From a reference type to a base type.
 
-From a reference type to an interface type, provided that the type implements the interface or a variant compatible interface.
+* From a reference type to an interface type, provided that the type implements the interface or a variant compatible interface.
 
-From an interface type to `Object`.
+* From an interface type to `Object`.
 
-From an interface type to a variant compatible interface type.
+* From an interface type to a variant compatible interface type.
 
-From a delegate type to a variant compatible delegate type. (__Note.__ Many other reference conversions are implied by these rules. For example, anonymous delegates are reference types that inherit from `System.MulticastDelegate`; array types are reference types that inherit from `System.Array`; anonymous types are reference types that inherit from `System.Object`.)
+* From a delegate type to a variant compatible delegate type. (__Note.__ Many other reference conversions are implied by these rules. For example, anonymous delegates are reference types that inherit from `System.MulticastDelegate`; array types are reference types that inherit from `System.Array`; anonymous types are reference types that inherit from `System.Object`.)
 
 __Anonymous Delegate conversions__
 
-From an anonymous delegate type generated for a lambda method reclassification to any wider delegate type.
+* From an anonymous delegate type generated for a lambda method reclassification to any wider delegate type.
 
 __Array conversions__
 
-From an array type `S` with an element type `Se` to an array type `T` with an element type `Te`, provided all of the following are true:
+* From an array type `S` with an element type `Se` to an array type `T` with an element type `Te`, provided all of the following are true:
 
-`S` and `T` differ only in element type.
+  * `S` and `T` differ only in element type.
 
-Both `Se` and `Te` are reference types or are type parameters known to be a reference type.
+  * Both `Se` and `Te` are reference types or are type parameters known to be a reference type.
 
-A widening reference, array, or type parameter conversion exists from `Se` to `Te`.
+  * A widening reference, array, or type parameter conversion exists from `Se` to `Te`.
 
-From an array type `S` with an enumerated element type `Se` to an array type `T` with an element type `Te`, provided all of the following are true:
+* From an array type `S` with an enumerated element type `Se` to an array type `T` with an element type `Te`, provided all of the following are true:
 
-`S` and `T` differ only in element type.
+  * `S` and `T` differ only in element type.
 
-`Te` is the underlying type of `Se`.
+  * `Te` is the underlying type of `Se`.
 
-From an array type `S` of rank 1 with an enumerated element type `Se`, to `System.Collections.Generic.IList(Of Te)`, `IReadOnlyList(Of Te)`, `ICollection(Of Te)`, `IReadOnlyCollection(Of Te)`, and `IEnumerable(Of Te)`, provided one of the following is true:
+* From an array type `S` of rank 1 with an enumerated element type `Se`, to `System.Collections.Generic.IList(Of Te)`, `IReadOnlyList(Of Te)`, `ICollection(Of Te)`, `IReadOnlyCollection(Of Te)`, and `IEnumerable(Of Te)`, provided one of the following is true:
 
-Both `Se` and `Te` are reference types or are type parameters known to be a reference type, and a widening reference, array, or type parameter conversion exists from `Se` to `Te`; or
+  * Both `Se` and `Te` are reference types or are type parameters known to be a reference type, and a widening reference, array, or type parameter conversion exists from `Se` to `Te`; or
 
-`Te` is the underlying type of `Se`; or
+  * `Te` is the underlying type of `Se`; or
 
-`Te` is identical to `Se`
+  * `Te` is identical to `Se`
 
 __Value Type conversions__
 
-From a value type to a base type.
+* From a value type to a base type.
 
-From a value type to an interface type that the type implements.
+* From a value type to an interface type that the type implements.
 
 __Nullable Value Type conversions__
 
-From a type `T` to the type `T?`.
+* From a type `T` to the type `T?`.
 
-From a type `T?` to a type `S?`, where there is a widening conversion from the type `T` to the type `S`.
+* From a type `T?` to a type `S?`, where there is a widening conversion from the type `T` to the type `S`.
 
-From a type `T` to a type `S?`, where there is a widening conversion from the type `T` to the type `S`.
+* From a type `T` to a type `S?`, where there is a widening conversion from the type `T` to the type `S`.
 
-From a type `T?` to an interface type that the type `T` implements.
+* From a type `T?` to an interface type that the type `T` implements.
 
 __String conversions__
 
-From `Char` to `String`.
+* From `Char` to `String`.
 
-From `Char()` to `String`.
+* From `Char()` to `String`.
 
 __Type Parameter conversions__
 
-From a type parameter to `Object`.
+* From a type parameter to `Object`.
 
-From a type parameter to an interface type constraint or any interface variant compatible with an interface type constraint.
+* From a type parameter to an interface type constraint or any interface variant compatible with an interface type constraint.
 
-From a type parameter to an interface implemented by a class constraint.
+* From a type parameter to an interface implemented by a class constraint.
 
-From a type parameter to an interface variant compatible with an interface implemented by a class constraint.
+* From a type parameter to an interface variant compatible with an interface implemented by a class constraint.
 
-From a type parameter to a class constraint, or a base type of the class constraint.
+* From a type parameter to a class constraint, or a base type of the class constraint.
 
-From a type parameter `T` to a type parameter constraint `Tx`, or anything `Tx` has a widening conversion to.
+* From a type parameter `T` to a type parameter constraint `Tx`, or anything `Tx` has a widening conversion to.
 
 ## Narrowing Conversions
 
@@ -589,111 +589,111 @@ Narrowing conversions are conversions that cannot be proved to always succeed, c
 
 __Boolean conversions__
 
-From `Boolean` to `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, `Long`, `Decimal`, `Single`, or `Double`.
+* From `Boolean` to `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, `Long`, `Decimal`, `Single`, or `Double`.
 
-From `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, `Long`, `Decimal`, `Single`, or `Double` to `Boolean`.
+* From `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, `Long`, `Decimal`, `Single`, or `Double` to `Boolean`.
 
 __Numeric conversions__
 
-From `Byte` to `SByte`.
+* From `Byte` to `SByte`.
 
-From `SByte` to `Byte`, `UShort`, `UInteger`, or `ULong`.
+* From `SByte` to `Byte`, `UShort`, `UInteger`, or `ULong`.
 
-From `UShort` to `Byte`, `SByte`, or `Short`.
+* From `UShort` to `Byte`, `SByte`, or `Short`.
 
-From `Short` to `Byte`, `SByte`, `UShort`, `UInteger`, or `ULong`.
+* From `Short` to `Byte`, `SByte`, `UShort`, `UInteger`, or `ULong`.
 
-From `UInteger` to `Byte`, `SByte`, `UShort`, `Short`, or `Integer`.
+* From `UInteger` to `Byte`, `SByte`, `UShort`, `Short`, or `Integer`.
 
-From `Integer` to `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, or `ULong`.
+* From `Integer` to `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, or `ULong`.
 
-From `ULong` to `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, or `Long`.
+* From `ULong` to `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, or `Long`.
 
-From `Long` to `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, or `ULong`.
+* From `Long` to `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, or `ULong`.
 
-From `Decimal` to `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, or `Long`.
+* From `Decimal` to `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, or `Long`.
 
-From `Single` to `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, `Long`, or `Decimal`.
+* From `Single` to `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, `Long`, or `Decimal`.
 
-From `Double` to `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, `Long`, `Decimal`, or `Single`.
+* From `Double` to `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, `Long`, `Decimal`, or `Single`.
 
-From a numeric type to an enumerated type.
+* From a numeric type to an enumerated type.
 
-From an enumerated type to a numeric type its underlying numeric type has a narrowing conversion to.
+* From an enumerated type to a numeric type its underlying numeric type has a narrowing conversion to.
 
-From an enumerated type to another enumerated type.
+* From an enumerated type to another enumerated type.
 
 __Reference conversions__
 
-From a reference type to a more derived type.
+* From a reference type to a more derived type.
 
-From a class type to an interface type, provided the class type does not implement the interface type or an interface type variant compatible with it.
+* From a class type to an interface type, provided the class type does not implement the interface type or an interface type variant compatible with it.
 
-From an interface type to a class type.
+* From an interface type to a class type.
 
-From an interface type to another interface type, provided there is no inheritance relationship between the two types and provided they are not variant compatible.
+* From an interface type to another interface type, provided there is no inheritance relationship between the two types and provided they are not variant compatible.
 
 __Anonymous Delegate conversions__
 
-From an anonymous delegate type generated for a lambda method reclassification to any narrower delegate type.
+* From an anonymous delegate type generated for a lambda method reclassification to any narrower delegate type.
 
 __Array conversions__
 
-From an array type `S` with an element type `Se`, to an array type `T` with an element type `Te`, provided that all of the following are true:
+* From an array type `S` with an element type `Se`, to an array type `T` with an element type `Te`, provided that all of the following are true:
 
-* `S` and `T` differ only in element type.
-* Both `Se` and `Te` are reference types or are type parameters not known to be value types.
-* A narrowing reference, array, or type parameter conversion exists from `Se` to `Te`.
+  * `S` and `T` differ only in element type.
+  * Both `Se` and `Te` are reference types or are type parameters not known to be value types.
+  * A narrowing reference, array, or type parameter conversion exists from `Se` to `Te`.
 
-From an array type `S` with an element type `Se` to an array type `T` with an enumerated element type `Te`, provided all of the following are true:
+* From an array type `S` with an element type `Se` to an array type `T` with an enumerated element type `Te`, provided all of the following are true:
 
-* `S` and `T` differ only in element type.
-* `Se` is the underlying type of `Te` , or they are both different enumerated types that share the same underlying type.
+  * `S` and `T` differ only in element type.
+  * `Se` is the underlying type of `Te` , or they are both different enumerated types that share the same underlying type.
 
-From an array type `S` of rank 1 with an enumerated element type `Se`, to `IList(Of Te)`, `IReadOnlyList(Of Te)`, `ICollection(Of Te)`, `IReadOnlyCollection(Of Te)` and `IEnumerable(Of Te)`, provided one of the following is true:
+* From an array type `S` of rank 1 with an enumerated element type `Se`, to `IList(Of Te)`, `IReadOnlyList(Of Te)`, `ICollection(Of Te)`, `IReadOnlyCollection(Of Te)` and `IEnumerable(Of Te)`, provided one of the following is true:
 
-* Both `Se` and `Te` are reference types or are type parameters known to be a reference type, and a narrowing reference, array, or type parameter conversion exists from `Se` to `Te`; or
-* `Se` is the underlying type of `Te`, or they are both different enumerated types that share the same underlying type.
+  * Both `Se` and `Te` are reference types or are type parameters known to be a reference type, and a narrowing reference, array, or type parameter conversion exists from `Se` to `Te`; or
+  * `Se` is the underlying type of `Te`, or they are both different enumerated types that share the same underlying type.
 
 __Value type conversions__
 
-From a reference type to a more derived value type.
+* From a reference type to a more derived value type.
 
-From an interface type to a value type, provided the value type implements the interface type.
+* From an interface type to a value type, provided the value type implements the interface type.
 
 __Nullable Value Type conversions__
 
-From a type `T?` to a type `T`.
+* From a type `T?` to a type `T`.
 
-From a type `T?` to a type `S?`, where there is a narrowing conversion from the type `T` to the type `S`.
+* From a type `T?` to a type `S?`, where there is a narrowing conversion from the type `T` to the type `S`.
 
-From a type `T` to a type `S?`, where there is a narrowing conversion from the type `T` to the type `S`.
+* From a type `T` to a type `S?`, where there is a narrowing conversion from the type `T` to the type `S`.
 
-From a type `S?` to a type `T`, where there is a conversion from the type `S` to the type `T`.
+* From a type `S?` to a type `T`, where there is a conversion from the type `S` to the type `T`.
 
 __String conversions__
 
-From `String` to `Char`.
+* From `String` to `Char`.
 
-From `String` to `Char()`.
+* From `String` to `Char()`.
 
-From `String` to `Boolean` and from `Boolean` to `String`.
+* From `String` to `Boolean` and from `Boolean` to `String`.
 
-Conversions between `String` and `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, `Long`, `Decimal`, `Single`, or `Double`.
+* Conversions between `String` and `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, `Long`, `Decimal`, `Single`, or `Double`.
 
-From `String` to `Date` and from `Date` to `String`.
+* From `String` to `Date` and from `Date` to `String`.
 
 __Type Parameter conversions__
 
-From `Object` to a type parameter.
+* From `Object` to a type parameter.
 
-From a type parameter to an interface type, provided the type parameter is not constrained to that interface or constrained to a class that implements that interface.
+* From a type parameter to an interface type, provided the type parameter is not constrained to that interface or constrained to a class that implements that interface.
 
-From an interface type to a type parameter.
+* From an interface type to a type parameter.
 
-From a type parameter to a derived type of a class constraint.
+* From a type parameter to a derived type of a class constraint.
 
-From a type parameter `T` to anything a type parameter constraint `Tx` has a narrowing conversion to.
+* From a type parameter `T` to anything a type parameter constraint `Tx` has a narrowing conversion to.
 
 ## Type Parameter Conversions
 
@@ -787,11 +787,11 @@ End Module
 
 At run-time, evaluating a user-defined conversion can involve up to three steps:
 
-First, the value is converted from the source type to the operand type using an intrinsic conversion, if necessary.
+1. First, the value is converted from the source type to the operand type using an intrinsic conversion, if necessary.
 
-Then, the user-defined conversion is invoked.
+2. Then, the user-defined conversion is invoked.
 
-Finally, the result of the user-defined conversion is converted to the target type using an intrinsic conversion, if necessary.
+3. Finally, the result of the user-defined conversion is converted to the target type using an intrinsic conversion, if necessary.
 
 It is important to note that evaluation of a user-defined conversion will never involve more than one user-defined conversion operator.
 
@@ -799,49 +799,49 @@ It is important to note that evaluation of a user-defined conversion will never 
 
 Determining the most specific user-defined widening conversion operator between two types is accomplished using the following steps:
 
-First, all of the candidate conversion operators are collected. The candidate conversion operators are all of the user-defined widening conversion operators in the source type and all of the user-defined widening conversion operators in the target type.
+1. First, all of the candidate conversion operators are collected. The candidate conversion operators are all of the user-defined widening conversion operators in the source type and all of the user-defined widening conversion operators in the target type.
 
-Then, all non-applicable conversion operators are removed from the set. A conversion operator is applicable to a source type and target type if there is an intrinsic widening conversion operator from the source type to the operand type and there is an intrinsic widening conversion operator from the result of the operator to the target type. If there are no applicable conversion operators, then there is no most specific widening conversion.
+2. Then, all non-applicable conversion operators are removed from the set. A conversion operator is applicable to a source type and target type if there is an intrinsic widening conversion operator from the source type to the operand type and there is an intrinsic widening conversion operator from the result of the operator to the target type. If there are no applicable conversion operators, then there is no most specific widening conversion.
 
-Then, the most specific source type of the applicable conversion operators is determined:
+3. Then, the most specific source type of the applicable conversion operators is determined:
 
-If any of the conversion operators convert directly from the source type, then the source type is the most specific source type.
+   * If any of the conversion operators convert directly from the source type, then the source type is the most specific source type.
 
-Otherwise, the most specific source type is the most encompassed type in the combined set of source types of the conversion operators. If no most encompassed type can be found, then there is no most specific widening conversion.
+   * Otherwise, the most specific source type is the most encompassed type in the combined set of source types of the conversion operators. If no most encompassed type can be found, then there is no most specific widening conversion.
 
-Then, the most specific target type of the applicable conversion operators is determined:
+4. Then, the most specific target type of the applicable conversion operators is determined:
 
-If any of the conversion operators convert directly to the target type, then the target type is the most specific target type.
+   * If any of the conversion operators convert directly to the target type, then the target type is the most specific target type.
 
-Otherwise, the most specific target type is the most encompassing type in the combined set of target types of the conversion operators. If no most encompassing type can be found, then there is no most specific widening conversion.
+   * Otherwise, the most specific target type is the most encompassing type in the combined set of target types of the conversion operators. If no most encompassing type can be found, then there is no most specific widening conversion.
 
-Then, if exactly one conversion operator converts from the most specific source type to the most specific target type, then this is the most specific conversion operator. If more than one such operator exists, then there is no most specific widening conversion.
+5. Then, if exactly one conversion operator converts from the most specific source type to the most specific target type, then this is the most specific conversion operator. If more than one such operator exists, then there is no most specific widening conversion.
 
 ### Most Specific Narrowing Conversion
 
 Determining the most specific user-defined narrowing conversion operator between two types is accomplished using the following steps:
 
-First, all of the candidate conversion operators are collected. The candidate conversion operators are all of the user-defined conversion operators in the source type and all of the user-defined conversion operators in the target type.
+1. First, all of the candidate conversion operators are collected. The candidate conversion operators are all of the user-defined conversion operators in the source type and all of the user-defined conversion operators in the target type.
 
-Then, all non-applicable conversion operators are removed from the set. A conversion operator is applicable to a source type and target type if there is an intrinsic conversion operator from the source type to the operand type and there is an intrinsic conversion operator from the result of the operator to the target type. If there are no applicable conversion operators, then there is no most specific narrowing conversion.
+2. Then, all non-applicable conversion operators are removed from the set. A conversion operator is applicable to a source type and target type if there is an intrinsic conversion operator from the source type to the operand type and there is an intrinsic conversion operator from the result of the operator to the target type. If there are no applicable conversion operators, then there is no most specific narrowing conversion.
 
-Then, the most specific source type of the applicable conversion operators is determined:
+3. Then, the most specific source type of the applicable conversion operators is determined:
 
-If any of the conversion operators convert directly from the source type, then the source type is the most specific source type.
+   * If any of the conversion operators convert directly from the source type, then the source type is the most specific source type.
 
-Otherwise, if any of the conversion operators convert from types that encompass the source type, then the most specific source type is the most encompassed type in the combined set of source types of those conversion operators. If no most encompassed type can be found, then there is no most specific narrowing conversion.
+   * Otherwise, if any of the conversion operators convert from types that encompass the source type, then the most specific source type is the most encompassed type in the combined set of source types of those conversion operators. If no most encompassed type can be found, then there is no most specific narrowing conversion.
 
-Otherwise, the most specific source type is the most encompassing type in the combined set of source types of the conversion operators. If no most encompassing type can be found, then there is no most specific narrowing conversion.
+   * Otherwise, the most specific source type is the most encompassing type in the combined set of source types of the conversion operators. If no most encompassing type can be found, then there is no most specific narrowing conversion.
 
-Then, the most specific target type of the applicable conversion operators is determined:
+4. Then, the most specific target type of the applicable conversion operators is determined:
 
-If any of the conversion operators convert directly to the target type, then the target type is the most specific target type.
+   * If any of the conversion operators convert directly to the target type, then the target type is the most specific target type.
 
-Otherwise, if any of the conversion operators convert to types that are encompassed by the target type, then the most specific target type is the most encompassing type in the combined set of source types of those conversion operators. If no most encompassing type can be found, then there is no most specific narrowing conversion.
+   * Otherwise, if any of the conversion operators convert to types that are encompassed by the target type, then the most specific target type is the most encompassing type in the combined set of source types of those conversion operators. If no most encompassing type can be found, then there is no most specific narrowing conversion.
 
-Otherwise, the most specific target type is the most encompassed type in the combined set of target types of the conversion operators. If no most encompassed type can be found, then there is no most specific narrowing conversion.
+   * Otherwise, the most specific target type is the most encompassed type in the combined set of target types of the conversion operators. If no most encompassed type can be found, then there is no most specific narrowing conversion.
 
-Then, if exactly one conversion operator converts from the most specific source type to the most specific target type, then this is the most specific conversion operator. If more than one such operator exists, then there is no most specific narrowing conversion.
+5. Then, if exactly one conversion operator converts from the most specific source type to the most specific target type, then this is the most specific conversion operator. If more than one such operator exists, then there is no most specific narrowing conversion.
 
 ## Native Conversions
 

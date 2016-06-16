@@ -185,7 +185,44 @@ StringTypeCharacter
     ;
 
 Keyword
-    : '<Any member of keyword table in 2.3>'
+    : 'AddHandler'      | 'AddressOf'      | 'Alias'       | 'And'
+    | 'AndAlso'         | 'As'             | 'Boolean'     | 'ByRef'
+	| 'Byte'            | 'ByVal'          | 'Call'        | 'Case'        
+	| 'Catch'           | 'CBool'          | 'CByte'       | 'CChar'       
+	| 'CDate'           | 'CDbl'           | 'CDec'        | 'Char'        
+	| 'CInt'            | 'Class'          | 'CLng'        | 'CObj'        
+	| 'Const'           | 'Continue'       | 'CSByte'      | 'CShort'      
+	| 'CSng'            | 'CStr'           | 'CType'       | 'CUInt'       
+	| 'CULng'           | 'CUShort'        | 'Date'        | 'Decimal'     
+	| 'Declare'         | 'Default'        | 'Delegate'    | 'Dim'         
+	| 'DirectCast'      | 'Do'             | 'Double'      | 'Each'        
+	| 'Else'            | 'ElseIf'         | 'End'         | 'EndIf'       
+	| 'Enum'            | 'Erase'          | 'Error'       | 'Event'       
+	| 'Exit'            | 'False'          | 'Finally'     | 'For'         
+	| 'Friend'          | 'Function'       | 'Get'         | 'GetType'     
+	| 'GetXmlNamespace' | 'Global'         | 'GoSub'       | 'GoTo'        
+	| 'Handles'         | 'If'             | 'Implements'  | 'Imports'     
+	| 'In'              | 'Inherits'       | 'Integer'     | 'Interface'   
+	| 'Is'              | 'IsNot'          | 'Let'         | 'Lib'         
+	| 'Like'            | 'Long'           | 'Loop'        | 'Me'          
+	| 'Mod'             | 'Module'         | 'MustInherit' | 'MustOverride'
+	| 'MyBase'          | 'MyClass'        | 'Namespace'   | 'Narrowing'   
+	| 'New'             | 'Next'           | 'Not'         | 'Nothing'     
+	| 'NotInheritable'  | 'NotOverridable' | 'Object'      | 'Of'          
+	| 'On'              | 'Operator'       | 'Option'      | 'Optional'    
+	| 'Or'              | 'OrElse'         | 'Overloads'   | 'Overridable' 
+	| 'Overrides'       | 'ParamArray'     | 'Partial'     | 'Private'     
+	| 'Property'        | 'Protected'      | 'Public'      | 'RaiseEvent'  
+	| 'ReadOnly'        | 'ReDim'          | 'REM'         | 'RemoveHandler'
+	| 'Resume'          | 'Return'         | 'SByte'       | 'Select'      
+	| 'Set'             | 'Shadows'        | 'Shared'      | 'Short'       
+	| 'Single'          | 'Static'         | 'Step'        | 'Stop'        
+	| 'String'          | 'Structure'      | 'Sub'         | 'SyncLock'    
+	| 'Then'            | 'Throw'          | 'To'          | 'True'        
+	| 'Try'             | 'TryCast'        | 'TypeOf'      | 'UInteger'    
+	| 'ULong'           | 'UShort'         | 'Using'       | 'Variant'     
+	| 'Wend'            | 'When'           | 'While'       | 'Widening'    
+	| 'With'            | 'WithEvents'     | 'WriteOnly'   | 'Xor'         
     ;
 
 Literal
@@ -446,9 +483,9 @@ CCUnaryOperator
     ;
 
 CCBinaryOperator
-    : '+' | '-' | '*' | '/' | '\\' | 'Mod' | '^' | '='
-    | '<' '>' | '<' | '>' | '<' '=' | '>' '=' | '&'
-    | 'And' | 'Or' | 'Xor' | 'AndAlso' | 'OrElse'
+    : '+'     | '-'     | '*'   | '/'       | '\\'     | 'Mod' | '^' | '='
+    | '<' '>' | '<'     | '>'   | '<' '='   | '>' '='  | '&'
+    | 'And'   | 'Or'    | 'Xor' | 'AndAlso' | 'OrElse'
     | '<' '<' | '>' '>'
     ;
 
@@ -1603,7 +1640,8 @@ FinallyStatement
     ;
 
 CatchStatement
-    : 'Catch' ( Identifier ( 'As' NonArrayTypeName )? )? ( 'When' BooleanExpression )? StatementTerminator
+    : 'Catch' ( Identifier ( 'As' NonArrayTypeName )? )?
+	  ( 'When' BooleanExpression )? StatementTerminator
       Block?
     ;
 
@@ -1932,8 +1970,8 @@ CastExpression
     ;
 
 CastTarget
-    : 'CBool' | 'CByte' | 'CChar' | 'CDate' | 'CDec' | 'CDbl' | 'CInt'
-    | 'CLng' | 'CObj' | 'CSByte' | 'CShort' | 'CSng' | 'CStr' | 'CUInt'
+    : 'CBool' | 'CByte' | 'CChar'  | 'CDate'  | 'CDec' | 'CDbl' | 'CInt'
+    | 'CLng'  | 'CObj'  | 'CSByte' | 'CShort' | 'CSng' | 'CStr' | 'CUInt'
     | 'CULng' | 'CUShort'
     ;
 

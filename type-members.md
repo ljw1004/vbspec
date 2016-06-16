@@ -4,7 +4,23 @@ Type members define storage locations and executable code. They can be methods, 
 
 ## Interface Method Implementation
 
-Methods, events, and properties can implement interface members. To implement an interface member, a member declaration specifies the `Implements` keyword and lists one or more interface members. Methods and properties that implement interface members are implicitly `NotOverridable` unless declared to be `MustOverride`, `Overridable`, or overriding another member. It is an error for a member implementing an interface member to be `Shared`. A member's accessibility has no effect on its ability to implement interface members.
+Methods, events, and properties can implement interface members. To implement an interface member, a member declaration specifies the `Implements` keyword and lists one or more interface members.
+
+```antlr
+ImplementsClause
+    : ( 'Implements' ImplementsList )?
+    ;
+
+ImplementsList
+    : InterfaceMemberSpecifier ( Comma InterfaceMemberSpecifier )*
+    ;
+
+InterfaceMemberSpecifier
+    : NonArrayTypeName Period IdentifierOrKeyword
+    ;
+```
+
+Methods and properties that implement interface members are implicitly `NotOverridable` unless declared to be `MustOverride`, `Overridable`, or overriding another member. It is an error for a member implementing an interface member to be `Shared`. A member's accessibility has no effect on its ability to implement interface members.
 
 For an interface implementation to be valid, the implements list of the containing type must name an interface that contains a compatible member. A compatible member is one whose signature matches the signature of the implementing member. If a generic interface is being implemented, then the type argument supplied in the Implements clause is substituted into the signature when checking compatibility. For example:
 
@@ -137,23 +153,97 @@ Class C2(Of U)
 End Class
 ```
 
-```antlr
-ImplementsClause
-    : ( 'Implements' ImplementsList )?
-    ;
-
-ImplementsList
-    : InterfaceMemberSpecifier ( Comma InterfaceMemberSpecifier )*
-    ;
-
-InterfaceMemberSpecifier
-    : NonArrayTypeName Period IdentifierOrKeyword
-    ;
-```
 
 ## Methods
 
-Methods contain the executable statements of a program. Methods, which have an optional list of parameters and an optional return value, are either shared or not shared. Shared methods are accessed through the class or instances of the class. Non-shared methods, also called instance methods, are accessed through instances of the class. The following example shows a class `Stack` that has several shared methods (`Clone` and `Flip`), and several instance methods (`Push`, `Pop`, and `ToString`):
+Methods contain the executable statements of a program.
+
+```antlr
+MethodMemberDeclaration
+    : MethodDeclaration
+    | ExternalMethodDeclaration
+    ;
+
+InterfaceMethodMemberDeclaration
+    : InterfaceMethodDeclaration
+    ;
+
+MethodDeclaration
+    : SubDeclaration
+    | MustOverrideSubDeclaration
+    | FunctionDeclaration
+    | MustOverrideFunctionDeclaration
+    ;
+
+InterfaceMethodDeclaration
+    : InterfaceSubDeclaration
+    | InterfaceFunctionDeclaration
+    ;
+
+SubSignature
+    : 'Sub' Identifier TypeParameterList?
+      ( OpenParenthesis ParameterList? CloseParenthesis )?
+    ;
+
+FunctionSignature
+    : 'Function' Identifier TypeParameterList?
+      ( OpenParenthesis ParameterList? CloseParenthesis )?
+      ( 'As' Attributes? TypeName )?
+    ;
+
+SubDeclaration
+    : Attributes? ProcedureModifier* SubSignature
+      HandlesOrImplements? LineTerminator
+      Block
+      'End' 'Sub' StatementTerminator
+    ;
+
+MustOverrideSubDeclaration
+    : Attributes? MustOverrideProcedureModifier+ SubSignature
+      HandlesOrImplements? StatementTerminator
+    ;
+
+InterfaceSubDeclaration
+    : Attributes? InterfaceProcedureModifier* SubSignature StatementTerminator
+    ;
+
+FunctionDeclaration
+    : Attributes? ProcedureModifier* FunctionSignature
+      HandlesOrImplements? LineTerminator
+      Block
+      'End' 'Function' StatementTerminator
+    ;
+
+MustOverrideFunctionDeclaration
+    : Attributes? MustOverrideProcedureModifier+ FunctionSignature
+      HandlesOrImplements? StatementTerminator
+    ;
+
+InterfaceFunctionDeclaration
+    : Attributes? InterfaceProcedureModifier* FunctionSignature StatementTerminator
+    ;
+
+ProcedureModifier
+    : AccessModifier | 'Shadows' | 'Shared' | 'Overridable' | 'NotOverridable' | 'Overrides'
+    | 'Overloads' | 'Partial' | 'Iterator' | 'Async'
+    ;
+
+MustOverrideProcedureModifier
+    : ProcedureModifier
+    | 'MustOverride'
+    ;
+
+InterfaceProcedureModifier
+    : 'Shadows' | 'Overloads'
+    ;
+
+HandlesOrImplements
+    : HandlesClause
+    | ImplementsClause
+    ;
+```
+
+Methods, which have an optional list of parameters and an optional return value, are either shared or not shared. Shared methods are accessed through the class or instances of the class. Non-shared methods, also called instance methods, are accessed through instances of the class. The following example shows a class `Stack` that has several shared methods (`Clone` and `Flip`), and several instance methods (`Push`, `Pop`, and `ToString`):
 
 ```vb
 Public Class Stack
@@ -269,16 +359,6 @@ Sub fopen(file As String, Optional mode as Integer = 0, Optional pword As String
 
 Note that optional parameters in a public API are not CLS-compliant. However, they can be consumed at least by Visual Basic and C#4 and F#.
 
-```antlr
-MethodMemberDeclaration
-    : MethodDeclaration
-    | ExternalMethodDeclaration
-    ;
-
-InterfaceMethodMemberDeclaration
-    : InterfaceMethodDeclaration
-    ;
-```
 
 
 ### Regular, Async and Iterator Method Declarations
@@ -291,7 +371,9 @@ An __iterator method__ is one with the `Iterator` modifier and no `Async` modifi
 
 An __async method__ is one with the `Async` modifier and no `Iterator` modifier. It must be either a subroutine, or a function with return type `Task` or `Task(Of T)` for some `T`, and must have no `ByRef` parameters. Section [Async Methods](statements.md#async-methods) details what happens when an async method is invoked.
 
-It is a compile-time error if a method is not one of these three kinds of method. Subroutine and function declarations are special in that their beginning and end statements must each start at the beginning of a logical line. Additionally, the body of a non-`MustOverride` subroutine or function declaration must start at the beginning of a logical line. For example:
+It is a compile-time error if a method is not one of these three kinds of method.
+
+Subroutine and function declarations are special in that their beginning and end statements must each start at the beginning of a logical line. Additionally, the body of a non-`MustOverride` subroutine or function declaration must start at the beginning of a logical line. For example:
 
 ```vb
 Module Test
@@ -307,120 +389,10 @@ Module Test
 End Module
 ```
 
-```antlr
-MethodDeclaration
-    : SubDeclaration
-    | MustOverrideSubDeclaration
-    | FunctionDeclaration
-    | MustOverrideFunctionDeclaration
-    ;
-
-InterfaceMethodDeclaration
-    : InterfaceSubDeclaration
-    | InterfaceFunctionDeclaration
-    ;
-
-SubSignature
-    : 'Sub' Identifier TypeParameterList?
-      ( OpenParenthesis ParameterList? CloseParenthesis )?
-    ;
-
-FunctionSignature
-    : 'Function' Identifier TypeParameterList?
-      ( OpenParenthesis ParameterList? CloseParenthesis )?
-      ( 'As' Attributes? TypeName )?
-    ;
-
-SubDeclaration
-    : Attributes? ProcedureModifier* SubSignature
-      HandlesOrImplements? LineTerminator
-      Block
-      'End' 'Sub' StatementTerminator
-    ;
-
-MustOverrideSubDeclaration
-    : Attributes? MustOverrideProcedureModifier+ SubSignature
-      HandlesOrImplements? StatementTerminator
-    ;
-
-InterfaceSubDeclaration
-    : Attributes? InterfaceProcedureModifier* SubSignature StatementTerminator
-    ;
-
-FunctionDeclaration
-    : Attributes? ProcedureModifier* FunctionSignature
-      HandlesOrImplements? LineTerminator
-      Block
-      'End' 'Function' StatementTerminator
-    ;
-
-MustOverrideFunctionDeclaration
-    : Attributes? MustOverrideProcedureModifier+ FunctionSignature
-      HandlesOrImplements? StatementTerminator
-    ;
-
-InterfaceFunctionDeclaration
-    : Attributes? InterfaceProcedureModifier* FunctionSignature StatementTerminator
-    ;
-
-ProcedureModifier
-    : AccessModifier | 'Shadows' | 'Shared' | 'Overridable' | 'NotOverridable' | 'Overrides'
-    | 'Overloads' | 'Partial' | 'Iterator' | 'Async'
-    ;
-
-MustOverrideProcedureModifier
-    : ProcedureModifier
-    | 'MustOverride'
-    ;
-
-InterfaceProcedureModifier
-    : 'Shadows' | 'Overloads'
-    ;
-
-HandlesOrImplements
-    : HandlesClause
-    | ImplementsClause
-    ;
-```
 
 ### External Method Declarations
 
-An external method declaration introduces a new method whose implementation is provided external to the program. Because an external method declaration provides no actual implementation, it has no method body or `End` construct. External methods are implicitly shared, may not have type parameters, and may not handle events or implement interface members. If no return type is specified on a function and strict semantics are being used, a compile-time error occurs. Otherwise the type is implicitly `Object` or the type of the method's type character. The accessibility domain of the return type and parameter types of an external method must be the same as or a superset of the accessibility domain of the external method itself.
-
-The library clause of an external method declaration specifies the name of the external file that implements the method. The optional alias clause is a string that specifies the numeric ordinal (prefixed by a `#` character) or name of the method in the external file. A single-character set modifier may also be specified, which governs the character set used to marshal strings during a call to the external method. The `Unicode` modifier marshals all strings to Unicode values, the `Ansi` modifier marshals all strings to ANSI values, and the `Auto` modifier marshals the strings according to .NET Framework rules based on the name of the method, or the alias name if specified. If no modifier is specified, the default is `Ansi`.
-
-If `Ansi` or `Unicode` is specified, then the method name is looked up in the external file with no modification. If `Auto` is specified, then method name lookup depends on the platform. If the platform is considered to be ANSI (for example, Windows 95, Windows 98, Windows ME), then the method name is looked up with no modification. If the lookup fails, an `A` is appended and the lookup tried again. If the platform is considered to be Unicode (for example, Windows NT, Windows 2000, Windows XP), then a `W` is appended and the name is looked up. If the lookup fails, the lookup is tried again without the `W`. For example:
-
-```vb
-Module Test
-    ' All platforms bind to "ExternSub".
-    Declare Ansi Sub ExternSub Lib "ExternDLL" ()
-
-    ' All platforms bind to "ExternSub".
-    Declare Unicode Sub ExternSub Lib "ExternDLL" ()
-
-    ' ANSI platforms: bind to "ExternSub" then "ExternSubA".
-    ' Unicode platforms: bind to "ExternSubW" then "ExternSub".
-    Declare Auto Sub ExternSub Lib "ExternDLL" ()
-End Module
-```
-
-Data types being passed to external methods are marshaled according to the .NET Framework data marshalling conventions with one exception. String variables that are passed by value (that is, `ByVal x As String`) are marshaled to the OLE Automation BSTR type, and changes made to the BSTR in the external method are reflected back in the string argument. This is because the type `String` in external methods is mutable, and this special marshalling mimics that behavior. String parameters that are passed by reference (i.e. `ByRef x As String`) are marshaled as a pointer to the OLE Automation BSTR type. It is possible to override these special behaviors by specifying the `System.Runtime.InteropServices.MarshalAsAttribute` attribute on the parameter.
-
-The example demonstrates use of external methods:
-
-```vb
-Class Path
-    Declare Function CreateDirectory Lib "kernel32" ( _
-        Name As String, sa As SecurityAttributes) As Boolean
-    Declare Function RemoveDirectory Lib "kernel32" ( _
-        Name As String) As Boolean
-    Declare Function GetCurrentDirectory Lib "kernel32" ( _
-        BufSize As Integer, Buf As String) As Integer
-    Declare Function SetCurrentDirectory Lib "kernel32" ( _
-        Name As String) As Boolean
-End Class
-```
+An external method declaration introduces a new method whose implementation is provided external to the program.
 
 ```antlr
 ExternalMethodDeclaration
@@ -461,31 +433,69 @@ AliasClause
     ;
 ```
 
+Because an external method declaration provides no actual implementation, it has no method body or `End` construct. External methods are implicitly shared, may not have type parameters, and may not handle events or implement interface members. If no return type is specified on a function and strict semantics are being used, a compile-time error occurs. Otherwise the type is implicitly `Object` or the type of the method's type character. The accessibility domain of the return type and parameter types of an external method must be the same as or a superset of the accessibility domain of the external method itself.
+
+The library clause of an external method declaration specifies the name of the external file that implements the method. The optional alias clause is a string that specifies the numeric ordinal (prefixed by a `#` character) or name of the method in the external file. A single-character set modifier may also be specified, which governs the character set used to marshal strings during a call to the external method. The `Unicode` modifier marshals all strings to Unicode values, the `Ansi` modifier marshals all strings to ANSI values, and the `Auto` modifier marshals the strings according to .NET Framework rules based on the name of the method, or the alias name if specified. If no modifier is specified, the default is `Ansi`.
+
+If `Ansi` or `Unicode` is specified, then the method name is looked up in the external file with no modification. If `Auto` is specified, then method name lookup depends on the platform. If the platform is considered to be ANSI (for example, Windows 95, Windows 98, Windows ME), then the method name is looked up with no modification. If the lookup fails, an `A` is appended and the lookup tried again. If the platform is considered to be Unicode (for example, Windows NT, Windows 2000, Windows XP), then a `W` is appended and the name is looked up. If the lookup fails, the lookup is tried again without the `W`. For example:
+
+```vb
+Module Test
+    ' All platforms bind to "ExternSub".
+    Declare Ansi Sub ExternSub Lib "ExternDLL" ()
+
+    ' All platforms bind to "ExternSub".
+    Declare Unicode Sub ExternSub Lib "ExternDLL" ()
+
+    ' ANSI platforms: bind to "ExternSub" then "ExternSubA".
+    ' Unicode platforms: bind to "ExternSubW" then "ExternSub".
+    Declare Auto Sub ExternSub Lib "ExternDLL" ()
+End Module
+```
+
+Data types being passed to external methods are marshaled according to the .NET Framework data marshalling conventions with one exception. String variables that are passed by value (that is, `ByVal x As String`) are marshaled to the OLE Automation BSTR type, and changes made to the BSTR in the external method are reflected back in the string argument. This is because the type `String` in external methods is mutable, and this special marshalling mimics that behavior. String parameters that are passed by reference (i.e. `ByRef x As String`) are marshaled as a pointer to the OLE Automation BSTR type. It is possible to override these special behaviors by specifying the `System.Runtime.InteropServices.MarshalAsAttribute` attribute on the parameter.
+
+The example demonstrates use of external methods:
+
+```vb
+Class Path
+    Declare Function CreateDirectory Lib "kernel32" ( _
+        Name As String, sa As SecurityAttributes) As Boolean
+    Declare Function RemoveDirectory Lib "kernel32" ( _
+        Name As String) As Boolean
+    Declare Function GetCurrentDirectory Lib "kernel32" ( _
+        BufSize As Integer, Buf As String) As Integer
+    Declare Function SetCurrentDirectory Lib "kernel32" ( _
+        Name As String) As Boolean
+End Class
+```
+
+
 ### Overridable Methods
 
 The `Overridable` modifier indicates that a method is overridable. The `Overrides` modifier indicates that a method overrides a base-type overridable method that has the same signature. The `NotOverridable` modifier indicates that an overridable method cannot be further overridden. The `MustOverride` modifier indicates that a method must be overridden in derived classes.
 
 Certain combinations of these modifiers are not valid:
 
-`Overridable` and `NotOverridable` are mutually exclusive and cannot be combined.
+* `Overridable` and `NotOverridable` are mutually exclusive and cannot be combined.
 
-`MustOverride` implies `Overridable` (and so cannot specify it) and cannot be combined with `NotOverridable`.
+* `MustOverride` implies `Overridable` (and so cannot specify it) and cannot be combined with `NotOverridable`.
 
-`NotOverridable` cannot be combined with `Overridable` or `MustOverride` and must be combined with `Overrides`.
+* `NotOverridable` cannot be combined with `Overridable` or `MustOverride` and must be combined with `Overrides`.
 
-`Overrides` implies `Overridable` (and so cannot specify it) and cannot be combined with `MustOverride`.
+* `Overrides` implies `Overridable` (and so cannot specify it) and cannot be combined with `MustOverride`.
 
 There are also additional restrictions on overridable methods:
 
-A `MustOverride` method may not include a method body or an `End` construct, may not override another method, and may only appear in `MustInherit` classes.
+* A `MustOverride` method may not include a method body or an `End` construct, may not override another method, and may only appear in `MustInherit` classes.
 
-If a method specifies `Overrides` and there is no matching base method to override, a compile-time error occurs. An overriding method may not specify `Shadows`.
+* If a method specifies `Overrides` and there is no matching base method to override, a compile-time error occurs. An overriding method may not specify `Shadows`.
 
-A method may not override another method if the overriding method's accessibility domain is not equal to the accessibility domain of the method being overridden. The one exception is that a method overriding a `Protected Friend` method in another assembly that does not have `Friend` access must specify `Protected` (not `Protected Friend`).
+* A method may not override another method if the overriding method's accessibility domain is not equal to the accessibility domain of the method being overridden. The one exception is that a method overriding a `Protected Friend` method in another assembly that does not have `Friend` access must specify `Protected` (not `Protected Friend`).
 
-`Private` methods may not be `Overridable`, `NotOverridable`, or `MustOverride`, nor may they override other methods.
+* `Private` methods may not be `Overridable`, `NotOverridable`, or `MustOverride`, nor may they override other methods.
 
-Methods in `NotInheritable` classes may not be declared `Overridable` or `MustOverride`.
+* Methods in `NotInheritable` classes may not be declared `Overridable` or `MustOverride`.
 
 The following example illustrates the differences between overridable and nonoverridable methods:
 
@@ -574,13 +584,7 @@ Method `F` shows that in an instance function member, an identifier can be used 
 
 ### Method Parameters
 
-A *parameter* is a variable that can be used to pass information into and out of a method. Parameters of a method are declared by the method's parameter list, which consists of one or more parameters separated by commas. If no type is specified for a parameter and strict semantics are used, a compile-time error occurs. Otherwise the default type is `Object` or the type of the parameter's type character. Even under permissive semantics, if one parameter includes an `As` clause, all parameters must specify types.
-
-Parameters are specified as value, reference, optional, or paramarray parameters by the modifiers `ByVal`, `ByRef`, `Optional`, and `ParamArray`, respectively. A parameter that does not specify `ByRef` or `ByVal` defaults to `ByVal`.
-
-Parameter names are scoped to the entire body of the method and are always publicly accessible. A method invocation creates a copy, specific to that invocation, of the parameters, and the argument list of the invocation assigns values or variable references to the newly created parameters. Because external method declarations and delegate declarations have no body, duplicate parameter names are allowed in parameter lists, but discouraged.
-
-The identifier may be followed by the nullable name modifier `?` to indicate that it is nullable, and also by array name modifiers to indicate that it is an array. They may be combined, e.g. "`ByVal x?() As Integer`". It is not allowed to use explicit array bounds; also, if the nullable name modifier is present then an `As` clause must be present.
+A *parameter* is a variable that can be used to pass information into and out of a method. Parameters of a method are declared by the method's parameter list, which consists of one or more parameters separated by commas.
 
 ```antlr
 ParameterList
@@ -600,6 +604,15 @@ ParameterIdentifier
     : Identifier IdentifierModifiers
     ;
 ```
+
+If no type is specified for a parameter and strict semantics are used, a compile-time error occurs. Otherwise the default type is `Object` or the type of the parameter's type character. Even under permissive semantics, if one parameter includes an `As` clause, all parameters must specify types.
+
+Parameters are specified as value, reference, optional, or paramarray parameters by the modifiers `ByVal`, `ByRef`, `Optional`, and `ParamArray`, respectively. A parameter that does not specify `ByRef` or `ByVal` defaults to `ByVal`.
+
+Parameter names are scoped to the entire body of the method and are always publicly accessible. A method invocation creates a copy, specific to that invocation, of the parameters, and the argument list of the invocation assigns values or variable references to the newly created parameters. Because external method declarations and delegate declarations have no body, duplicate parameter names are allowed in parameter lists, but discouraged.
+
+The identifier may be followed by the nullable name modifier `?` to indicate that it is nullable, and also by array name modifiers to indicate that it is an array. They may be combined, e.g. "`ByVal x?() As Integer`". It is not allowed to use explicit array bounds; also, if the nullable name modifier is present then an `As` clause must be present.
+
 
 #### Value Parameters
 
@@ -725,7 +738,7 @@ In the case of the first invocation of `F`, a temporary variable is created and 
 
 #### Optional Parameters
 
-An optional parameter is declared with the `Optional` modifier. Parameters that follow an optional parameter in the formal parameter list must be optional as well; failure to specify the `Optional` modifier on the following parameters will trigger a compile-time error. An optional parameter of some type nullable type *T?* or non-nullable type *T* must specify a constant expression *e* to be used as a default value if no argument is specified. If *e* evaluates to `Nothing` of type Object, then the default value of the *parameter type* will be used as the default for the parameter. Otherwise, CType(e, T) must be a constant expression and it is taken as the default for the parameter.
+An optional parameter is declared with the `Optional` modifier. Parameters that follow an optional parameter in the formal parameter list must be optional as well; failure to specify the `Optional` modifier on the following parameters will trigger a compile-time error. An optional parameter of some type nullable type `T?` or non-nullable type `T` must specify a constant expression `e` to be used as a default value if no argument is specified. If `e` evaluates to `Nothing` of type Object, then the default value of the *parameter type* will be used as the default for the parameter. Otherwise, `CType(e, T)` must be a constant expression and it is taken as the default for the parameter.
 
 Optional parameters are the only situation in which an initializer on a parameter is valid. The initialization is always done as a part of the invocation expression, not within the method body itself.
 
@@ -806,11 +819,30 @@ F(New Integer() {})
 
 ### Event Handling
 
-Methods can declaratively handle events raised by objects in instance or shared variables. To handle events, a method declaration specifies the `Handles` keyword and lists one or more events. An event in the `Handles` list is specified by two identifiers separated by a period:
+Methods can declaratively handle events raised by objects in instance or shared variables. To handle events, a method declaration specifies the `Handles` keyword and lists one or more events.
 
-The first identifier must be an instance or shared variable in the containing type that specifies the `WithEvents` modifier or the `MyBase` or `MyClass` or `Me` keyword; otherwise, a compile-time error occurs. This variable contains the object that will raise the events handled by this method.
+```antlr
+HandlesClause
+    : ( 'Handles' EventHandlesList )?
+    ;
 
-The second identifier must specify a member of the type of the first identifier. The member must be an event, and may be shared. If a shared variable is specified for the first identifier, then the event must be shared, or an error results.
+EventHandlesList
+    : EventMemberSpecifier ( Comma EventMemberSpecifier )*
+    ;
+
+EventMemberSpecifier
+    : Identifier Period IdentifierOrKeyword
+    | 'MyBase' Period IdentifierOrKeyword
+    | 'MyClass' Period IdentifierOrKeyword
+    | 'Me' Period IdentifierOrKeyword
+    ;
+```
+
+An event in the `Handles` list is specified by two identifiers separated by a period:
+
+* The first identifier must be an instance or shared variable in the containing type that specifies the `WithEvents` modifier or the `MyBase` or `MyClass` or `Me` keyword; otherwise, a compile-time error occurs. This variable contains the object that will raise the events handled by this method.
+
+* The second identifier must specify a member of the type of the first identifier. The member must be an event, and may be shared. If a shared variable is specified for the first identifier, then the event must be shared, or an error results.
 
 A handler method `M` is considered a valid event handler for an event `E` if the statement `AddHandler E, AddressOf M` would also be valid. Unlike an `AddHandler` statement, however, explicit event handlers allow handling an event with a method with no arguments regardless of whether strict semantics are being used or not:
 
@@ -870,22 +902,6 @@ Raised
 
 A type inherits all event handlers provided by its base type. A derived type cannot in any way alter the event mappings it inherits from its base types, but may add additional handlers to the event.
 
-```antlr
-HandlesClause
-    : ( 'Handles' EventHandlesList )?
-    ;
-
-EventHandlesList
-    : EventMemberSpecifier ( Comma EventMemberSpecifier )*
-    ;
-
-EventMemberSpecifier
-    : Identifier Period IdentifierOrKeyword
-    | 'MyBase' Period IdentifierOrKeyword
-    | 'MyClass' Period IdentifierOrKeyword
-    | 'Me' Period IdentifierOrKeyword
-    ;
-```
 
 ### Extension Methods
 
@@ -1285,11 +1301,11 @@ End Class
 
 Exactly when shared constructors are run is mostly implementation dependent, though several guarantees are provided if a shared constructor is explicitly defined:
 
-Shared constructors are run before the first access to any static field of the type.
+* Shared constructors are run before the first access to any static field of the type.
 
-Shared constructors are run before the first invocation of any static method of the type.
+* Shared constructors are run before the first invocation of any static method of the type.
 
-Shared constructors are run before the first invocation of any constructor for the type.
+* Shared constructors are run before the first invocation of any constructor for the type.
 
 The above guarantees do not apply in the situation where a shared constructor is implicitly created for shared initializers. The output from the following example is uncertain, because the exact ordering of loading and therefore of shared constructor execution is not defined:
 
@@ -1409,7 +1425,41 @@ Avoid circular references in `Shared` variable initializers since it is generall
 
 ## Events
 
-Events are used to notify code of a particular occurrence. An event declaration consists of an identifier, either a delegate type or a parameter list, and an optional `Implements` clause. If a delegate type is specified, the delegate type may not have a return type. If a parameter list is specified, it may not contain `Optional` or `ParamArray` parameters. The accessibility domain of the parameter types and/or delegate type must be the same as, or a superset of, the accessibility domain of the event itself. Events may be shared by specifying the `Shared` modifier.
+Events are used to notify code of a particular occurrence. An event declaration consists of an identifier, either a delegate type or a parameter list, and an optional `Implements` clause.
+
+```antlr
+EventMemberDeclaration
+    : RegularEventMemberDeclaration
+    | CustomEventMemberDeclaration
+    ;
+
+RegularEventMemberDeclaration
+    : Attributes? EventModifiers* 'Event'
+      Identifier ParametersOrType ImplementsClause? StatementTerminator
+    ;
+
+InterfaceEventMemberDeclaration
+    : Attributes? InterfaceEventModifiers* 'Event'
+      Identifier ParametersOrType StatementTerminator
+    ;
+
+ParametersOrType
+    : ( OpenParenthesis ParameterList? CloseParenthesis )?
+    | 'As' NonArrayTypeName
+    ;
+
+EventModifiers
+    : AccessModifier
+    | 'Shadows'
+    | 'Shared'
+    ;
+
+InterfaceEventModifiers
+    : 'Shadows'
+    ;
+```
+
+If a delegate type is specified, the delegate type may not have a return type. If a parameter list is specified, it may not contain `Optional` or `ParamArray` parameters. The accessibility domain of the parameter types and/or delegate type must be the same as, or a superset of, the accessibility domain of the event itself. Events may be shared by specifying the `Shared` modifier.
 
 In addition to the member name added to the type's declaration space, an event declaration implicitly declares several other members. Given an event named `X`, the following members are added to the declaration space:
 
@@ -1509,124 +1559,12 @@ End Class
 
 In method `Disconnect`, the event handler is removed.
 
-```antlr
-EventMemberDeclaration
-    : RegularEventMemberDeclaration
-    | CustomEventMemberDeclaration
-    ;
-
-RegularEventMemberDeclaration
-    : Attributes? EventModifiers* 'Event'
-      Identifier ParametersOrType ImplementsClause? StatementTerminator
-    ;
-
-InterfaceEventMemberDeclaration
-    : Attributes? InterfaceEventModifiers* 'Event'
-      Identifier ParametersOrType StatementTerminator
-    ;
-
-ParametersOrType
-    : ( OpenParenthesis ParameterList? CloseParenthesis )?
-    | 'As' NonArrayTypeName
-    ;
-
-EventModifiers
-    : AccessModifier
-    | 'Shadows'
-    | 'Shared'
-    ;
-
-InterfaceEventModifiers
-    : 'Shadows'
-    ;
-```
 
 ### Custom Events
 
 As discussed in the previous section, event declarations implicitly define a field, an `add_` method, and a `remove_` method that are used to keep track of event handlers. In some situations, however, it may be desirable to provide custom code for tracking event handlers. For example, if a class defines forty events of which only a few will ever be handled, using a hash table instead of forty fields to track the handlers for each event may be more efficient. *Custom events* allow the `add_X` and `remove_X` methods to be defined explicitly, which enables custom storage for event handlers.
 
-Custom events are declared in the same way that events that specify a delegate type are declared, with the exception that the keyword `Custom` must precede the `Event` keyword. A custom event declaration contains three declarations: an `AddHandler` declaration, a `RemoveHandler` declaration and a `RaiseEvent` declaration. None of the declarations can have any modifiers, although they can have attributes. For example:
-
-```vb
-Class Test
-    Private Handlers As EventHandler
-
-    Public Custom Event TestEvent As EventHandler
-        AddHandler(value As EventHandler)
-            Handlers = CType([Delegate].Combine(Handlers, value), _
-                EventHandler)
-        End AddHandler
-
-        RemoveHandler(value as EventHandler)
-            Handlers = CType([Delegate].Remove(Handlers, value), _
-                EventHandler)
-        End RemoveHandler
-
-        RaiseEvent(sender As Object, e As EventArgs)
-            Dim TempHandlers As EventHandler = Handlers
-
-            If TempHandlers IsNot Nothing Then
-                TempHandlers(sender, e)
-            End If
-        End RaiseEvent
-    End Event
-End Class
-```
-
-The `AddHandler` and `RemoveHandler` declaration take one `ByVal` parameter, which must be of the delegate type of the event. When an `AddHandler` or `RemoveHandler` statement is executed (or a `Handles` clause automatically handles an event), the corresponding declaration will be called. The `RaiseEvent` declaration takes the same parameters as the event delegate and will be called when a `RaiseEvent` statement is executed. All of the declarations must be provided and are considered to be subroutines.
-
-Note that `AddHandler`, `RemoveHandler` and `RaiseEvent` declarations have the same restriction on line placement that subroutines have. The beginning statement, end statement and block must all appear at the beginning of a logical line.
-
-In addition to the member name added to the type's declaration space, a custom event declaration implicitly declares several other members. Given an event named `X`, the following members are added to the declaration space:
-
-A method named `add_X`, corresponding to the `AddHandler` declaration.
-
-A method named `remove_X`, corresponding to the `RemoveHandler` declaration.
-
-A method named `fire_X`, corresponding to the `RaiseEvent` declaration.
-
-If a type attempts to declare a name that matches one of the above names, a compile-time error will result, and the implicit declarations are all ignored for the purposes of name binding. It is not possible to override or overload any of the introduced members, although it is possible to shadow them in derived types.
-
-__Note.__ `Custom` is not a reserved word.
-
-#### Custom events in WinRT assemblies
-
-As of Microsoft Visual Basic 11.0, events declared in a file compiled with /target:winmdobj, or declared in an interface in such a file and then implemented elsewhere, are treated a little differently.
-
-1. External tools used to build the winmd will typically allow only certain delegate types such as `System.EventHandler(Of T)` or `System.TypedEventHandle(Of T, U)`, and will disallow others.
-2. The `XEvent` field has type `System.Runtime.InteropServices.WindowsRuntime.EventRegistrationTokenTable(Of T)` where `T` is the delegate type.
-3. The AddHandler accessor returns a `System.Runtime.InteropServices.WindowsRuntime.EventRegistrationToken`, and the RemoveHandler accessor takes a single parameter of the same type.
-
-Here is an example of such a custom event.
-
-```vb
-Imports System.Runtime.InteropServices.WindowsRuntime
-
-Public NotInheritable Class ClassInWinMD
-    Private XEvent As EventRegistrationTokenTable(Of EventHandler(Of Integer))
-
-    Public Custom Event X As EventHandler(Of Integer)
-        AddHandler(handler As EventHandler(Of Integer))
-            Return EventRegistrationTokenTable(Of EventHandler(Of Integer)).
-                   GetOrCreateEventRegistrationTokenTable(XEvent).
-                   AddEventHandler(handler)
-        End AddHandler
-
-        RemoveHandler(token As EventRegistrationToken)
-            EventRegistrationTokenTable(Of EventHandler(Of Integer)).
-                GetOrCreateEventRegistrationTokenTable(XEvent).
-                RemoveEventHandler(token)
-        End RemoveHandler
-
-        RaiseEvent(sender As Object, i As Integer)
-            Dim table = EventRegistrationTokenTable(Of EventHandler(Of Integer)).
-                GetOrCreateEventRegistrationTokenTable(XEvent).
-                InvocationList
-            If table IsNot Nothing Then table(sender, i)
-        End RaiseEvent
-    End Event
-End Class
-```
+Custom events are declared in the same way that events that specify a delegate type are declared, with the exception that the keyword `Custom` must precede the `Event` keyword. A custom event declaration contains three declarations: an `AddHandler` declaration, a `RemoveHandler` declaration and a `RaiseEvent` declaration. None of the declarations can have any modifiers, although they can have attributes.
 
 ```antlr
 CustomEventMemberDeclaration
@@ -1664,9 +1602,114 @@ RaiseEventDeclaration
     ;
 ```
 
+For example:
+
+```vb
+Class Test
+    Private Handlers As EventHandler
+
+    Public Custom Event TestEvent As EventHandler
+        AddHandler(value As EventHandler)
+            Handlers = CType([Delegate].Combine(Handlers, value), _
+                EventHandler)
+        End AddHandler
+
+        RemoveHandler(value as EventHandler)
+            Handlers = CType([Delegate].Remove(Handlers, value), _
+                EventHandler)
+        End RemoveHandler
+
+        RaiseEvent(sender As Object, e As EventArgs)
+            Dim TempHandlers As EventHandler = Handlers
+
+            If TempHandlers IsNot Nothing Then
+                TempHandlers(sender, e)
+            End If
+        End RaiseEvent
+    End Event
+End Class
+```
+
+The `AddHandler` and `RemoveHandler` declaration take one `ByVal` parameter, which must be of the delegate type of the event. When an `AddHandler` or `RemoveHandler` statement is executed (or a `Handles` clause automatically handles an event), the corresponding declaration will be called. The `RaiseEvent` declaration takes the same parameters as the event delegate and will be called when a `RaiseEvent` statement is executed. All of the declarations must be provided and are considered to be subroutines.
+
+Note that `AddHandler`, `RemoveHandler` and `RaiseEvent` declarations have the same restriction on line placement that subroutines have. The beginning statement, end statement and block must all appear at the beginning of a logical line.
+
+In addition to the member name added to the type's declaration space, a custom event declaration implicitly declares several other members. Given an event named `X`, the following members are added to the declaration space:
+
+* A method named `add_X`, corresponding to the `AddHandler` declaration.
+
+* A method named `remove_X`, corresponding to the `RemoveHandler` declaration.
+
+* A method named `fire_X`, corresponding to the `RaiseEvent` declaration.
+
+If a type attempts to declare a name that matches one of the above names, a compile-time error will result, and the implicit declarations are all ignored for the purposes of name binding. It is not possible to override or overload any of the introduced members, although it is possible to shadow them in derived types.
+
+__Note.__ `Custom` is not a reserved word.
+
+#### Custom events in WinRT assemblies
+
+As of Microsoft Visual Basic 11.0, events declared in a file compiled with `/target:winmdobj`, or declared in an interface in such a file and then implemented elsewhere, are treated a little differently.
+
+1. External tools used to build the winmd will typically allow only certain delegate types such as `System.EventHandler(Of T)` or `System.TypedEventHandle(Of T, U)`, and will disallow others.
+2. The `XEvent` field has type `System.Runtime.InteropServices.WindowsRuntime.EventRegistrationTokenTable(Of T)` where `T` is the delegate type.
+3. The AddHandler accessor returns a `System.Runtime.InteropServices.WindowsRuntime.EventRegistrationToken`, and the RemoveHandler accessor takes a single parameter of the same type.
+
+Here is an example of such a custom event.
+
+```vb
+Imports System.Runtime.InteropServices.WindowsRuntime
+
+Public NotInheritable Class ClassInWinMD
+    Private XEvent As EventRegistrationTokenTable(Of EventHandler(Of Integer))
+
+    Public Custom Event X As EventHandler(Of Integer)
+        AddHandler(handler As EventHandler(Of Integer))
+            Return EventRegistrationTokenTable(Of EventHandler(Of Integer)).
+                   GetOrCreateEventRegistrationTokenTable(XEvent).
+                   AddEventHandler(handler)
+        End AddHandler
+
+        RemoveHandler(token As EventRegistrationToken)
+            EventRegistrationTokenTable(Of EventHandler(Of Integer)).
+                GetOrCreateEventRegistrationTokenTable(XEvent).
+                RemoveEventHandler(token)
+        End RemoveHandler
+
+        RaiseEvent(sender As Object, i As Integer)
+            Dim table = EventRegistrationTokenTable(Of EventHandler(Of Integer)).
+                GetOrCreateEventRegistrationTokenTable(XEvent).
+                InvocationList
+            If table IsNot Nothing Then table(sender, i)
+        End RaiseEvent
+    End Event
+End Class
+```
+
+
 ## Constants
 
-A *constant* is a constant value that is a member of a type. Constants are implicitly shared. If the declaration contains an `As` clause, the clause specifies the type of the member introduced by the declaration. If the type is omitted then the type of the constant is inferred. The type of a constant may only be a primitive type or `Object`. If a constant is typed as `Object` and there is no type character, the real type of the constant will be the type of the constant expression. Otherwise, the type of the constant is the type of the constant's type character.
+A *constant* is a constant value that is a member of a type.
+
+```antlr
+ConstantMemberDeclaration
+    : Attributes? ConstantModifier* 'Const' ConstantDeclarators StatementTerminator
+    ;
+
+ConstantModifier
+    : AccessModifier
+    | 'Shadows'
+    ;
+
+ConstantDeclarators
+    : ConstantDeclarator ( Comma ConstantDeclarator )*
+    ;
+
+ConstantDeclarator
+    : Identifier ( 'As' TypeName )? Equals ConstantExpression StatementTerminator
+    ;
+```
+
+Constants are implicitly shared. If the declaration contains an `As` clause, the clause specifies the type of the member introduced by the declaration. If the type is omitted then the type of the constant is inferred. The type of a constant may only be a primitive type or `Object`. If a constant is typed as `Object` and there is no type character, the real type of the constant will be the type of the constant expression. Otherwise, the type of the constant is the type of the constant's type character.
 
 The following example shows a class named `Constants` that has two public constants:
 
@@ -1722,28 +1765,44 @@ End Class
 
 When a symbolic name for a constant value is desired, but the type of the value is not permitted in a constant declaration or when the value cannot be computed at compile time by a constant expression, a read-only variable may be used instead.
 
-```antlr
-ConstantMemberDeclaration
-    : Attributes? ConstantModifier* 'Const' ConstantDeclarators StatementTerminator
-    ;
-
-ConstantModifier
-    : AccessModifier
-    | 'Shadows'
-    ;
-
-ConstantDeclarators
-    : ConstantDeclarator ( Comma ConstantDeclarator )*
-    ;
-
-ConstantDeclarator
-    : Identifier ( 'As' TypeName )? Equals ConstantExpression StatementTerminator
-    ;
-```
 
 ## Instance and Shared Variables
 
-An instance or shared variable is a member of a type that can store information. The `Dim` modifier must be specified if no modifiers are specified, but may be omitted otherwise. A single variable declaration may include multiple variable declarators; each variable declarator introduces a new instance or shared member.
+An instance or shared variable is a member of a type that can store information.
+
+```antlr
+VariableMemberDeclaration
+    : Attributes? VariableModifier+ VariableDeclarators StatementTerminator
+    ;
+
+VariableModifier
+    : AccessModifier
+    | 'Shadows'
+    | 'Shared'
+    | 'ReadOnly'
+    | 'WithEvents'
+    | 'Dim'
+    ;
+
+VariableDeclarators
+    : VariableDeclarator ( Comma VariableDeclarator )*
+    ;
+
+VariableDeclarator
+    : VariableIdentifiers 'As' ObjectCreationExpression
+    | VariableIdentifiers ( 'As' TypeName )? ( Equals Expression )?
+    ;
+
+VariableIdentifiers
+    : VariableIdentifier ( Comma VariableIdentifier )*
+    ;
+
+VariableIdentifier
+    : Identifier IdentifierModifiers
+    ;
+```
+
+The `Dim` modifier must be specified if no modifiers are specified, but may be omitted otherwise. A single variable declaration may include multiple variable declarators; each variable declarator introduces a new instance or shared member.
 
 If an initializer is specified, only one instance or shared variable may be declared by the variable declarator:
 
@@ -1826,47 +1885,16 @@ Class Color
 End Class
 ```
 
-```antlr
-VariableMemberDeclaration
-    : Attributes? VariableModifier+ VariableDeclarators StatementTerminator
-    ;
-
-VariableModifier
-    : AccessModifier
-    | 'Shadows'
-    | 'Shared'
-    | 'ReadOnly'
-    | 'WithEvents'
-    | 'Dim'
-    ;
-
-VariableDeclarators
-    : VariableDeclarator ( Comma VariableDeclarator )*
-    ;
-
-VariableDeclarator
-    : VariableIdentifiers 'As' ObjectCreationExpression
-    | VariableIdentifiers ( 'As' TypeName )? ( Equals Expression )?
-    ;
-
-VariableIdentifiers
-    : VariableIdentifier ( Comma VariableIdentifier )*
-    ;
-
-VariableIdentifier
-    : Identifier IdentifierModifiers
-    ;
-```
 
 ### Read-Only Variables
 
 When an instance or shared variable declaration includes a `ReadOnly` modifier, assignments to the variables introduced by the declaration may only occur as part of the declaration or in a constructor in the same class. Specifically, assignments to a read-only instance or shared variable are permitted only in the following situations:
 
-In the variable declaration that introduces the instance or shared variable (by including a variable initializer in the declaration).
+* In the variable declaration that introduces the instance or shared variable (by including a variable initializer in the declaration).
 
-For an instance variable, in the instance constructors of the class that contains the variable declaration. The instance variable can only be accessed in an unqualified manner or through `Me` or `MyClass`.
+* For an instance variable, in the instance constructors of the class that contains the variable declaration. The instance variable can only be accessed in an unqualified manner or through `Me` or `MyClass`.
 
-For a shared variable, in the shared constructor of the class that contains the shared variable declaration.
+* For a shared variable, in the shared constructor of the class that contains the shared variable declaration.
 
 A shared read-only variable is useful when a symbolic name for a constant value is desired, but when the type of the value is not permitted in a constant declaration, or when the value cannot be computed at compile time by a constant expression.
 
@@ -2181,7 +2209,24 @@ The parenthesis in an object initializer is always interpreted as the argument l
 
 #### Array-Size Initializers
 
-An *array-size initializer* is a modifier on the name of the variable that gives a set of dimension upper bounds denoted by expressions. The upper bound expressions must be classified as values and must be implicitly convertible to `Integer`. The set of upper bounds is equivalent to a variable initializer of an array-creation expression with the given upper bounds. The number of dimensions of the array type is inferred from the array size initializer. So
+An *array-size initializer* is a modifier on the name of the variable that gives a set of dimension upper bounds denoted by expressions.
+
+```antlr
+ArraySizeInitializationModifier
+    : OpenParenthesis BoundList CloseParenthesis ArrayTypeModifiers?
+    ;
+
+BoundList
+    : Bound ( Comma Bound )*
+    ;
+
+Bound
+    : Expression
+    | '0' 'To' Expression
+    ;
+```
+
+The upper bound expressions must be classified as values and must be implicitly convertible to `Integer`. The set of upper bounds is equivalent to a variable initializer of an array-creation expression with the given upper bounds. The number of dimensions of the array type is inferred from the array size initializer. So
 
 ```vb
 Module Test
@@ -2215,20 +2260,6 @@ declares a local variable `x` whose type is a two-dimensional array of three-dim
 
 A variable declaration with an array-size initializer cannot have an array type modifier on its type or a regular initializer.
 
-```antlr
-ArraySizeInitializationModifier
-    : OpenParenthesis BoundList CloseParenthesis ArrayTypeModifiers?
-    ;
-
-BoundList
-    : Bound ( Comma Bound )*
-    ;
-
-Bound
-    : Expression
-    | '0' 'To' Expression
-    ;
-```
 
 ### System.MarshalByRefObject Classes
 
@@ -2242,7 +2273,88 @@ There is one exception to this rule: a member implicitly or explicitly qualified
 
 *Properties* are a natural extension of variables; both are named members with associated types, and the syntax for accessing variables and properties is the same. Unlike variables, however, properties do not denote storage locations. Instead, properties have *accessors*, which specify the statements to execute in order to read or write their values.
 
-Properties are defined with property declarations. The first part of a property declaration resembles a field declaration. The second part includes a `Get` accessor and/or a `Set` accessor. In the example below, the `Button` class defines a `Caption` property.
+Properties are defined with property declarations. The first part of a property declaration resembles a field declaration. The second part includes a `Get` accessor and/or a `Set` accessor.
+
+```antlr
+PropertyMemberDeclaration
+    : RegularPropertyMemberDeclaration
+    | MustOverridePropertyMemberDeclaration
+    | AutoPropertyMemberDeclaration
+    ;
+
+PropertySignature
+    : 'Property'
+      Identifier ( OpenParenthesis ParameterList? CloseParenthesis )?
+      ( 'As' Attributes? TypeName )?
+    ;
+
+RegularPropertyMemberDeclaration
+    : Attributes? PropertyModifier* PropertySignature
+      ImplementsClause? LineTerminator
+      PropertyAccessorDeclaration+
+      'End' 'Property' StatementTerminator
+    ;
+
+MustOverridePropertyMemberDeclaration
+    : Attributes? MustOverridePropertyModifier+ PropertySignature
+      ImplementsClause? StatementTerminator
+    ;
+
+AutoPropertyMemberDeclaration
+    : Attributes? AutoPropertyModifier* 'Property' Identifier
+      ( OpenParenthesis ParameterList? CloseParenthesis )?
+      ( 'As' Attributes? TypeName )? ( Equals Expression )?
+      ImplementsClause? LineTerminator
+    | Attributes? AutoPropertyModifier* 'Property' Identifier
+      ( OpenParenthesis ParameterList? CloseParenthesis )?
+      'As' Attributes? 'New'
+      ( NonArrayTypeName ( OpenParenthesis ArgumentList? CloseParenthesis )? )?
+      ObjectCreationExpressionInitializer?
+      ImplementsClause? LineTerminator
+    ;
+
+InterfacePropertyMemberDeclaration
+    : Attributes? InterfacePropertyModifier* PropertySignature StatementTerminator
+    ;
+
+AutoPropertyModifier
+    : AccessModifier
+    | 'Shadows'
+    | 'Shared'
+    | 'Overridable'
+    | 'NotOverridable'
+    | 'Overrides'
+    | 'Overloads'
+    ;
+
+PropertyModifier
+    : AutoPropertyModifier
+    | 'Default'
+    | 'ReadOnly'
+    | 'WriteOnly'
+    | 'Iterator'
+    ;
+
+MustOverridePropertyModifier
+    : PropertyModifier
+    | 'MustOverride'
+    ;
+
+InterfacePropertyModifier
+    : 'Shadows'
+    | 'Overloads'
+    | 'Default'
+    | 'ReadOnly'
+    | 'WriteOnly'
+    ;
+
+PropertyAccessorDeclaration
+    : PropertyGetDeclaration
+    | PropertySetDeclaration
+    ;
+```
+
+In the example below, the `Button` class defines a `Caption` property.
 
 ```vb
 Public Class Button
@@ -2280,11 +2392,11 @@ The index parameter list makes up the signature of the property, so properties m
 
 A property may be declared as follows:
 
-If the property specifies no property type modifier, the property must have both a `Get` accessor and a `Set` accessor. The property is said to be a read-write property.
+* If the property specifies no property type modifier, the property must have both a `Get` accessor and a `Set` accessor. The property is said to be a read-write property.
 
-If the property specifies the `ReadOnly` modifier, the property must have a `Get` accessor and may not have a `Set` accessor. The property is said to be read-only property. It is a compile-time error for a read-only property to be the target of an assignment.
+* If the property specifies the `ReadOnly` modifier, the property must have a `Get` accessor and may not have a `Set` accessor. The property is said to be read-only property. It is a compile-time error for a read-only property to be the target of an assignment.
 
-If the property specifies the `WriteOnly` modifier, the property must have a `Set` accessor and may not have a `Get` accessor. The property is said to be write-only property. It is a compile-time error to reference a write-only property in an expression except as the target of an assignment or as an argument to a method.
+* If the property specifies the `WriteOnly` modifier, the property must have a `Set` accessor and may not have a `Get` accessor. The property is said to be write-only property. It is a compile-time error to reference a write-only property in an expression except as the target of an assignment or as an argument to a method.
 
 The `Get` and `Set` accessors of a property are not distinct members, and it is not possible to declare the accessors of a property separately. The following example does not declare a single read-write property. Rather, it declares two properties with the same name, one read-only and one write-only:
 
@@ -2312,13 +2424,13 @@ Since two members declared in the same class cannot have the same name, the exam
 
 By default, the accessibility of a property's `Get` and `Set` accessors is the same as the accessibility of the property itself. However, the `Get` and `Set` accessors can also specify accessibility separately from the property. In that case, the accessibility of an accessor must be more restrictive than the accessibility of the property and only one accessor can have a different accessibility level from the property. Access types are considered more or less restrictive as follows:
 
-`Private` is more restrictive than `Public`, `Protected Friend`, `Protected`, or `Friend`.
+* `Private` is more restrictive than `Public`, `Protected Friend`, `Protected`, or `Friend`.
 
-`Friend` is more restrictive than `Protected Friend` or `Public`.
+* `Friend` is more restrictive than `Protected Friend` or `Public`.
 
-`Protected` is more restrictive than `Protected Friend` or `Public`.
+* `Protected` is more restrictive than `Protected Friend` or `Public`.
 
-`Protected Friend` is more restrictive than `Public`.
+* `Protected Friend` is more restrictive than `Public`.
 
 When one of a property's accessors is accessible but the other one is not, the property is treated as if it was read-only or write-only. For example:
 
@@ -2485,84 +2597,6 @@ End Class
 
 The `ConsoleStreams` class contains three properties, `In`, `Out`, and `Error`, that represent the standard input, output, and error devices, respectively. By exposing these members as properties, the `ConsoleStreams` class can delay their initialization until they are actually used. For example, upon first referencing the `Out` property, as in `ConsoleStreams.Out.WriteLine("hello, world")`, the underlying `TextWriter` for the output device is initialized. But if the application makes no reference to the `In` and `Error` properties, then no objects are created for those devices.
 
-```antlr
-PropertyMemberDeclaration
-    : RegularPropertyMemberDeclaration
-    | MustOverridePropertyMemberDeclaration
-    | AutoPropertyMemberDeclaration
-    ;
-
-PropertySignature
-    : 'Property'
-      Identifier ( OpenParenthesis ParameterList? CloseParenthesis )?
-      ( 'As' Attributes? TypeName )?
-    ;
-
-RegularPropertyMemberDeclaration
-    : Attributes? PropertyModifier* PropertySignature
-      ImplementsClause? LineTerminator
-      PropertyAccessorDeclaration+
-      'End' 'Property' StatementTerminator
-    ;
-
-MustOverridePropertyMemberDeclaration
-    : Attributes? MustOverridePropertyModifier+ PropertySignature
-      ImplementsClause? StatementTerminator
-    ;
-
-AutoPropertyMemberDeclaration
-    : Attributes? AutoPropertyModifier* 'Property' Identifier
-      ( OpenParenthesis ParameterList? CloseParenthesis )?
-      ( 'As' Attributes? TypeName )? ( Equals Expression )?
-      ImplementsClause? LineTerminator
-    | Attributes? AutoPropertyModifier* 'Property' Identifier
-      ( OpenParenthesis ParameterList? CloseParenthesis )?
-      'As' Attributes? 'New'
-      ( NonArrayTypeName ( OpenParenthesis ArgumentList? CloseParenthesis )? )?
-      ObjectCreationExpressionInitializer?
-      ImplementsClause? LineTerminator
-    ;
-
-InterfacePropertyMemberDeclaration
-    : Attributes? InterfacePropertyModifier* PropertySignature StatementTerminator
-    ;
-
-AutoPropertyModifier
-    : AccessModifier
-    | 'Shadows'
-    | 'Shared'
-    | 'Overridable'
-    | 'NotOverridable'
-    | 'Overrides'
-    | 'Overloads'
-    ;
-
-PropertyModifier
-    : AutoPropertyModifier
-    | 'Default'
-    | 'ReadOnly'
-    | 'WriteOnly'
-    | 'Iterator'
-    ;
-
-MustOverridePropertyModifier
-    : PropertyModifier
-    | 'MustOverride'
-    ;
-
-InterfacePropertyModifier
-    : 'Shadows'
-    | 'Overloads'
-    | 'Default'
-    | 'ReadOnly'
-    | 'WriteOnly'
-    ;
-
-PropertyAccessorDeclaration
-    : PropertyGetDeclaration
-    | PropertySetDeclaration
-    ;
-```
 
 ### Get Accessor Declarations
 
@@ -2816,7 +2850,29 @@ End Module
 
 ## Operators
 
-*Operators* are methods that define the meaning of an existing Visual Basic operator for the containing class. When the operator is applied to the class in an expression, the operator is compiled into a call to the operator method defined in the class. Defining an operator for a class is also known as *overloading* the operator. It is not possible to overload an operator that already exists; in practice, this primarily applies to conversion operators. For example, it is not possible to overload the conversion from a derived class to a base class:
+*Operators* are methods that define the meaning of an existing Visual Basic operator for the containing class. When the operator is applied to the class in an expression, the operator is compiled into a call to the operator method defined in the class. Defining an operator for a class is also known as *overloading* the operator.
+
+```antlr
+OperatorDeclaration
+    : Attributes? OperatorModifier* 'Operator' OverloadableOperator
+      OpenParenthesis ParameterList CloseParenthesis
+      ( 'As' Attributes? TypeName )? LineTerminator
+      Block?
+      'End' 'Operator' StatementTerminator
+    ;
+
+OperatorModifier
+    : 'Public' | 'Shared' | 'Overloads' | 'Shadows' | 'Widening' | 'Narrowing'
+    ;
+
+OverloadableOperator
+    : '+' | '-' | '*' | '/' | '\\' | '&' | 'Like' | 'Mod' | 'And' | 'Or' | 'Xor'
+    | '^' | '<' '<' | '>' '>' | '=' | '<' '>' | '>' | '<' | '>' '=' | '<' '='
+    | 'Not' | 'IsTrue' | 'IsFalse' | 'CType'
+    ;
+```
+
+It is not possible to overload an operator that already exists; in practice, this primarily applies to conversion operators. For example, it is not possible to overload the conversion from a derived class to a base class:
 
 ```vb
 Class Base
@@ -2849,13 +2905,13 @@ Operator declarations do not explicitly add names to the containing type's decla
 
 There are three classes of operators that can be defined: unary operators, binary operators and conversion operators. All operator declarations share certain restrictions:
 
-Operator declarations must always be `Public` and `Shared`. The `Public` modifier can be omitted in contexts where the modifier will be assumed.
+* Operator declarations must always be `Public` and `Shared`. The `Public` modifier can be omitted in contexts where the modifier will be assumed.
 
-The parameters of an operator cannot be declared `ByRef`, `Optional` or `ParamArray`.
+* The parameters of an operator cannot be declared `ByRef`, `Optional` or `ParamArray`.
 
-The type of at least one of the operands or the return value must be the type that contains the operator.
+* The type of at least one of the operands or the return value must be the type that contains the operator.
 
-There is no function return variable defined for operators. Therefore, the `Return` statement must be used to return values from an operator body.
+* There is no function return variable defined for operators. Therefore, the `Return` statement must be used to return values from an operator body.
 
 The only exception to these restrictions applies to nullable value types. Since nullable value types do not have an actual type definition, a value type can declare user-defined operators for the nullable version of the type. When determining whether a type can declare a particular user-defined operator, the `?` modifiers are first dropped off of all of the types involved in the declaration for the purposes of validity checking. This relaxation does not apply to the return type of the `IsTrue` and `IsFalse` operators; they must still return `Boolean`, not `Boolean?`.
 
@@ -2863,37 +2919,18 @@ The precedence and associativity of an operator cannot be modified by an operato
 
 __Note.__ Operators have the same restriction on line placement that subroutines have. The beginning statement, end statement and block must all appear at the beginning of a logical line.
 
-```antlr
-OperatorDeclaration
-    : Attributes? OperatorModifier* 'Operator' OverloadableOperator
-      OpenParenthesis ParameterList CloseParenthesis
-      ( 'As' Attributes? TypeName )? LineTerminator
-      Block?
-      'End' 'Operator' StatementTerminator
-    ;
-
-OperatorModifier
-    : 'Public' | 'Shared' | 'Overloads' | 'Shadows' | 'Widening' | 'Narrowing'
-    ;
-
-OverloadableOperator
-    : '+' | '-' | '*' | '/' | '\\' | '&' | 'Like' | 'Mod' | 'And' | 'Or' | 'Xor'
-    | '^' | '<' '<' | '>' '>' | '=' | '<' '>' | '>' | '<' | '>' '=' | '<' '='
-    | 'Not' | 'IsTrue' | 'IsFalse' | 'CType'
-    ;
-```
 
 ### Unary Operators
 
 The following unary operators can be overloaded:
 
-The unary plus operator `+` (corresponding method: `op_UnaryPlus`)
+* The unary plus operator `+` (corresponding method: `op_UnaryPlus`)
 
-The unary minus operator `-` (corresponding method: `op_UnaryNegation`)
+* The unary minus operator `-` (corresponding method: `op_UnaryNegation`)
 
-The logical `Not` operator (corresponding method: `op_OnesComplement`)
+* The logical `Not` operator (corresponding method: `op_OnesComplement`)
 
-The `IsTrue` and `IsFalse` operators (corresponding methods: `op_True`, `op_False`)
+* The `IsTrue` and `IsFalse` operators (corresponding methods: `op_True`, `op_False`)
 
 All overloaded unary operators must take a single parameter of the containing type and may return any type, except for `IsTrue` and `IsFalse`, which must return `Boolean`. If the containing type is a generic type, the type parameters must match the containing type's type parameters. For example,
 
@@ -2915,29 +2952,27 @@ __Note.__ `IsTrue` and `IsFalse` are not reserved words.
 
 The following binary operators can be overloaded:
 
-The addition `+`, subtraction `-`, multiplication `*`, division `/`, integral division `\`, modulo `Mod` and exponentiation `^` operators (corresponding method: `op_Addition`, `op_Subtraction`, `op_Multiply`, `op_Division`, `op_IntegerDivision`, `op_Modulus`, `op_Exponent`)
+* The addition `+`, subtraction `-`, multiplication `*`, division `/`, integral division `\`, modulo `Mod` and exponentiation `^` operators (corresponding method: `op_Addition`, `op_Subtraction`, `op_Multiply`, `op_Division`, `op_IntegerDivision`, `op_Modulus`, `op_Exponent`)
 
-The relational operators `=`, `<>`, `<`, `>`, `<=`, `>=` (corresponding methods: `op_Equality`, `op_Inequality`, `op_LessThan`, `op_GreaterThan`, `op_LessThanOrEqual`, `op_GreaterThanOrEqual`)
+* The relational operators `=`, `<>`, `<`, `>`, `<=`, `>=` (corresponding methods: `op_Equality`, `op_Inequality`, `op_LessThan`, `op_GreaterThan`, `op_LessThanOrEqual`, `op_GreaterThanOrEqual`). __Note.__ While the equality operator can be overloaded, the assignment operator (used only in assignment statements) cannot be overloaded.
 
-__Note.__ While the equality operator can be overloaded, the assignment operator (used only in assignment statements) cannot be overloaded.
+* The `Like` operator (corresponding method: `op_Like`)
 
-The `Like` operator (corresponding method: `op_Like`)
+* The concatenation operator `&` (corresponding method: `op_Concatenate`)
 
-The concatenation operator `&` (corresponding method: `op_Concatenate`)
+* The logical `And`, `Or` and `Xor` operators (corresponding methods: `op_BitwiseAnd`, `op_BitwiseOr`, `op_ExclusiveOr`)
 
-The logical `And`, `Or` and `Xor` operators (corresponding methods: `op_BitwiseAnd`, `op_BitwiseOr`, `op_ExclusiveOr`)
-
-The shift operators `<<` and `>>` (corresponding methods: `op_LeftShift`, `op_RightShift`)
+* The shift operators `<<` and `>>` (corresponding methods: `op_LeftShift`, `op_RightShift`)
 
 All overloaded binary operators must take the containing type as one of the parameters. If the containing type is a generic type, the type parameters must match the containing type's type parameters. The shift operators further restrict this rule to require the first parameter to be of the containing type; the second parameter must always be of type `Integer`.
 
 The following binary operators must be declared in pairs:
 
-Operator `=` and operator `<>`
+* Operator `=` and operator `<>`
 
-Operator `>` and operator `<`
+* Operator `>` and operator `<`
 
-Operator `>=` and operator `<=`
+* Operator `>=` and operator `<=`
 
 If one of the pair is declared, then the other must also be declared with matching parameter and return types, or a compile-time error will result. (__Note.__ The purpose of requiring paired declarations of relational operators is to try and ensure at least a minimum level of logical consistency in overloaded operators.)
 
@@ -2995,13 +3030,13 @@ Unlike all other type members that can be overloaded, the signature of a convers
 
 A user-defined conversion operator must convert either to or from the containing type -- for example, it is possible for a class `C` to define a conversion from `C` to `Integer` and from `Integer` to `C`, but not from `Integer` to `Boolean`. If the containing type is a generic type, the type parameters must match the containing type's type parameters. Also, it is not possible to redefine an intrinsic (i.e. non-user-defined) conversion. As a result, a type cannot declare a conversion where:
 
-The source type and the destination type are the same.
+* The source type and the destination type are the same.
 
-Both the source type and the destination type are not the type that defines the conversion operator.
+* Both the source type and the destination type are not the type that defines the conversion operator.
 
-The source type or the destination type is an interface type.
+* The source type or the destination type is an interface type.
 
-The source type and destination types are related by inheritance (including `Object`).
+* The source type and destination types are related by inheritance (including `Object`).
 
 The only exception to these rules applies to nullable value types. Since nullable value types do not have an actual type definition, a value type can declare user-defined conversions for the nullable version of the type. When determining whether a type can declare a particular user-defined conversion, the `?` modifiers are first dropped off of all of the types involved in the declaration for the purposes of validity checking. Thus, the following declaration is valid because `S` can define a conversion from `S` to `T`:
 
@@ -3031,12 +3066,12 @@ End Structure
 
 Because the set of operators that Visual Basic supports may not exactly match the set of operators that other languages on the .NET Framework, some operators are mapped specially onto other operators when being defined or used. Specifically:
 
-Defining an integral division operator will automatically define a regular division operator (usable only from other languages) that will call the integral division operator.
+* Defining an integral division operator will automatically define a regular division operator (usable only from other languages) that will call the integral division operator.
 
-Overloading the `Not`, `And`, and `Or` operators will overload only the bitwise operator from the perspective of other languages that distinguish between logical and bitwise operators.
+* Overloading the `Not`, `And`, and `Or` operators will overload only the bitwise operator from the perspective of other languages that distinguish between logical and bitwise operators.
 
-A class that overloads only the logical operators in a language that distinguishes between logical and bitwise operators (i.e. a languages that uses `op_LogicalNot`, `op_LogicalAnd`, and `op_LogicalOr` for `Not`, `And`, and `Or`, respectively) will have their logical operators mapped onto the Visual Basic logical operators. If both the logical and bitwise operators are overloaded, only the bitwise operators will be used.
+* A class that overloads only the logical operators in a language that distinguishes between logical and bitwise operators (i.e. a languages that uses `op_LogicalNot`, `op_LogicalAnd`, and `op_LogicalOr` for `Not`, `And`, and `Or`, respectively) will have their logical operators mapped onto the Visual Basic logical operators. If both the logical and bitwise operators are overloaded, only the bitwise operators will be used.
 
-Overloading the `<<` and `>>` operators will overload only the signed operators from the perspective of other languages that distinguish between signed and unsigned shift operators.
+* Overloading the `<<` and `>>` operators will overload only the signed operators from the perspective of other languages that distinguish between signed and unsigned shift operators.
 
-A class that overloads only an unsigned shift operator will have the unsigned shift operator mapped onto the corresponding Visual Basic shift operator. If both an unsigned and signed shift operator is overloaded, only the signed shift operator will be used.
+* A class that overloads only an unsigned shift operator will have the unsigned shift operator mapped onto the corresponding Visual Basic shift operator. If both an unsigned and signed shift operator is overloaded, only the signed shift operator will be used.

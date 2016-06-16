@@ -98,9 +98,9 @@ When control flow exits the iterator method body through an unhandled exception,
 
 As for the other possible return types of an iterator function,
 
-1. When an iterator method is invoked whose return type is `IEnumerable(Of T)` for some `T`, an instance is first created -- specific to that invocation of the iterator method -- of all parameters in the method, and they are initialized with the supplied values. The result of the invocation is an an object which implements the return type. Should this object's `GetEnumerator` method be called, it creates an instance -- specific to that invocation of `GetEnumerator` -- of all parameters and local variables in the method. It initializes the parameters to the values already saved, and proceeds as for the iterator method above.
-2. When an iterator method is invoked whose return type is the non-generic interface `IEnumerator`, the behavior is exactly as for `IEnumerator(Of Object)`.
-3. When an iterator method is invoked whose return type is the non-generic interface `IEnumerable`, the behavior is exactly as for `IEnumerable(Of Object)`.
+* When an iterator method is invoked whose return type is `IEnumerable(Of T)` for some `T`, an instance is first created -- specific to that invocation of the iterator method -- of all parameters in the method, and they are initialized with the supplied values. The result of the invocation is an an object which implements the return type. Should this object's `GetEnumerator` method be called, it creates an instance -- specific to that invocation of `GetEnumerator` -- of all parameters and local variables in the method. It initializes the parameters to the values already saved, and proceeds as for the iterator method above.
+* When an iterator method is invoked whose return type is the non-generic interface `IEnumerator`, the behavior is exactly as for `IEnumerator(Of Object)`.
+* When an iterator method is invoked whose return type is the non-generic interface `IEnumerable`, the behavior is exactly as for `IEnumerable(Of Object)`.
 
 ### Async Methods
 
@@ -147,17 +147,17 @@ In the following, the *current caller* of the method instance is defined as eith
 
 When control flow exits the async method body -- through reaching the `End Sub` or `End Function` that mark its end, or through an explicit `Return` or `Exit` statement, or through an unhandled exception -- the instance's control point is set to the end of the method. Behavior then depends on the return type of the async method.
 
-1. In the case of an `Async Function` with return type `Task`:
-   11. If control flow exits through an unhandled exception, then the async object's status is set to `TaskStatus.Faulted` and its `Exception.InnerException` property is set to the exception (except: certain implementation-defined exceptions such as `OperationCanceledException` change it to `TaskStatus.Canceled`). Control flow resumes in the current caller.
-   12. Otherwise, the async object's status is set to `TaskStatus.Completed`. Control flow resumes in the current caller.
+* In the case of an `Async Function` with return type `Task`:
+  1. If control flow exits through an unhandled exception, then the async object's status is set to `TaskStatus.Faulted` and its `Exception.InnerException` property is set to the exception (except: certain implementation-defined exceptions such as `OperationCanceledException` change it to `TaskStatus.Canceled`). Control flow resumes in the current caller.
+  2. Otherwise, the async object's status is set to `TaskStatus.Completed`. Control flow resumes in the current caller.
 
-       (__Note.__ The whole point of Task, and what makes async methods interesting, is that when a task becomes Completed then any methods that were awaiting it will presently have their resumption delegates executed, i.e. they will become unblocked.)
+     (__Note.__ The whole point of Task, and what makes async methods interesting, is that when a task becomes Completed then any methods that were awaiting it will presently have their resumption delegates executed, i.e. they will become unblocked.)
 
-2. In the case of an `Async Function` with return type `Task(Of T)` for some `T`: the behavior is as above, except that in non-exception cases the async object's `Result` property is also set to the final value of the task return variable.
+* In the case of an `Async Function` with return type `Task(Of T)` for some `T`: the behavior is as above, except that in non-exception cases the async object's `Result` property is also set to the final value of the task return variable.
 
-3. In the case of an `Async Sub`:
-   31. If control flow exits through an unhandled exception, then that exception is propagated to the environment in some implementation-specific manner. Control flow resumes in the current caller.
-   32. Otherwise, control flow simply resumes in the current caller.
+* In the case of an `Async Sub`:
+  1. If control flow exits through an unhandled exception, then that exception is propagated to the environment in some implementation-specific manner. Control flow resumes in the current caller.
+  2. Otherwise, control flow simply resumes in the current caller.
 
 #### Async Sub
 
@@ -192,6 +192,26 @@ A group of executable statements is called a statement block. Execution of a sta
 
 Within a statement block, the division of statements on logical lines is not significant with the exception of label declaration statements. A label is an identifier that identifies a particular position within the statement block that can be used as the target of a branch statement such as `GoTo`.
 
+```antlr
+Block
+    : Statements*
+    ;
+
+LabelDeclarationStatement
+    : LabelName ':'
+    ;
+
+LabelName
+    : Identifier
+    | IntLiteral
+    ;
+
+Statements
+    : Statement? ( ':' Statement? )*
+    ;
+```
+
+
 Label declaration statements must appear at the beginning of a logical line and labels may be either an identifier or an integer literal. Because both label declaration statements and invocation statements can consist of a single identifier, a single identifier at the beginning of a local line is always considered a label declaration statement. Label declaration statements must always be followed by a colon, even if no statements follow on the same logical line.
 
 Labels have their own declaration space and do not interfere with other identifiers. The following example is valid and uses the name variable `x` both as a parameter and as a label.
@@ -211,24 +231,6 @@ The scope of a label is the body of the method containing it.
 
 For the sake of readability, statement productions that involve multiple substatements are treated as a single production in this specification, even though the substatements may each be by themselves on a labeled line.
 
-```antlr
-Block
-    : Statements*
-    ;
-
-LabelDeclarationStatement
-    : LabelName ':'
-    ;
-
-LabelName
-    : Identifier
-    | IntLiteral
-    ;
-
-Statements
-    : Statement? ( ':' Statement? )*
-    ;
-```
 
 ### Local Variables and Parameters
 
@@ -326,17 +328,27 @@ When control flow leaves the method body, the value of the local variable is pas
 
 A local declaration statement declares a new local variable, local constant, or static variable. *Local variables* and *local constants* are equivalent to instance variables and constants scoped to the method and are declared in the same way. *Static variables* are similar to `Shared` variables and are declared using the `Static` modifier.
 
+```antlr
+LocalDeclarationStatement
+    : LocalModifier VariableDeclarators StatementTerminator
+    ;
+
+LocalModifier
+    : 'Static' | 'Dim' | 'Const'
+    ;
+```
+
 Static variables are locals that retain their value across invocations of the method. Static variables declared within non-shared methods are per instance: each instance of the type that contains the method has its own copy of the static variable. Static variables declared within `Shared` methods are per type; there is only one copy of the static variable for all instances. While local variables are initialized to their type's default value upon each entry into the method, static variables are only initialized to their type's default value when the type or type instance is initialized. Static variables may not be declared in structures or generic methods.
 
 Local variables, local constants, and static variables always have public accessibility and may not specify accessibility modifiers. If no type is specified on a local declaration statement, then the following steps determine the type of the local declaration:
 
-If the declaration has a type character, the type of the type character is the type of the local declaration.
+1. If the declaration has a type character, the type of the type character is the type of the local declaration.
 
-If the local declaration is a local constant, or if the local declaration is a local variable with an initializer and local variable type inference is being used, the type of the local declaration is inferred from the type of the initializer. If the initializer refers to the local declaration, a compile-time error occurs. (Local constants are required to have initializers.)
+2. If the local declaration is a local constant, or if the local declaration is a local variable with an initializer and local variable type inference is being used, the type of the local declaration is inferred from the type of the initializer. If the initializer refers to the local declaration, a compile-time error occurs. (Local constants are required to have initializers.)
 
-If strict semantics are not being used, the type of the local declaration statement is implicitly `Object`.
+3. If strict semantics are not being used, the type of the local declaration statement is implicitly `Object`.
 
-Otherwise, a compile-time error occurs.
+4. Otherwise, a compile-time error occurs.
 
 If no type is specified on a local declaration statement that has an array size or array type modifier, then the type of the local declaration is an array with the specified rank and the previous steps are used to determine the element type of the array. If local variable type inference is used, the type of the initializer must be an array type with the same array shape (i.e. array type modifiers) as the local declaration statement. Note that it is possible that the inferred element type may still be an array type. For example:
 
@@ -457,15 +469,6 @@ End Module
 
 Local variables, local constants, and static variables are scoped to the statement block in which they are declared. Static variables are special in that their names may only be used once throughout the entire method. For example, it is not valid to specify two static variable declarations with the same name even if they are in different blocks.
 
-```antlr
-LocalDeclarationStatement
-    : LocalModifier VariableDeclarators StatementTerminator
-    ;
-
-LocalModifier
-    : 'Static' | 'Dim' | 'Const'
-    ;
-```
 
 ### Implicit Local Declarations
 
@@ -511,7 +514,17 @@ If explicit local declaration is specified by the compilation environment or by 
 
 ## With Statement
 
-A `With` statement allows multiple references to an expression's members without specifying the expression multiple times. The expression must be classified as a value and is evaluated once, upon entry into the block. Within the `With` statement block, a member access expression or dictionary access expression starting with a period or an exclamation point is evaluated as if the `With` expression preceded it. For example:
+A `With` statement allows multiple references to an expression's members without specifying the expression multiple times.
+
+```antlr
+WithStatement
+    : 'With' Expression StatementTerminator
+      Block?
+      'End' 'With' StatementTerminator
+    ;
+```
+
+The expression must be classified as a value and is evaluated once, upon entry into the block. Within the `With` statement block, a member access expression or dictionary access expression starting with a period or an exclamation point is evaluated as if the `With` expression preceded it. For example:
 
 ```vb
 Structure Test
@@ -537,17 +550,20 @@ End Module
 
 It is invalid to branch into a `With` statement block from outside of the block.
 
-```antlr
-WithStatement
-    : 'With' Expression StatementTerminator
-      Block?
-      'End' 'With' StatementTerminator
-    ;
-```
 
 ## SyncLock Statement
 
-A `SyncLock` statement allows statements to be synchronized on an expression, which ensures that multiple threads of execution do not execute the same statements at the same time. The expression must be classified as a value and is evaluated once, upon entry to the block. When entering the `SyncLock` block, the `Shared` method `System.Threading.Monitor.Enter` is called on the specified expression, which blocks until the thread of execution has an exclusive lock on the object returned by the expression. The type of the expression in a `SyncLock` statement must be a reference type. For example:
+A `SyncLock` statement allows statements to be synchronized on an expression, which ensures that multiple threads of execution do not execute the same statements at the same time.
+
+```antlr
+SyncLockStatement
+    : 'SyncLock' Expression StatementTerminator
+      Block?
+      'End' 'SyncLock' StatementTerminator
+    ;
+```
+
+The expression must be classified as a value and is evaluated once, upon entry to the block. When entering the `SyncLock` block, the `Shared` method `System.Threading.Monitor.Enter` is called on the specified expression, which blocks until the thread of execution has an exclusive lock on the object returned by the expression. The type of the expression in a `SyncLock` statement must be a reference type. For example:
 
 ```vb
 Class Test
@@ -601,13 +617,6 @@ Class Test
 End Class
 ```
 
-```antlr
-SyncLockStatement
-    : 'SyncLock' Expression StatementTerminator
-      Block?
-      'End' 'SyncLock' StatementTerminator
-    ;
-```
 
 ## Event Statements
 
@@ -623,7 +632,16 @@ EventStatement
 
 ### RaiseEvent Statement
 
-A `RaiseEvent` statement notifies event handlers that a particular event has occurred. The simple name expression in a `RaiseEvent` statement is interpreted as a member lookup on `Me`. Thus, `RaiseEvent x` is interpreted as if it were `RaiseEvent Me.x`. The result of the expression must be classified as an event access for an event defined in the class itself; events defined on base types cannot be used in a `RaiseEvent` statement.
+A `RaiseEvent` statement notifies event handlers that a particular event has occurred.
+
+```antlr
+RaiseEventStatement
+    : 'RaiseEvent' IdentifierOrKeyword
+      ( OpenParenthesis ArgumentList? CloseParenthesis )? StatementTerminator
+    ;
+```
+
+The simple name expression in a `RaiseEvent` statement is interpreted as a member lookup on `Me`. Thus, `RaiseEvent x` is interpreted as if it were `RaiseEvent Me.x`. The result of the expression must be classified as an event access for an event defined in the class itself; events defined on base types cannot be used in a `RaiseEvent` statement.
 
 The `RaiseEvent` statement is processed as a call to the `Invoke` method of the event's delegate, using the supplied parameters, if any. If the delegate's value is `Nothing`, no exception is thrown. If there are no arguments, the parentheses may be omitted. For example:
 
@@ -676,16 +694,20 @@ Class Raiser
 End Class
 ```
 
-```antlr
-RaiseEventStatement
-    : 'RaiseEvent' IdentifierOrKeyword
-      ( OpenParenthesis ArgumentList? CloseParenthesis )? StatementTerminator
-    ;
-```
 
 ### AddHandler and RemoveHandler Statements
 
 Although most event handlers are automatically hooked up through `WithEvents` variables, it may be necessary to dynamically add and remove event handlers at run time. `AddHandler` and `RemoveHandler` statements do this.
+
+```antlr
+AddHandlerStatement
+    : 'AddHandler' Expression Comma Expression StatementTerminator
+    ;
+
+RemoveHandlerStatement
+    : 'RemoveHandler' Expression Comma Expression StatementTerminator
+    ;
+```
 
 Each statement takes two arguments: the first argument must be an expression that is classified as an event access and the second argument must be an expression that is classified as a value. The second argument's type must be the delegate type associated with the event access. For example:
 
@@ -728,15 +750,6 @@ Public Class Form1
 End Class
 ```
 
-```antlr
-AddHandlerStatement
-    : 'AddHandler' Expression Comma Expression StatementTerminator
-    ;
-
-RemoveHandlerStatement
-    : 'RemoveHandler' Expression Comma Expression StatementTerminator
-    ;
-```
 
 ## Assignment Statements
 
@@ -752,7 +765,15 @@ AssignmentStatement
 
 ### Regular Assignment Statements
 
-A simple assignment statement stores the result of an expression in a variable. The expression on the left side of the assignment operator must be classified as a variable or a property access, while the expression on the right side of the assignment operator must be classified as a value. The type of the expression must be implicitly convertible to the type of the variable or property access.
+A simple assignment statement stores the result of an expression in a variable.
+
+```antlr
+RegularAssignmentStatement
+    : Expression Equals Expression StatementTerminator
+    ;
+```
+
+The expression on the left side of the assignment operator must be classified as a variable or a property access, while the expression on the right side of the assignment operator must be classified as a value. The type of the expression must be implicitly convertible to the type of the variable or property access.
 
 If the variable being assigned into is an array element of a reference type, a run-time check will be performed to ensure that the expression is compatible with the array-element type. In the following example, the last assignment causes a `System.ArrayTypeMismatchException` to be thrown, because an instance of `ArrayList` cannot be stored in an element of a `String` array.
 
@@ -830,15 +851,23 @@ __Note.__ For intrinsic types such as `Integer` and `Date`, reference and value 
 
 Because the equals character (`=`) is used both for assignment and for equality, there is an ambiguity between a simple assignment and an invocation statement in situations such as `x = y.ToString()`. In all such cases, the assignment statement takes precedence over the equality operator. This means that the example expression is interpreted as `x = (y.ToString())` rather than `(x = y).ToString()`.
 
-```antlr
-RegularAssignmentStatement
-    : Expression Equals Expression StatementTerminator
-    ;
-```
 
 ### Compound Assignment Statements
 
-A *compound assignment statement* takes the form *V OP= E* (where *OP* is a valid binary operator). The expression on the left side of the assignment operator must be classified as a variable or property access, while the expression on the right side of the assignment operator must be classified as a value. The compound assignment statement is equivalent to the statement *V = V OP E* with the difference that the variable on the left side of the compound assignment operator is only evaluated once. The following example demonstrates this difference:
+A *compound assignment statement* takes the form `V op= E` (where `op` is a valid binary operator).
+
+```antlr
+CompoundAssignmentStatement
+    : Expression CompoundBinaryOperator LineTerminator? Expression StatementTerminator
+    ;
+
+CompoundBinaryOperator
+    : '^' '=' | '*' '=' | '/' '=' | '\\' '=' | '+' '=' | '-' '='
+    | '&' '=' | '<' '<' '=' | '>' '>' '='
+    ;
+```
+
+The expression on the left side of the assignment operator must be classified as a variable or property access, while the expression on the right side of the assignment operator must be classified as a value. The compound assignment statement is equivalent to the statement `V = V op E` with the difference that the variable on the left side of the compound assignment operator is only evaluated once. The following example demonstrates this difference:
 
 ```vb
 Module Test
@@ -869,20 +898,19 @@ Compound assignment
 Getting index
 ```
 
-```antlr
-CompoundAssignmentStatement
-    : Expression CompoundBinaryOperator LineTerminator? Expression StatementTerminator
-    ;
-
-CompoundBinaryOperator
-    : '^' '=' | '*' '=' | '/' '=' | '\\' '=' | '+' '=' | '-' '='
-    | '&' '=' | '<' '<' '=' | '>' '>' '='
-    ;
-```
 
 ### Mid Assignment Statement
 
-A `Mid` assignment statement assigns a string into another string. The left side of the assignment has the same syntax as a call to the function `Microsoft.VisualBasic.Strings.Mid`. The first argument is the target of the assignment and must be classified as a variable or a property access whose type is implicitly convertible to and from `String`. The second parameter is the 1-based start position that corresponds to where the assignment should begin in the target string and must be classified as a value whose type must be implicitly convertible to `Integer`. The optional third parameter is the number of characters from the right-side value to assign into the target string and must be classified as a value whose type is implicitly convertible to `Integer`. The right side is the source string and must be classified as a value whose type is implicitly convertible to `String`. The right side is truncated to the length parameter, if specified, and replaces the characters in the left-side string, starting at the start position. If the right side string contained fewer characters than the third parameter, only the characters from the right side string will be copied.
+A `Mid` assignment statement assigns a string into another string. The left side of the assignment has the same syntax as a call to the function `Microsoft.VisualBasic.Strings.Mid`.
+
+```antlr
+MidAssignmentStatement
+    : 'Mid' '$'? OpenParenthesis Expression Comma Expression
+      ( Comma Expression )? CloseParenthesis Equals Expression StatementTerminator
+    ;
+```
+
+The first argument is the target of the assignment and must be classified as a variable or a property access whose type is implicitly convertible to and from `String`. The second parameter is the 1-based start position that corresponds to where the assignment should begin in the target string and must be classified as a value whose type must be implicitly convertible to `Integer`. The optional third parameter is the number of characters from the right-side value to assign into the target string and must be classified as a value whose type is implicitly convertible to `Integer`. The right side is the source string and must be classified as a value whose type is implicitly convertible to `String`. The right side is truncated to the length parameter, if specified, and replaces the characters in the left-side string, starting at the start position. If the right side string contained fewer characters than the third parameter, only the characters from the right side string will be copied.
 
 The following example displays `ab123fg`:
 
@@ -900,12 +928,6 @@ End Module
 
 __Note.__ `Mid` is not a reserved word.
 
-```antlr
-MidAssignmentStatement
-    : 'Mid' '$'? OpenParenthesis Expression Comma Expression
-      ( Comma Expression )? CloseParenthesis Equals Expression StatementTerminator
-    ;
-```
 
 ## Invocation Statements
 
@@ -962,28 +984,7 @@ ConditionalStatement
 
 ### If...Then...Else Statements
 
-An `If...Then...Else` statement is the basic conditional statement. Each expression in an `If...Then...Else` statement must be a Boolean expression, as per Section [Boolean Expressions](expressions.md#boolean-expressions). (Note: this does not require the expression to have Boolean type). If the expression in the `If` statement is true, the statements enclosed by the `If` block are executed. If the expression is false, each of the `ElseIf` expressions is evaluated. If one of the `ElseIf` expressions evaluates to true, the corresponding block is executed. If no expression evaluates to true and there is an `Else` block, the `Else` block is executed. Once a block finishes executing, execution passes to the end of the `If...Then...Else` statement.
-
-The line version of the `If` statement has a single set of statements to be executed if the `If` expression is `True` and an optional set of statements to be executed if the expression is `False`. For example:
-
-```vb
-Module Test
-    Sub Main()
-        Dim a As Integer = 10
-        Dim b As Integer = 20
-
-        ' Block If statement.
-        If a < b Then
-            a = b
-        Else
-            b = a
-        End If
-
-        ' Line If statement
-        If a < b Then a = b Else b = a
-    End Sub
-End Module
-```
+An `If...Then...Else` statement is the basic conditional statement.
 
 ```antlr
 IfStatement
@@ -1012,6 +1013,29 @@ ElseStatement
 LineIfThenStatement
     : 'If' BooleanExpression 'Then' Statements ( 'Else' Statements )? StatementTerminator
     ;
+```
+
+Each expression in an `If...Then...Else` statement must be a Boolean expression, as per Section [Boolean Expressions](expressions.md#boolean-expressions). (Note: this does not require the expression to have Boolean type). If the expression in the `If` statement is true, the statements enclosed by the `If` block are executed. If the expression is false, each of the `ElseIf` expressions is evaluated. If one of the `ElseIf` expressions evaluates to true, the corresponding block is executed. If no expression evaluates to true and there is an `Else` block, the `Else` block is executed. Once a block finishes executing, execution passes to the end of the `If...Then...Else` statement.
+
+The line version of the `If` statement has a single set of statements to be executed if the `If` expression is `True` and an optional set of statements to be executed if the expression is `False`. For example:
+
+```vb
+Module Test
+    Sub Main()
+        Dim a As Integer = 10
+        Dim b As Integer = 20
+
+        ' Block If statement.
+        If a < b Then
+            a = b
+        Else
+            b = a
+        End If
+
+        ' Line If statement
+        If a < b Then a = b Else b = a
+    End Sub
+End Module
 ```
 
 The line version of the If statement binds less tightly than ":", and its `Else` binds to the lexically nearest preceding `If` that is allowed by the syntax. For example, the following two versions are equivalent:
@@ -1050,7 +1074,41 @@ If b Then Call Sub()
 
 ### Select Case Statements
 
-A `Select Case` statement executes statements based on the value of an expression. The expression must be classified as a value. When a `Select Case` statement is executed, the `Select` expression is evaluated first, and the `Case` statements are then evaluated in order of textual declaration. The first `Case` statement that evaluates to `True` has its block executed. If no `Case` statement evaluates to `True` and there is a `Case Else` statement, that block is executed. Once a block has finished executing, execution passes to the end of the `Select` statement.
+A `Select Case` statement executes statements based on the value of an expression.
+
+```antlr
+SelectStatement
+    : 'Select' 'Case'? Expression StatementTerminator
+      CaseStatement*
+      CaseElseStatement?
+      'End' 'Select' StatementTerminator
+    ;
+
+CaseStatement
+    : 'Case' CaseClauses StatementTerminator
+      Block?
+    ;
+
+CaseClauses
+    : CaseClause ( Comma CaseClause )*
+    ;
+
+CaseClause
+    : ( 'Is' LineTerminator? )? ComparisonOperator LineTerminator? Expression
+    | Expression ( 'To' Expression )?
+    ;
+
+ComparisonOperator
+    : '=' | '<' '>' | '<' | '>' | '>' '=' | '<' '='
+    ;
+
+CaseElseStatement
+    : 'Case' 'Else' StatementTerminator
+      Block?
+    ;
+```
+
+The expression must be classified as a value. When a `Select Case` statement is executed, the `Select` expression is evaluated first, and the `Case` statements are then evaluated in order of textual declaration. The first `Case` statement that evaluates to `True` has its block executed. If no `Case` statement evaluates to `True` and there is a `Case Else` statement, that block is executed. Once a block has finished executing, execution passes to the end of the `Select` statement.
 
 Execution of a `Case` block is not permitted to "fall through" to the next switch section. This prevents a common class of bugs that occur in other languages when a `Case` terminating statement is accidentally omitted. The following example illustrates this behavior:
 
@@ -1085,41 +1143,19 @@ A `Case` clause may take two forms. One form is an optional `Is` keyword, a comp
 
 The other form is an expression optionally followed by the keyword `To` and a second expression. Both expressions are converted to the type of the `Select` expression; if either expression is not implicitly convertible to the type of the `Select` expression, a compile-time error occurs. If the `Select` expression is `E`, the first `Case` expression is `E1`, and the second `Case` expression is `E2`, the `Case` is evaluated either as `E = E1` (if no `E2` is specified) or `(E >= E1) And (E <= E2)`. The operators must be valid for the types of the two expressions; otherwise a compile-time error occurs.
 
-```antlr
-SelectStatement
-    : 'Select' 'Case'? Expression StatementTerminator
-      CaseStatement*
-      CaseElseStatement?
-      'End' 'Select' StatementTerminator
-    ;
-
-CaseStatement
-    : 'Case' CaseClauses StatementTerminator
-      Block?
-    ;
-
-CaseClauses
-    : CaseClause ( Comma CaseClause )*
-    ;
-
-CaseClause
-    : ( 'Is' LineTerminator? )? ComparisonOperator LineTerminator? Expression
-    | Expression ( 'To' Expression )?
-    ;
-
-ComparisonOperator
-    : '=' | '<' '>' | '<' | '>' | '>' '=' | '<' '='
-    ;
-
-CaseElseStatement
-    : 'Case' 'Else' StatementTerminator
-      Block?
-    ;
-```
 
 ## Loop Statements
 
 Loop statements allow repeated execution of the statements in their body.
+
+```antlr
+LoopStatement
+    : WhileStatement
+    | DoLoopStatement
+    | ForStatement
+    | ForEachStatement
+    ;
+```
 
 Each time a loop body is entered, a fresh copy is made of all local variables declared in that body, initialized to the previous values of the variables. Any reference to a variable within the loop body will use the most recently made copy. This code shows an example:
 
@@ -1152,45 +1188,10 @@ When the loop body is executed, it uses whichever copy of the variable is curren
 
 Note that if there are no lambdas or LINQ expressions, then it's impossible to know that a fresh copy is made on loop entry. Indeed, compiler optimizations will avoid making copies in this case. Note too that it's illegal to `GoTo` into a loop that contains lambdas or LINQ expressions.
 
-```antlr
-LoopStatement
-    : WhileStatement
-    | DoLoopStatement
-    | ForStatement
-    | ForEachStatement
-    ;
-```
 
 ### While...End While and Do...Loop Statements
 
-A `While` or `Do` loop statement loops based on a Boolean expression. A `While` loop statement loops as long as the Boolean expression evaluates to true; a `Do` loop statement may contain a more complex condition. An expression may be placed after the `Do` keyword or after the `Loop` keyword, but not after both. The Boolean expression is evaluated as per Section [Boolean Expressions](expressions.md#boolean-expressions). (Note: this does not require the expression to have Boolean type). It is also valid to specify no expression at all; in that case, the loop will never exit. If the expression is placed after `Do`, it will be evaluated before the loop block is executed on each iteration. If the expression is placed after `Loop`, it will be evaluated after the loop block has executed on each iteration. Placing the expression after `Loop` will therefore generate one more loop than placement after `Do`. The following example demonstrates this behavior:
-
-```vb
-Module Test
-    Sub Main()
-        Dim x As Integer
-
-        x = 3
-        Do While x = 1
-            Console.WriteLine("First loop")
-        Loop
-
-        Do
-            Console.WriteLine("Second loop")
-        Loop While x = 1
-    End Sub
-End Module
-```
-
-The code produces the output:
-
-```
-Second Loop
-```
-
-In the case of the first loop, the condition is evaluated before the loop executes. In the case of the second loop, the condition is executed after the loop executes. The conditional expression must be prefixed with either a `While` keyword or an `Until` keyword. The former breaks the loop if the condition evaluates to false, the latter when the condition evaluates to true.
-
-__Note.__ `Until` is not a reserved word.
+A `While` or `Do` loop statement loops based on a Boolean expression.
 
 ```antlr
 WhileStatement
@@ -1221,24 +1222,81 @@ WhileOrUntil
     ;
 ```
 
+A `While` loop statement loops as long as the Boolean expression evaluates to true; a `Do` loop statement may contain a more complex condition. An expression may be placed after the `Do` keyword or after the `Loop` keyword, but not after both. The Boolean expression is evaluated as per Section [Boolean Expressions](expressions.md#boolean-expressions). (Note: this does not require the expression to have Boolean type). It is also valid to specify no expression at all; in that case, the loop will never exit. If the expression is placed after `Do`, it will be evaluated before the loop block is executed on each iteration. If the expression is placed after `Loop`, it will be evaluated after the loop block has executed on each iteration. Placing the expression after `Loop` will therefore generate one more loop than placement after `Do`. The following example demonstrates this behavior:
+
+```vb
+Module Test
+    Sub Main()
+        Dim x As Integer
+
+        x = 3
+        Do While x = 1
+            Console.WriteLine("First loop")
+        Loop
+
+        Do
+            Console.WriteLine("Second loop")
+        Loop While x = 1
+    End Sub
+End Module
+```
+
+The code produces the output:
+
+```
+Second Loop
+```
+
+In the case of the first loop, the condition is evaluated before the loop executes. In the case of the second loop, the condition is executed after the loop executes. The conditional expression must be prefixed with either a `While` keyword or an `Until` keyword. The former breaks the loop if the condition evaluates to false, the latter when the condition evaluates to true.
+
+__Note.__ `Until` is not a reserved word.
+
+
 ### For...Next Statements
 
-1. A `For...Next` statement loops based on a set of bounds. A `For` statement specifies a loop control variable, a lower bound expression, an upper bound expression, and an optional step value expression. The loop control variable is specified either through an identifier followed by an optional `As` clause or an expression. As per the following rules, the loop control variable refers either to a new local variable specific to this For...Next statement, or to a pre-existing variable, or to an expression.If the loop control variable is an identifier with an `As` clause, the identifier defines a new local variable of the type specified in the `As` clause, scoped to the entire `For` loop.
-2. If the loop control variable is an identifier without an `As` clause, then the identifier is first resolved using the simple name resolution rules (see Section [Simple Name Expressions](expressions.md#simple-name-expressions)), excepting that this occurrence of the identifier would not in and of itself cause an implicit local variable to be created (Section [Implicit Local Declarations](statements.md#implicit-local-declarations)).
-   1. If this resolution succeeds and the result is classified as a variable, then the loop control variable is that pre-existing variable.
-   2. If resolution fails, or if resolution succeeds and the result is classified as a type, then:
-      1. if local variable type inference is being used, the identifier defines a new local variable whose type is inferred from the bound and step expressions, scoped to the entire `For` loop;
-      2. if local variable type inference is not being used but implicit local declaration is, then an implicit local variable is created whose scope is the entire method (Section [Implicit Local Declarations](statements.md#implicit-local-declarations)), and the loop control variable refers to this pre-existing variable;
-      3. if neither local variable type inference nor implicit local declarations are used, it is an error.
-   3. If resolution succeeds with something classified as neither a type nor a variable, it is an error.
-3. If the loop control variable is an expression, the expression must be classified as a variable.
+A `For...Next` statement loops based on a set of bounds. A `For` statement specifies a loop control variable, a lower bound expression, an upper bound expression, and an optional step value expression. The loop control variable is specified either through an identifier followed by an optional `As` clause or an expression.
+
+```antlr
+ForStatement
+    : 'For' LoopControlVariable Equals Expression 'To' Expression
+      ( 'Step' Expression )? StatementTerminator
+      Block?
+      ( 'Next' NextExpressionList? StatementTerminator )?
+    ;
+
+LoopControlVariable
+    : Identifier ( IdentifierModifiers 'As' TypeName )?
+    | Expression
+    ;
+
+NextExpressionList
+    : Expression ( Comma Expression )*
+    ;
+```
+
+As per the following rules, the loop control variable refers either to a new local variable specific to this `For...Next` statement, or to a pre-existing variable, or to an expression.
+
+* If the loop control variable is an identifier with an `As` clause, the identifier defines a new local variable of the type specified in the `As` clause, scoped to the entire `For` loop.
+
+* If the loop control variable is an identifier without an `As` clause, then the identifier is first resolved using the simple name resolution rules (see Section [Simple Name Expressions](expressions.md#simple-name-expressions)), excepting that this occurrence of the identifier would not in and of itself cause an implicit local variable to be created (Section [Implicit Local Declarations](statements.md#implicit-local-declarations)).
+
+  * If this resolution succeeds and the result is classified as a variable, then the loop control variable is that pre-existing variable.
+
+  * If resolution fails, or if resolution succeeds and the result is classified as a type, then:
+    * if local variable type inference is being used, the identifier defines a new local variable whose type is inferred from the bound and step expressions, scoped to the entire `For` loop;
+    * if local variable type inference is not being used but implicit local declaration is, then an implicit local variable is created whose scope is the entire method (Section [Implicit Local Declarations](statements.md#implicit-local-declarations)), and the loop control variable refers to this pre-existing variable;
+    * if neither local variable type inference nor implicit local declarations are used, it is an error.
+
+  * If resolution succeeds with something classified as neither a type nor a variable, it is an error.
+
+* If the loop control variable is an expression, the expression must be classified as a variable.
 
 A loop control variable cannot be used by another enclosing `For...Next` statement. The type of the loop control variable of a `For` statement determines the type of the iteration and must be one of:
 
-1. `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, `Long`, `Decimal`, `Single`, `Double`
-2. An enumerated type
-3. `Object`
-4. A type `T` that has the following operators, where `B` is a type that can be used in a Boolean expression:
+* `Byte`, `SByte`, `UShort`, `Short`, `UInteger`, `Integer`, `ULong`, `Long`, `Decimal`, `Single`, `Double`
+* An enumerated type
+* `Object`
+* A type `T` that has the following operators, where `B` is a type that can be used in a Boolean expression:
 
 ```vb
 Public Shared Operator >= (op1 As T, op2 As T) As B
@@ -1261,40 +1319,35 @@ Note that a new copy of the loop control variable is *not* created on each itera
 
 It is not valid to branch into a `For` loop from outside the loop.
 
-```antlr
-ForStatement
-    : 'For' LoopControlVariable Equals Expression 'To' Expression
-      ( 'Step' Expression )? StatementTerminator
-      Block?
-      ( 'Next' NextExpressionList? StatementTerminator )?
-    ;
-
-LoopControlVariable
-    : Identifier ( IdentifierModifiers 'As' TypeName )?
-    | Expression
-    ;
-
-NextExpressionList
-    : Expression ( Comma Expression )*
-    ;
-```
 
 ### For Each...Next Statements
 
-A `For Each...Next` statement loops based on the elements in an expression. A `For Each` statement specifies a loop control variable and an enumerator expression. The loop control variable is specified either through an identifier followed by an optional `As` clause or an expression. Following the same rules as `For...Next` statements (Section [For...Next Statements](statements.md#fornext-statements)), the loop control variable refers either to a new local variable specific to this For Each...Next statement, or to a pre-existing variable, or to an expression.
+A `For Each...Next` statement loops based on the elements in an expression. A `For Each` statement specifies a loop control variable and an enumerator expression. The loop control variable is specified either through an identifier followed by an optional `As` clause or an expression.
+
+```antlr
+ForEachStatement
+    : 'For' 'Each' LoopControlVariable 'In' LineTerminator? Expression StatementTerminator
+      Block?
+      ( 'Next' NextExpressionList? StatementTerminator )?
+    ;
+```
+
+Following the same rules as `For...Next` statements (Section [For...Next Statements](statements.md#fornext-statements)), the loop control variable refers either to a new local variable specific to this For Each...Next statement, or to a pre-existing variable, or to an expression.
 
 The enumerator expression must be classified as a value and its type must be a collection type or `Object`. If the type of the enumerator expression is `Object`, then all processing is deferred until run-time. Otherwise, a conversion must exist from the element type of the collection to the type of the loop control variable.
 
 The loop control variable cannot be used by another enclosing `For Each` statement. A `For Each` statement must be closed by a matching `Next` statement. A `Next` statement without a loop control variable matches the innermost open `For Each`. A `Next` statement with one or more loop control variables will, from left to right, match the `For Each` loops that have the same loop control variable. If a variable matches a `For Each` loop that is not the most nested loop at that point, a compile-time error occurs.
 
-A type `C` is said to be a *collection type* if:
+A type `C` is said to be a *collection type* if one of:
 
-1. All of the following are true:
-   1. `C` contains an accessible instance, shared or extension method with the signature `GetEnumerator()` that returns a type `E`.
-   2. `E` contains an accessible instance, shared or extension method with the signature `MoveNext()` and the return type `Boolean`.
-   3. `E` contains an accessible instance or shared property named `Current` that has a getter. The type of this property is the element type of the collection type.
-2. It implements the interface `System.Collections.Generic.IEnumerable(Of T)`, in which case the element type of the collection is considered to be `T`.
-3. It implements the interface `System.Collections.IEnumerable`, in which case the element type of the collection is considered to be `Object`.
+* All of the following are true:
+  * `C` contains an accessible instance, shared or extension method with the signature `GetEnumerator()` that returns a type `E`.
+  * `E` contains an accessible instance, shared or extension method with the signature `MoveNext()` and the return type `Boolean`.
+  * `E` contains an accessible instance or shared property named `Current` that has a getter. The type of this property is the element type of the collection type.
+
+* It implements the interface `System.Collections.Generic.IEnumerable(Of T)`, in which case the element type of the collection is considered to be `T`.
+
+* It implements the interface `System.Collections.IEnumerable`, in which case the element type of the collection is considered to be `Object`.
 
 Following is an example of a class that can be enumerated:
 
@@ -1425,13 +1478,6 @@ End Module
 
 It is not valid to branch into a `For Each` statement block from outside the block.
 
-```antlr
-ForEachStatement
-    : 'For' 'Each' LoopControlVariable 'In' LineTerminator? Expression StatementTerminator
-      Block?
-      ( 'Next' NextExpressionList? StatementTerminator )?
-    ;
-```
 
 ## Exception-Handling Statements
 
@@ -1447,6 +1493,22 @@ ErrorHandlingStatement
 ### Structured Exception-Handling Statements
 
 Structured exception handling is a method of handling errors by declaring explicit blocks within which certain exceptions will be handled. Structured exception handling is done through a `Try` statement.
+
+```antlr
+StructuredErrorStatement
+    : ThrowStatement
+    | TryStatement
+    ;
+
+TryStatement
+    : 'Try' StatementTerminator
+      Block?
+      CatchStatement*
+      FinallyStatement?
+      'End' 'Try' StatementTerminator
+    ;
+```
+
 
 For example:
 
@@ -1470,20 +1532,6 @@ End Module
 
 A `Try` statement is made up of three kinds of blocks: try blocks, catch blocks, and finally blocks. A *try block* is a statement block that contains the statements to be executed. A *catch block* is a statement block that handles an exception. A *finally block* is a statement block that contains statements to be run when the `Try` statement is exited, regardless of whether an exception has occurred and been handled. A `Try` statement, which can only contain one try block and one finally block, must contain at least one catch block or finally block. It is invalid to explicitly transfer execution into a try block except from within a catch block in the same statement.
 
-```antlr
-StructuredErrorStatement
-    : ThrowStatement
-    | TryStatement
-    ;
-
-TryStatement
-    : 'Try' StatementTerminator
-      Block?
-      CatchStatement*
-      FinallyStatement?
-      'End' 'Try' StatementTerminator
-    ;
-```
 
 #### Finally Blocks
 
@@ -1502,7 +1550,17 @@ FinallyStatement
 
 #### Catch Blocks
 
-If an exception occurs while processing the `Try` block, each `Catch` statement is examined in textual order to determine if it handles the exception. The identifier specified in a `Catch` clause represents the exception that has been thrown. If the identifier contains an `As` clause, then the identifier is considered to be declared within the `Catch` block's local declaration space. Otherwise, the identifier must be a local variable (not a static variable) that was defined in a containing block.
+If an exception occurs while processing the `Try` block, each `Catch` statement is examined in textual order to determine if it handles the exception.
+
+```antlr
+CatchStatement
+    : 'Catch' ( Identifier ( 'As' NonArrayTypeName )? )?
+	  ( 'When' BooleanExpression )? StatementTerminator
+      Block?
+    ;
+```
+
+The identifier specified in a `Catch` clause represents the exception that has been thrown. If the identifier contains an `As` clause, then the identifier is considered to be declared within the `Catch` block's local declaration space. Otherwise, the identifier must be a local variable (not a static variable) that was defined in a containing block.
 
 A `Catch` clause with no identifier will catch all exceptions derived from `System.Exception`. A `Catch` clause with an identifier will only catch exceptions whose types are the same as or derived from the type of the identifier. The type must be `System.Exception`, or a type derived from `System.Exception`. When an exception is caught that derives from `System.Exception`, a reference to the exception object is stored in the object returned by the function `Microsoft.VisualBasic.Information.Err`.
 
@@ -1564,16 +1622,18 @@ End Function
 
  However, Async and Iterator methods cause all finally blocks inside them to be executed prior to any filters outside. For instance, if the above code had `Async Sub Foo()`, then the output would be "Finally, Filter, Catch".
 
-```antlr
-CatchStatement
-    : 'Catch' ( Identifier ( 'As' NonArrayTypeName )? )? ( 'When' BooleanExpression )? StatementTerminator
-      Block?
-    ;
-```
 
 #### Throw Statement
 
-The `Throw` statement raises an exception, which is represented by an instance of a type derived from `System.Exception`. If the expression is not classified as a value or is not a type derived from `System.Exception`, then a compile-time error occurs. If the expression evaluates to a null value at run time, then a `System.NullReferenceException` exception is raised instead.
+The `Throw` statement raises an exception, which is represented by an instance of a type derived from `System.Exception`.
+
+```antlr
+ThrowStatement
+    : 'Throw' Expression? StatementTerminator
+    ;
+```
+
+If the expression is not classified as a value or is not a type derived from `System.Exception`, then a compile-time error occurs. If the expression evaluates to a null value at run time, then a `System.NullReferenceException` exception is raised instead.
 
 A `Throw` statement may omit the expression within a catch block of a `Try` statement, as long as there is no intervening finally block. In that case, the statement rethrows the exception currently being handled within the catch block. For example:
 
@@ -1597,15 +1657,20 @@ Sub Test(x As Integer)
 End Sub
 ```
 
-```antlr
-ThrowStatement
-    : 'Throw' Expression? StatementTerminator
-    ;
-```
 
 ### Unstructured Exception-Handling Statements
 
-Unstructured exception handling is a method of handling errors by indicating statements to branch to when an exception occurs. Unstructured exception handling is implemented using three statements: the `Error` statement, the `On Error` statement, and the `Resume` statement. For example:
+Unstructured exception handling is a method of handling errors by indicating statements to branch to when an exception occurs. Unstructured exception handling is implemented using three statements: the `Error` statement, the `On Error` statement, and the `Resume` statement.
+
+```antlr
+UnstructuredErrorStatement
+    : ErrorStatement
+    | OnErrorStatement
+    | ResumeStatement
+    ;
+```
+
+For example:
 
 ```vb
 Module Test
@@ -1630,13 +1695,6 @@ When a method uses unstructured exception handling, a single structured exceptio
 
 Unstructured error handling statements are not allowed in iterator or async methods.
 
-```antlr
-UnstructuredErrorStatement
-    : ErrorStatement
-    | OnErrorStatement
-    | ResumeStatement
-    ;
-```
 
 #### Error Statement
 
@@ -1650,15 +1708,7 @@ ErrorStatement
 
 #### On Error Statement
 
-An `On Error` statement modifies the most recent exception-handling state. It may be used in one of four ways:
-
-`On Error GoTo -1` resets the most recent exception to `Nothing`.
-
-`On Error GoTo 0` resets the most recent exception-handler location to `Nothing`.
-
-`On Error GoTo LabelName` establishes the label as the most recent exception-handler location. This statement cannot be used in a method that contains a lambda or query expression.
-
-`On Error Resume Next` establishes the `Resume Next` behavior as the most recent exception-handler location.
+An `On Error` statement modifies the most recent exception-handling state.
 
 ```antlr
 OnErrorStatement
@@ -1673,9 +1723,33 @@ ErrorClause
     ;
 ```
 
+It may be used in one of four ways:
+
+* `On Error GoTo -1` resets the most recent exception to `Nothing`.
+
+* `On Error GoTo 0` resets the most recent exception-handler location to `Nothing`.
+
+* `On Error GoTo LabelName` establishes the label as the most recent exception-handler location. This statement cannot be used in a method that contains a lambda or query expression.
+
+* `On Error Resume Next` establishes the `Resume Next` behavior as the most recent exception-handler location.
+
+
 #### Resume Statement
 
-A `Resume` statement returns execution to the statement that caused the most recent exception. If the `Next` modifier is specified, execution returns to the statement that would have been executed after the statement that caused the most recent exception. If a label name is specified, execution returns to the label.
+A `Resume` statement returns execution to the statement that caused the most recent exception.
+
+```antlr
+ResumeStatement
+    : 'Resume' ResumeClause? StatementTerminator
+    ;
+
+ResumeClause
+    : 'Next'
+    | LabelName
+    ;
+```
+
+If the `Next` modifier is specified, execution returns to the statement that would have been executed after the statement that caused the most recent exception. If a label name is specified, execution returns to the label.
 
 Because the `SyncLock` statement contains an implicit structured error-handling block, `Resume` and `Resume Next` have special behaviors for exceptions that occur in `SyncLock` statements. `Resume` returns execution to the beginning of the `SyncLock` statement, while `Resume Next` returns execution to the next statement following the `SyncLock` statement. For example, consider the following code:
 
@@ -1722,16 +1796,6 @@ The first time through the `SyncLock` statement, `Resume` returns execution to t
 
 In all cases, when a `Resume` statement is executed, the most recent exception is set to `Nothing`. If a `Resume` statement is executed with no most recent exception, the statement raises a `System.Exception` exception containing the Visual Basic error number `20` (Resume without error).
 
-```antlr
-ResumeStatement
-    : 'Resume' ResumeClause? StatementTerminator
-    ;
-
-ResumeClause
-    : 'Next'
-    | LabelName
-    ;
-```
 
 ## Branch Statements
 
@@ -1800,7 +1864,23 @@ ArrayHandlingStatement
 
 ### ReDim Statement
 
-A `ReDim` statement instantiates new arrays. Each clause in the statement must be classified as a variable or a property access whose type is an array type or `Object`, and be followed by a list of array bounds. The number of the bounds must be consistent with the type of the variable; any number of bounds is allowed for `Object`. At run time, an array is instantiated for each expression from left to right with the specified bounds and then assigned to the variable or property. If the variable type is `Object`, the number of dimensions is the number of dimensions specified, and the array element type is `Object`. If the given number of dimensions is incompatible with the variable or property at run time a compile-time error occurs. For example:
+A `ReDim` statement instantiates new arrays.
+
+```antlr
+RedimStatement
+    : 'ReDim' 'Preserve'? RedimClauses StatementTerminator
+    ;
+
+RedimClauses
+    : RedimClause ( Comma RedimClause )*
+    ;
+
+RedimClause
+    : Expression ArraySizeInitializationModifier
+    ;
+```
+
+Each clause in the statement must be classified as a variable or a property access whose type is an array type or `Object`, and be followed by a list of array bounds. The number of the bounds must be consistent with the type of the variable; any number of bounds is allowed for `Object`. At run time, an array is instantiated for each expression from left to right with the specified bounds and then assigned to the variable or property. If the variable type is `Object`, the number of dimensions is the number of dimensions specified, and the array element type is `Object`. If the given number of dimensions is incompatible with the variable or property at run time a compile-time error occurs. For example:
 
 ```vb
 Module Test
@@ -1848,19 +1928,6 @@ If the existing array reference is a null value at run time, no error is given. 
 
 __Note.__ `Preserve` is not a reserved word.
 
-```antlr
-RedimStatement
-    : 'ReDim' 'Preserve'? RedimClauses StatementTerminator
-    ;
-
-RedimClauses
-    : RedimClause ( Comma RedimClause )*
-    ;
-
-RedimClause
-    : Expression ArraySizeInitializationModifier
-    ;
-```
 
 ### Erase Statement
 
@@ -1907,6 +1974,19 @@ End Module
 
 The `Using` statement automates the process of acquiring a resource, executing a set of statements, and then disposing of the resource. The statement can take two forms: in one, the resource is a local variable declared as a part of the statement and treated as a regular local variable declaration statement; in the other, the resource is the result of an expression.
 
+```antlr
+UsingStatement
+    : 'Using' UsingResources StatementTerminator
+      Block?
+      'End' 'Using' StatementTerminator
+    ;
+
+UsingResources
+    : VariableDeclarators
+    | Expression
+    ;
+```
+
 If the resource is a local variable declaration statement then the type of the local variable declaration must be a type that can be implicitly converted to `System.IDisposable`. The declared local variables are read-only, scoped to the `Using` statement block and must include an initializer. If the resource is the result of an expression then the expression must be classified as a value and must be of a type that can be implicitly converted to `System.IDisposable`. The expression is only evaluated once, at the beginning of the statement.
 
 The `Using` block is implicitly contained by a `Try` statement whose finally block calls the method `IDisposable.Dispose` on the resource. This ensures the resource is disposed even when an exception is thrown. As a result, it is invalid to branch into a `Using` block from outside of the block, and a `Using` block is treated as a single statement for the purposes of `Resume` and `Resume Next`. If the resource is `Nothing`, then no call to `Dispose` is made. Thus, the example:
@@ -1950,18 +2030,6 @@ Using r1 As R = New R()
 End Using
 ```
 
-```antlr
-UsingStatement
-    : 'Using' UsingResources StatementTerminator
-      Block?
-      'End' 'Using' StatementTerminator
-    ;
-
-UsingResources
-    : VariableDeclarators
-    | Expression
-    ;
-```
 
 ## Await Statement
 
@@ -1979,6 +2047,12 @@ AwaitStatement
 
 Yield statements are related to iterator methods, which are described in Section [Iterator Methods](statements.md#iterator-methods).
 
+```antlr
+YieldStatement
+    : 'Yield' Expression StatementTerminator
+    ;
+```
+
 `Yield` is a reserved word if the immediately enclosing method or lambda expression in which it appears has an `Iterator` modifier, and if the `Yield` appears after that `Iterator` modifier; it is unreserved elsewhere. It is also unreserved in preprocessor directives. The yield statement is only allowed in the body of a method or lambda expression where it is a reserved word. Within the immediately enclosing method or lambda, the yield statement may not occur inside the body of a `Catch` or `Finally` block, nor inside the body of a `SyncLock` statement.
 
 The yield statement takes a single expression which must be classified as a value and whose type is implicitly convertible to the type of the *iterator current variable* (Section [Iterator Methods](statements.md#iterator-methods)) of its enclosing iterator method.
@@ -1987,8 +2061,3 @@ Control flow only ever reaches a `Yield` statement when the `MoveNext` method is
 
 When a `Yield` statement is executed, its expression is evaluated and stored in the *iterator current variable* of the iterator method instance associated with that iterator object. The value `True` is returned to the invoker of `MoveNext`, and the control point of this instance stops advancing until the next invocation of `MoveNext` on the iterator object.
 
-```antlr
-YieldStatement
-    : 'Yield' Expression StatementTerminator
-    ;
-```

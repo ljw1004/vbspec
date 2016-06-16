@@ -38,15 +38,15 @@ Overloaded type members must possess unique signatures. The signature of a type 
 
 The following are not part of a member's signature, and hence cannot be overloaded on:
 
-Modifiers to a type member (for example, `Shared` or `Private`).
+* Modifiers to a type member (for example, `Shared` or `Private`).
 
-Modifiers to a parameter (for example, `ByVal` or `ByRef`).
+* Modifiers to a parameter (for example, `ByVal` or `ByRef`).
 
-The names of the parameters.
+* The names of the parameters.
 
-The return type of a method or operator (except for conversion operators) or the element type of a property.
+* The return type of a method or operator (except for conversion operators) or the element type of a property.
 
-Constraints on a type parameter.
+* Constraints on a type parameter.
 
 The following example shows a set of overloaded method declarations along with their signatures. This declaration would not be valid since several of the method declarations have identical signatures.
 
@@ -155,17 +155,17 @@ Since `A` does not explicitly specify a base class, its base class is implicitly
 
 The following are important aspects of inheritance:
 
-Inheritance is transitive. If type *C* is derived from type *B*, and type *B* is derived from type *A*, type *C* inherits the type members declared in type *B* as well as the type members declared in type *A*.
+* Inheritance is transitive. If type *C* is derived from type *B*, and type *B* is derived from type *A*, type *C* inherits the type members declared in type *B* as well as the type members declared in type *A*.
 
-A derived type extends, but cannot narrow, its base type. A derived type can add new type members, and it can shadow inherited type members, but it cannot remove the definition of an inherited type member.
+* A derived type extends, but cannot narrow, its base type. A derived type can add new type members, and it can shadow inherited type members, but it cannot remove the definition of an inherited type member.
 
-Because an instance of a type contains all of the type members of its base type, a conversion always exists from a derived type to its base type.
+* Because an instance of a type contains all of the type members of its base type, a conversion always exists from a derived type to its base type.
 
-All types must have a base type, except for the type `Object`. Thus, `Object` is the ultimate base type of all types, and all types can be converted to it.
+* All types must have a base type, except for the type `Object`. Thus, `Object` is the ultimate base type of all types, and all types can be converted to it.
 
-Circularity in derivation is not permitted. That is, when a type `B` derives from a type `A`, it is an error for type `A` to derive directly or indirectly from type `B`.
+* Circularity in derivation is not permitted. That is, when a type `B` derives from a type `A`, it is an error for type `A` to derive directly or indirectly from type `B`.
 
-A type may not directly or indirectly derive from a type nested within it.
+* A type may not directly or indirectly derive from a type nested within it.
 
 The following example produces a compile-time error because the classes circularly depend on each other.
 
@@ -1061,11 +1061,11 @@ In the example, class `B` overrides `A.F` with a `MustOverride` method. This mea
 
 A compile-time error occurs unless all of the following are true of an overriding method:
 
-1. The declaration context contains a single accessible inherited method with the same signature and return type (if any) as the overriding method.
-2. The inherited method being overridden is overridable. In other words, the inherited method being overridden is not `Shared` or `NotOverridable`.
-3. The accessibility domain of the method being declared is the same as the accessibility domain of the inherited method being overridden. There is one exception: a `Protected Friend` method must be overridden by a `Protected` method if the other method is in another assembly that the overriding method does not have `Friend` access to.
-4. The parameters of the overriding method match the overridden method's parameters in regards to usage of the `ByVal`, `ByRef`, `ParamArray,` and `Optional` modifiers, including the values provided for optional parameters.
-5. The type parameters of the overriding method match the overridden method's type parameters in regards to type constraints.
+* The declaration context contains a single accessible inherited method with the same signature and return type (if any) as the overriding method.
+* The inherited method being overridden is overridable. In other words, the inherited method being overridden is not `Shared` or `NotOverridable`.
+* The accessibility domain of the method being declared is the same as the accessibility domain of the inherited method being overridden. There is one exception: a `Protected Friend` method must be overridden by a `Protected` method if the other method is in another assembly that the overriding method does not have `Friend` access to.
+* The parameters of the overriding method match the overridden method's parameters in regards to usage of the `ByVal`, `ByRef`, `ParamArray,` and `Optional` modifiers, including the values provided for optional parameters.
+* The type parameters of the overriding method match the overridden method's type parameters in regards to type constraints.
 
 When overriding a method in a base generic type, the overriding method must supply the type arguments that correspond to the base type parameters. For example:
 
@@ -1179,11 +1179,11 @@ Since the new method `F` in class `Derived` has `Private` access, its scope only
 
 When an `Overridable` method is invoked, the most derived implementation of the instance method is called, based on the type of the instance, regardless of whether the call is to the method in the base class or the derived class. The most derived implementation of an `Overridable` method `M` with respect to a class `R` is determined as follows:
 
-If `R` contains the introducing `Overridable` declaration of `M`, this is the most derived implementation of `M`.
+* If `R` contains the introducing `Overridable` declaration of `M`, this is the most derived implementation of `M`.
 
-Otherwise, if `R` contains an override of `M`, this is the most derived implementation of `M`.
+* Otherwise, if `R` contains an override of `M`, this is the most derived implementation of `M`.
 
-Otherwise, the most derived implementation of `M` is the same as that of the direct base class of `R`.
+* Otherwise, the most derived implementation of `M` is the same as that of the direct base class of `R`.
 
 ## Accessibility
 
@@ -1191,17 +1191,27 @@ A declaration specifies the *accessibility* of the entity it declares. An entity
 
 The five access types are `Public`, `Protected`, `Friend`, `Protected Friend`, and `Private`. `Public` is the most permissive access type, and the four other types are all subsets of `Public`. The least permissive access type is `Private`, and the four other access types are all supersets of `Private`.
 
+```antlr
+AccessModifier
+    : 'Public'
+    | 'Protected'
+    | 'Friend'
+    | 'Private'
+    | 'Protected' 'Friend'
+    ;
+```
+
 The access type for a declaration is specified via an optional access modifier, which can be `Public`, `Protected`, `Friend`, `Private`, or the combination of `Protected` and `Friend`. If no access modifier is specified, the default access type depends on the declaration context; the permitted access types also depend on the declaration context.
 
-Entities declared with the `Public` modifier have `Public` access. There are no restrictions on the use of `Public` entities.
+* Entities declared with the `Public` modifier have `Public` access. There are no restrictions on the use of `Public` entities.
 
-Entities declared with the `Protected` modifier have `Protected` access. `Protected` access can only be specified on members of classes (both regular type members and nested classes) or on `Overridable` members of standard modules and structures (which must, by definition, be inherited from `System.Object` or `System.ValueType`). A `Protected` member is accessible to a derived class, provided that either the member is not an instance member, or the access takes place through an instance of the derived class. `Protected` access is not a superset of `Friend` access.
+* Entities declared with the `Protected` modifier have `Protected` access. `Protected` access can only be specified on members of classes (both regular type members and nested classes) or on `Overridable` members of standard modules and structures (which must, by definition, be inherited from `System.Object` or `System.ValueType`). A `Protected` member is accessible to a derived class, provided that either the member is not an instance member, or the access takes place through an instance of the derived class. `Protected` access is not a superset of `Friend` access.
 
-Entities declared with the `Friend` modifier have `Friend` access. An entity with `Friend` access is accessible only within the program that contains the entity declaration or any assemblies that have been given `Friend` access through the `System.Runtime.CompilerServices.InternalsVisibleToAttribute` attribute.
+* Entities declared with the `Friend` modifier have `Friend` access. An entity with `Friend` access is accessible only within the program that contains the entity declaration or any assemblies that have been given `Friend` access through the `System.Runtime.CompilerServices.InternalsVisibleToAttribute` attribute.
 
-Entities declared with the `Protected Friend` modifiers have the union of `Protected` and `Friend` access.
+* Entities declared with the `Protected Friend` modifiers have the union of `Protected` and `Friend` access.
 
-Entities declared with the `Private` modifier have `Private` access. A `Private` entity is accessible only within its declaration context, including any nested entities.
+* Entities declared with the `Private` modifier have `Private` access. A `Private` entity is accessible only within its declaration context, including any nested entities.
 
 The accessibility in a declaration does not depend on the accessibility of the declaration context. For example, a type declared with `Private` access may contain a type member with `Public` access.
 
@@ -1233,19 +1243,19 @@ Friend Class B
 End Class
 ```
 
-The classes and members have the following accessibility domains:
+The classes and members in this example have the following accessibility domains:
 
-The accessibility domain of `A` and `A.X` is unlimited.
+* The accessibility domain of `A` and `A.X` is unlimited.
 
-The accessibility domain of `A.Y`, `B`, `B.X`, `B.Y`, `B.C`, `B.C.X`, and `B.C.Y` is the containing program.
+* The accessibility domain of `A.Y`, `B`, `B.X`, `B.Y`, `B.C`, `B.C.X`, and `B.C.Y` is the containing program.
 
-The accessibility domain of `A.Z` is `A.`
+* The accessibility domain of `A.Z` is `A.`
 
-The accessibility domain of `B.Z`, `B.D`, `B.D.X`, and `B.D.Y` is `B`, including `B.C` and `B.D`.
+* The accessibility domain of `B.Z`, `B.D`, `B.D.X`, and `B.D.Y` is `B`, including `B.C` and `B.D`.
 
-The accessibility domain of `B.C.Z` is `B.C`.
+* The accessibility domain of `B.C.Z` is `B.C`.
 
-The accessibility domain of `B.D.Z` is `B.D`.
+* The accessibility domain of `B.D.Z` is `B.D`.
 
 As the example illustrates, the accessibility domain of a member is never larger than that of a containing type. For example, even though all `X` members have `Public` declared accessibility, all but `A.X` have accessibility domains that are constrained by a containing type.
 
@@ -1292,15 +1302,6 @@ End Class
 
 __Note.__ The C# language (and possibly other languages) allows a generic type to access `Protected` members regardless of what type arguments are supplied. This should be kept in mind when designing generic classes that contain `Protected` members.
 
-```antlr
-AccessModifier
-    : 'Public'
-    | 'Protected'
-    | 'Friend'
-    | 'Private'
-    | 'Protected' 'Friend'
-    ;
-```
 
 ### Constituent Types
 
@@ -1495,6 +1496,20 @@ End Module
 
 Type parameters may be supplied on type or method declarations. Each type parameter is an identifier which is a place-holder for a type argument that is supplied to create a constructed type or method. By contrast, a type argument is the actual type that is substituted for the type parameter when a generic type or method is used.
 
+```antlr
+TypeParameterList
+    : OpenParenthesis 'Of' TypeParameter ( Comma TypeParameter )* CloseParenthesis
+    ;
+
+TypeParameter
+    : VarianceModifier? Identifier TypeParameterConstraints?
+    ;
+
+VarianceModifier
+    : 'In' | 'Out'
+    ;
+```
+
 Each type parameter in a type or method declaration defines a name in the declaration space of that type or method. Thus, it cannot have the same name as another type parameter, a type member, a method parameter, or a local variable. The scope of a type parameter on a type or method is the entire type or method. Because type parameters are scoped to the entire type declaration, nested types can use outer type parameters. This also means that type parameters must always be specified when accessing types nested inside generic types:
 
 ```vb
@@ -1565,19 +1580,21 @@ Rules for methods overloaded on type parameters are covered in the section on me
 
 Within the containing declaration, type parameters are considered full types. Since a type parameter can be instantiated with many different actual type arguments, type parameters have slightly different operations and restrictions than other types as described below:
 
-A type parameter cannot be used directly to declare a base class or interface.
+* A type parameter cannot be used directly to declare a base class or interface.
 
-The rules for member lookup on type parameters depend on the constraints, if any, applied to the type parameter.
+* The rules for member lookup on type parameters depend on the constraints, if any, applied to the type parameter.
 
-The available conversions for a type parameter depend on the constraints, if any, applied to the type parameters.
+* The available conversions for a type parameter depend on the constraints, if any, applied to the type parameters.
 
-In the absence of a `Structure` constraint, a value with a type represented by a type parameter can be compared with `Nothing` using `Is` and `IsNot`.
+* In the absence of a `Structure` constraint, a value with a type represented by a type parameter can be compared with `Nothing` using `Is` and `IsNot`.
 
-A type parameter can only be used in a `New` expression if the type parameter is constrained by a `New` or a `Structure` constraint.
+* A type parameter can only be used in a `New` expression if the type parameter is constrained by a `New` or a `Structure` constraint.
 
-A type parameter cannot be used anywhere within an attribute exception within a `GetType` expression.
+* A type parameter cannot be used anywhere within an attribute exception within a `GetType` expression.
 
-Type parameters can be used as type arguments to other generic types and parameters. The following example is a generic type that extends the `Stack(Of ItemType)` class:
+* Type parameters can be used as type arguments to other generic types and parameters.
+
+The following example is a generic type that extends the `Stack(Of ItemType)` class:
 
 ```vb
 Class MyStack(Of ItemType)
@@ -1595,25 +1612,31 @@ When a declaration supplies a type argument to `MyStack`, the same type argument
 
 As a type, type parameters are purely a compile-time construct. At run-time, each type parameter is bound to a run-time type that was specified by supplying a type argument to the generic declaration. Thus, the type of a variable declared with a type parameter will, at run-time, be a non-generic type or a specific constructed type. The run-time execution of all statements and expressions involving type parameters uses the actual type that was supplied as the type argument for that parameter.
 
-```antlr
-TypeParameterList
-    : OpenParenthesis 'Of' TypeParameter ( Comma TypeParameter )* CloseParenthesis
-    ;
-
-TypeParameter
-    : VarianceModifier? Identifier TypeParameterConstraints?
-    ;
-
-VarianceModifier
-    : 'In' | 'Out'
-    ;
-```
 
 ### Type Constraints
 
 Because a type argument can be any type in the type system, a generic type or method cannot make any assumptions about a type parameter. Thus, the members of a type parameter are considered to be the members of the type `Object`, since all types derive from `Object`.
 
 In the case of a collection like `Stack(Of ItemType)`, this fact may not be a particularly important restriction, but there may be cases where a generic type may wish to make an assumption about the types that will be supplied as type arguments. *Type constraints* can be placed on type parameters that restrict which types can be supplied as a type parameter and allow generic types or methods to assume more about type parameters.
+
+```antlr
+TypeParameterConstraints
+    : 'As' Constraint
+    | 'As' OpenCurlyBrace ConstraintList CloseCurlyBrace
+    ;
+
+ConstraintList
+    : Constraint ( Comma Constraint )*
+    ;
+
+Constraint
+    : TypeName
+    | 'New'
+    | 'Structure'
+    | 'Class'
+    ;
+```
+
 
 ```vb
 Public Class DisposableStack(Of ItemType As IDisposable)
@@ -1644,15 +1667,15 @@ In this example, the `DisposableStack(Of ItemType)` constrains its type paramete
 
 A type constraint must be one of the special constraints `Class`, `Structure`, or `New`, or it must be a type `T` where:
 
-`T` is a class, an interface, or a type parameter.
+* `T` is a class, an interface, or a type parameter.
 
-`T` is not `NotInheritable`.
+* `T` is not `NotInheritable`.
 
-`T` is not one of, or a type inherited from one of, the following special types: `System.Array`, `System.Delegate`, `System.MulticastDelegate`, `System.Enum`, or `System.ValueType`.
+* `T` is not one of, or a type inherited from one of, the following special types: `System.Array`, `System.Delegate`, `System.MulticastDelegate`, `System.Enum`, or `System.ValueType`.
 
-`T` is not `Object`. Since all types derive from `Object`, such a constraint would have no effect if it were permitted.
+* `T` is not `Object`. Since all types derive from `Object`, such a constraint would have no effect if it were permitted.
 
-`T` must be at least as accessible as the generic type or method being declared.
+* `T` must be at least as accessible as the generic type or method being declared.
 
 Multiple type constraints can be specified for a single type parameter by enclosing the type constraints in curly braces (`{}`).. Only one type constraint for a given type parameter can be a class. It is an error to combine a `Structure` special constraint with a named class constraint or the `Class` special constraint.
 
@@ -1700,11 +1723,11 @@ End Class
 
 In this example, the type parameter `S` on `AddRange` is constrained to the type parameter `T` of `List`. This means that a `List(Of Control)` would constrain `AddRange`'s type parameter to any type that is or inherits from `Control`.
 
-A type parameter constraint "Of S As T" is resolved by transitively adding all of T's constraints onto S, other than the special constraints (`Class`, `Structure`, `New`). It is an error to have circular constraints (e.g. `Of S As T, T As S`). It is an error to have a type parameter constraint which itself has the Structure constraint. After adding constraints, it is possible that a number of special situations may occur:
+A type parameter constraint `Of S As T` is resolved by transitively adding all of `T`'s constraints onto `S`, other than the special constraints (`Class`, `Structure`, `New`). It is an error to have circular constraints (e.g. `Of S As T, T As S`). It is an error to have a type parameter constraint which itself has the `Structure` constraint. After adding constraints, it is possible that a number of special situations may occur:
 
-If multiple class constraints exist, the most derived class is considered to be the constraint. If one or more class constraints have no inheritance relationship, the constraint is unsatisfiable and it is an error.
+* If multiple class constraints exist, the most derived class is considered to be the constraint. If one or more class constraints have no inheritance relationship, the constraint is unsatisfiable and it is an error.
 
- If a type parameter combines a `Structure` special constraint with a named class constraint or the `Class` special constraint, it is an error. A class constraint may be `NotInheritable`, in which case no derived types of that constraint are accepted and it is an error.
+ * If a type parameter combines a `Structure` special constraint with a named class constraint or the `Class` special constraint, it is an error. A class constraint may be `NotInheritable`, in which case no derived types of that constraint are accepted and it is an error.
 
 The type may be one of, or a type inherited from, the following special types: `System.Array`, `System.Delegate`, `System.MulticastDelegate`, `System.Enum`, or `System.ValueType`. In that case, only the type, or a type inherited from it, is accepted. A type parameter constrained to one of these types can only use the conversions allowed by the `DirectCast` operator. For example:
 
@@ -1822,24 +1845,6 @@ Class Printer(Of V As IPrintable)
 End Class
 ```
 
-```antlr
-TypeParameterConstraints
-    : 'As' Constraint
-    | 'As' OpenCurlyBrace ConstraintList CloseCurlyBrace
-    ;
-
-ConstraintList
-    : Constraint ( Comma Constraint )*
-    ;
-
-Constraint
-    : TypeName
-    | 'New'
-    | 'Structure'
-    | 'Class'
-    ;
-```
-
 ### Type Parameter Variance
 
 A type parameter in an interface or a delegate type declaration can optionally specify a *variance modifier*. Type parameters with variance modifiers restrict how the type parameter can be used in the interface or delegate type but allow a generic interface or delegate type to be converted to another generic type with variant compatible type arguments. For example:
@@ -1865,37 +1870,37 @@ End Module
 
 Generic interfaces that have type parameters with variance modifiers have several restrictions:
 
-They cannot contain an event declaration that specifies a parameter list (but a custom event declaration or an event declaration with a delegate type is allowed).
+* They cannot contain an event declaration that specifies a parameter list (but a custom event declaration or an event declaration with a delegate type is allowed).
 
-They cannot contain a nested class, structure, or enumerated type.
+* They cannot contain a nested class, structure, or enumerated type.
 
 __Note.__ These restrictions are due to the fact that types nested in generic types implicitly copy the generic parameters of their parent. In the case of nested classes, structures, or enumerated types, those kinds of types cannot have variance modifiers on their type parameters. In the case of an event declaration with a parameter list, the generated nested delegate class could have confusing errors when a type that appears to be used in an `In` position (i.e. a parameter type) is actually used in an `Out` position (i.e. the type of the event).
 
 A type parameter that is declared with the Out modifier is *covariant*. Informally, a covariant type parameter can only be used in an output position -- i.e. a value that is being returned from the interface or delegate type -- and cannot be used in an input position. A type `T` is considered to be *valid covariantly* if:
 
-`T` is a class, structure, or enumerated type.
+* `T` is a class, structure, or enumerated type.
 
-`T` is non-generic delegate or interface type.
+* `T` is non-generic delegate or interface type.
 
-`T` is an array type whose element type is valid covariantly.
+* `T` is an array type whose element type is valid covariantly.
 
-`T` is a type parameter which was not declared as an `Out` type parameter.
+* `T` is a type parameter which was not declared as an `Out` type parameter.
 
-`T` is a constructed interface or delegate type `X(Of P1,...,Pn)` with type arguments `A1,...,An` such that:
+* `T` is a constructed interface or delegate type `X(Of P1,...,Pn)` with type arguments `A1,...,An` such that:
 
-If `Pi` was declared as an Out type parameter then `Ai` is valid covariantly.
+  * If `Pi` was declared as an Out type parameter then `Ai` is valid covariantly.
 
-If `Pi` was declared as an In type parameter then `Ai` is valid contravariantly.
+  * If `Pi` was declared as an In type parameter then `Ai` is valid contravariantly.
 
 The following must be valid covariantly in an interface or delegate type:
 
-The base interface of an interface.
+* The base interface of an interface.
 
-The return type of a function or the delegate type.
+* The return type of a function or the delegate type.
 
-The type of a property if there is a `Get` accessor.
+* The type of a property if there is a `Get` accessor.
 
-The type of any `ByRef` parameter.
+* The type of any `ByRef` parameter.
 
 For example:
 
@@ -1920,29 +1925,29 @@ __Note.__ `Out` is not a reserved word.
 
 A type parameter that is declared with the In modifier is *contravariant*. Informally, a contravariant type parameter can only be used in an input position -- i.e. a value that is being passed in to the interface or delegate type -- and cannot be used in an output position. A type `T` is considered to be *valid contravariantly* if:
 
-`T` is a class, structure, or enumerated type.
+* `T` is a class, structure, or enumerated type.
 
-`T` is a non-generic delegate or interface type.
+* `T` is a non-generic delegate or interface type.
 
-`T` is an array type whose element type is valid contravariantly.
+* `T` is an array type whose element type is valid contravariantly.
 
-`T` is a type parameter which was not declared as an In type parameter.
+* `T` is a type parameter which was not declared as an In type parameter.
 
-`T` is a constructed interface or delegate type `X(Of P1,...,Pn)` with type arguments `A1,...,An` such that:
+* `T` is a constructed interface or delegate type `X(Of P1,...,Pn)` with type arguments `A1,...,An` such that:
 
-If `Pi` was declared as an `Out` type parameter then `Ai` is valid contravariantly.
+  * If `Pi` was declared as an `Out` type parameter then `Ai` is valid contravariantly.
 
-If `Pi` was declared as an `In` type parameter then `Ai` is valid covariantly.
+  * If `Pi` was declared as an `In` type parameter then `Ai` is valid covariantly.
 
 The following must be valid contravariantly in an interface or delegate type:
 
-The type of a parameter.
+* The type of a parameter.
 
-A type constraint on a method type parameter.
+* A type constraint on a method type parameter.
 
-The type of a property if it has a `Set` accessor.
+* The type of a property if it has a `Set` accessor.
 
-The type of an event.
+* The type of an event.
 
 For example:
 

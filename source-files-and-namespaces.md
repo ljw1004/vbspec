@@ -58,16 +58,7 @@ In all other respects, entry point methods behave in the same manner as other me
 
 ## Compilation Options
 
-A source file can specify compilation options in the source code using *option statements*. An `Option` statement applies only to the source file in which it appears, and only one of each type of `Option` statement may appear in a source file. For example:
-
-```vb
-Option Strict On
-Option Compare Text
-Option Strict Off    ' Not allowed, Option Strict is already specified.
-Option Compare Text  ' Not allowed, Option Compare is already specified.
-```
-
-There are four compilation options: strict type semantics, explicit declaration semantics, comparison semantics, and local variable type inference semantics. If a source file does not include a particular `Option` statement, then the compilation environment determines which particular set of semantics will be used. There is also a fifth compilation option, integer overflow checks, which can only be specified through the compilation environment.
+A source file can specify compilation options in the source code using *option statements*.
 
 ```antlr
 OptionStatement
@@ -78,9 +69,32 @@ OptionStatement
     ;
 ```
 
+An `Option` statement applies only to the source file in which it appears, and only one of each type of `Option` statement may appear in a source file. For example:
+
+```vb
+Option Strict On
+Option Compare Text
+Option Strict Off    ' Not allowed, Option Strict is already specified.
+Option Compare Text  ' Not allowed, Option Compare is already specified.
+```
+
+There are four compilation options: strict type semantics, explicit declaration semantics, comparison semantics, and local variable type inference semantics. If a source file does not include a particular `Option` statement, then the compilation environment determines which particular set of semantics will be used. There is also a fifth compilation option, integer overflow checks, which can only be specified through the compilation environment.
+
+
 ### Option Explicit Statement
 
 The `Option Explicit` statement determines whether local variables may be implicitly declared. The keywords `On` or `Off` may follow the statement; if neither is specified, the default is `On`. If no statement is specified in a file, the compilation environment determines which will be used.
+
+```antlr
+OptionExplicitStatement
+    : 'Option' 'Explicit' OnOff? StatementTerminator
+    ;
+
+OnOff
+    : 'On' | 'Off'
+    ;
+```
+
 
 __Note.__ `Explicit` and `Off` are not reserved words.
 
@@ -96,19 +110,16 @@ End Module
 
 In this example, the local variable `x` is implicitly declared by assigning to it. The type of `x` is `Object`.
 
-```antlr
-OptionExplicitStatement
-    : 'Option' 'Explicit' OnOff? StatementTerminator
-    ;
-
-OnOff
-    : 'On' | 'Off'
-    ;
-```
 
 ### Option Strict Statement
 
 The `Option Strict` statement determines whether conversions and operations on `Object` are governed by strict or permissive type semantics and whether types are implicitly typed as `Object` if no `As` clause is specified. The statement may be followed by the keywords `On` or `Off`; if neither is specified, the default is `On`. If no statement is specified in a file, the compilation environment determines which will be used.
+
+```antlr
+OptionStrictStatement
+    : 'Option' 'Strict' OnOff? StatementTerminator
+    ;
+```
 
 __Note.__ `Strict` and `Off` are not reserved words.
 
@@ -129,23 +140,28 @@ End Module
 
 Under strict semantics, the following are disallowed:
 
-Narrowing conversions without an explicit cast operator.
+* Narrowing conversions without an explicit cast operator.
 
-Late binding.
+* Late binding.
 
-Operations on type `Object` other than `TypeOf`...`Is`, `Is`, and `IsNot`.
+* Operations on type `Object` other than `TypeOf`...`Is`, `Is`, and `IsNot`.
 
-Omitting the `As` clause in a declaration that does not have an inferred type.
+* Omitting the `As` clause in a declaration that does not have an inferred type.
 
-```antlr
-OptionStrictStatement
-    : 'Option' 'Strict' OnOff? StatementTerminator
-    ;
-```
 
 ### Option Compare Statement
 
 The `Option Compare` statement determines the semantics of string comparisons. String comparisons are carried out either using binary comparisons (in which the binary Unicode value of each character is compared) or text comparisons (in which the lexical meaning of each character is compared using the current culture). If no statement is specified in a file, the compilation environment controls which type of comparison will be used.
+
+```antlr
+OptionCompareStatement
+    : 'Option' 'Compare' CompareOption StatementTerminator
+    ;
+
+CompareOption
+    : 'Binary' | 'Text'
+    ;
+```
 
 __Note.__ `Compare`, `Binary`, and `Text` are not reserved words.
 
@@ -161,15 +177,6 @@ End Module
 
 In this case, the string comparison is done using a text comparison that ignores case differences. If `Option Compare Binary` had been specified, then this would have printed `False`.
 
-```antlr
-OptionCompareStatement
-    : 'Option' 'Compare' CompareOption StatementTerminator
-    ;
-
-CompareOption
-    : 'Binary' | 'Text'
-    ;
-```
 
 ### Integer Overflow Checks
 
@@ -178,6 +185,12 @@ Integer operations can either be checked or not checked for overflow conditions 
 ### Option Infer Statement
 
 The `Option Infer` statement determines whether local variable declarations that have no `As` clause have an inferred type or use `Object`. The statement may be followed by the keywords `On` or `Off`; if neither is specified, the default is `On`. If no statement is specified in a file, the compilation environment determines which will be used.
+
+```antlr
+OptionInferStatement
+    : 'Option' 'Infer' OnOff? StatementTerminator
+    ;
+```
 
 __Note.__ `Infer` and `Off` are not reserved words.
 
@@ -195,15 +208,26 @@ Module Test
 End Module
 ```
 
-```antlr
-OptionInferStatement
-    : 'Option' 'Infer' OnOff? StatementTerminator
-    ;
-```
 
 ## Imports Statement
 
 `Imports` statements import the names of entities into a source file, allowing the names to be referenced without qualification, or import a namespace for use in XML expressions.
+
+```antlr
+ImportsStatement
+    : 'Imports' ImportsClauses StatementTerminator
+    ;
+
+ImportsClauses
+    : ImportsClause ( Comma ImportsClause )*
+    ;
+
+ImportsClause
+    : AliasImportsClause
+    | MembersImportsClause
+    | XMLNamespaceImportsClause
+    ;
+```
 
 Within member declarations in a source file that contains an `Imports` statement, the types contained in the given namespace can be referenced directly, as seen in the following example:
 
@@ -250,25 +274,16 @@ Class System
 End Class
 ```
 
-```antlr
-ImportsStatement
-    : 'Imports' ImportsClauses StatementTerminator
-    ;
-
-ImportsClauses
-    : ImportsClause ( Comma ImportsClause )*
-    ;
-
-ImportsClause
-    : AliasImportsClause
-    | MembersImportsClause
-    | XMLNamespaceImportsClause
-    ;
-```
 
 ### Import Aliases
 
 An *import alias* defines an alias for a namespace or type.
+
+```antlr
+AliasImportsClause
+    : Identifier Equals TypeName
+    ;
+```
 
 ```vb
 Imports A = N1.N2.A
@@ -412,15 +427,18 @@ End Class
 
 In the above example, because the scope of the import alias that introduces `R` only extends to declarations in the source file in which it is contained, `R` is unknown in the second source file.
 
-```antlr
-AliasImportsClause
-    : Identifier Equals TypeName
-    ;
-```
 
 ### Namespace Imports
 
-A *namespace import* imports all of the members of a namespace or type, allowing the identifier of each member of the namespace or type to be used without qualification. In the case of types, a namespace import only allows access to the shared members of the type without requiring qualification of the class name. In particular, it allows the members of enumerated types to be used without qualification. For example:
+A *namespace import* imports all of the members of a namespace or type, allowing the identifier of each member of the namespace or type to be used without qualification. In the case of types, a namespace import only allows access to the shared members of the type without requiring qualification of the class name. In particular, it allows the members of enumerated types to be used without qualification.
+
+```antlr
+MembersImportsClause
+    : TypeName
+    ;
+```
+
+For example:
 
 ```vb
 Imports Colors
@@ -499,15 +517,24 @@ End Namespace
 
 Only namespaces, classes, structures, enumerated types, and standard modules may be imported.
 
-```antlr
-MembersImportsClause
-    : TypeName
-    ;
-```
 
 ### XML Namespace Imports
 
-An *XML namespace import* defines a namespace or the default namespace for unqualified XML expressions contained within the compilation unit. For example:
+An *XML namespace import* defines a namespace or the default namespace for unqualified XML expressions contained within the compilation unit.
+
+```antlr
+XMLNamespaceImportsClause
+    : '<' XMLNamespaceAttributeName XMLWhitespace? Equals XMLWhitespace?
+      XMLNamespaceValue '>'
+    ;
+
+XMLNamespaceValue
+    : DoubleQuoteCharacter XMLAttributeDoubleQuoteValueCharacter* DoubleQuoteCharacter
+    | SingleQuoteCharacter XMLAttributeSingleQuoteValueCharacter* SingleQuoteCharacter
+    ;
+```
+
+For example:
 
 ```vb
 Imports <xmlns:db="http://example.org/database">
@@ -530,17 +557,6 @@ Imports <xmlns:db="http://example.org/database-one">
 Imports <xmlns:db="http://example.org/database-two">
 ```
 
-```antlr
-XMLNamespaceImportsClause
-    : '<' XMLNamespaceAttributeName XMLWhitespace? Equals XMLWhitespace?
-      XMLNamespaceValue '>'
-    ;
-
-XMLNamespaceValue
-    : DoubleQuoteCharacter XMLAttributeDoubleQuoteValueCharacter* DoubleQuoteCharacter
-    | SingleQuoteCharacter XMLAttributeSingleQuoteValueCharacter* SingleQuoteCharacter
-    ;
-```
 
 ## Namespaces
 
@@ -582,6 +598,24 @@ End Namespace
 ### Namespace Declarations
 
 There are three forms of namespace declaration.
+
+```antlr
+NamespaceDeclaration
+    : 'Namespace' NamespaceName StatementTerminator
+      NamespaceMemberDeclaration*
+      'End' 'Namespace' StatementTerminator
+    ;
+
+NamespaceName
+    : RelativeNamespaceName
+    | 'Global'
+    | 'Global' '.' RelativeNamespaceName
+    ;
+
+RelativeNamespaceName
+    : Identifier ( Period IdentifierOrKeyword )*
+    ;
+```
 
 The first form starts with the keyword `Namespace` followed by a relative namespace name. If the relative namespace name is qualified, the namespace declaration is treated as if it is lexically nested within namespace declarations corresponding to each name in the qualified name. For example, the following two namespaces are semantically equivalent:
 
@@ -632,23 +666,6 @@ When dealing with the members of a namespace, it is not important where a partic
 
 Namespaces are by definition `Public`, so a namespace declaration cannot include any access modifiers.
 
-```antlr
-NamespaceDeclaration
-    : 'Namespace' NamespaceName StatementTerminator
-      NamespaceMemberDeclaration*
-      'End' 'Namespace' StatementTerminator
-    ;
-
-NamespaceName
-    : RelativeNamespaceName
-    | 'Global'
-    | 'Global' '.' RelativeNamespaceName
-    ;
-
-RelativeNamespaceName
-    : Identifier ( Period IdentifierOrKeyword )*
-    ;
-```
 
 ### Namespace Members
 

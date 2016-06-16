@@ -71,7 +71,7 @@ Public Class SimpleAttribute
 End Class
 ```
 
-The next example shows a few uses of the `Simple` attribute. Although the attribute class is named `SimpleAttribute`, uses of this attribute may omit the *Attribute* suffix, thus shortening the name to `Simple`:
+The next example shows a few uses of the `Simple` attribute. Although the attribute class is named `SimpleAttribute`, uses of this attribute may omit the `Attribute` suffix, thus shortening the name to `Simple`:
 
 ```vb
 <Simple> Class Class1
@@ -147,19 +147,42 @@ End Class
 
 The positional parameters of the attribute are defined by the parameters of the public constructors of the attribute class. Positional parameters must be `ByVal` and may not specify `ByRef`. Public instance variables and properties are defined by public read-write properties or instance variables of the attribute class. The types that can be used in positional parameters and public instance variables and properties are restricted to attribute types. A type is an attribute type if it is one of the following:
 
-Any primitive type except for `Date` and `Decimal`.
+* Any primitive type except for `Date` and `Decimal`.
 
-The type `Object`.
+* The type `Object`.
 
-The type `System.Type`.
+* The type `System.Type`.
 
-An enumerated type, provided that it and the types in which it is nested (if any) have `Public` accessibility.
+* An enumerated type, provided that it and the types in which it is nested (if any) have `Public` accessibility.
 
-A one-dimensional array of one of the previous types in this list.
+* A one-dimensional array of one of the previous types in this list.
 
 ## Attribute Blocks
 
 Attributes are specified in *attribute blocks*. Each attribute block is delimited by angle brackets ("<>"), and multiple attributes can be specified in a comma-separated list within an attribute block or in multiple attribute blocks. The order in which attributes are specified is not significant. For example, the attribute blocks `<A, B>`, `<B, A>`, `<A> <B>` and `<B> <A>` are all equivalent.
+
+```antlr
+Attributes
+    : AttributeBlock+
+    ;
+
+AttributeBlock
+    : LineTerminator? '<' AttributeList LineTerminator? '>' LineTerminator?
+    ;
+
+AttributeList
+    : Attribute ( Comma Attribute )*
+    ;
+
+Attribute
+    : ( AttributeModifier ':' )? SimpleTypeName
+    ( OpenParenthesis AttributeArguments? CloseParenthesis )?
+    ;
+
+AttributeModifier
+    : 'Assembly' | 'Module'
+    ;
+```
 
 An attribute may not be specified on a kind of declaration it does not support, and single-use attributes may not be specified more than once in an attribute block. The example below causes errors both because it attempts to use `HelpString` on the interface `Interface1` and more than once on the declaration of `Class1`.
 
@@ -198,28 +221,6 @@ An attribute consists of an optional attribute modifier, an attribute name, an o
 
 If a source file contains an attribute block at the top of the file that specifies attributes for the assembly or module that will contain the source file, each attribute in the attribute block must be prefixed by both the `Assembly` or `Module` modifier and a colon.
 
-```antlr
-Attributes
-    : AttributeBlock+
-    ;
-
-AttributeBlock
-    : LineTerminator? '<' AttributeList LineTerminator? '>' LineTerminator?
-    ;
-
-AttributeList
-    : Attribute ( Comma Attribute )*
-    ;
-
-Attribute
-    : ( AttributeModifier ':' )? SimpleTypeName
-    ( OpenParenthesis AttributeArguments? CloseParenthesis )?
-    ;
-
-AttributeModifier
-    : 'Assembly' | 'Module'
-    ;
-```
 
 ### Attribute Names
 
@@ -269,19 +270,15 @@ Both the attribute block `<T>` and the attribute block `<TAttribute>` refer to t
 
 ### Attribute Arguments
 
-Arguments to an attribute may take two forms: positional arguments and instance variable/property initializers. Any positional arguments to the attribute must precede the instance variable/property initializers. A positional argument consists of a constant expression, a one-dimensional array-creation expression or a `GetType` expression. An instance variable/property initializer consists of an identifier, which can match keywords, followed by a colon and equal sign, and terminated by a constant expression or a `GetType` expression.
+Arguments to an attribute may take two forms: *positional arguments* and *instance variable/property initializers*. Any positional arguments to the attribute must precede the instance variable/property initializers. A positional argument consists of a constant expression, a one-dimensional array-creation expression or a `GetType` expression. An instance variable/property initializer consists of an identifier, which can match keywords, followed by a colon and equal sign, and terminated by a constant expression or a `GetType` expression.
 
 Given an attribute with attribute class `T`, positional argument list `P`, and instance variable/property initializer list `N`, these steps determine whether the arguments are valid:
 
-Follow the compile-time processing steps for compiling an expression of the form `New T(P)`. This either results in a compile-time error or determines a constructor on `T` that is most applicable to the argument list.
+1. Follow the compile-time processing steps for compiling an expression of the form `New T(P)`. This either results in a compile-time error or determines a constructor on `T` that is most applicable to the argument list.
 
-If the constructor determined in step 1 has parameters that are not attribute types or is inaccessible at the declaration site, a compile-time error occurs.
+2. If the constructor determined in step 1 has parameters that are not attribute types or is inaccessible at the declaration site, a compile-time error occurs.
 
-For each instance variable/property initializer `Arg` in `N`:
-
-Let `Name` be the identifier of the instance variable/property initializer `Arg`.
-
-`Name` must identify a non-`Shared`, writeable, `Public` instance variable or parameterless property on `T` whose type is an attribute type. If `T` has no such instance variable or property, a compile-time error occurs.
+3. For each instance variable/property initializer `Arg` in `N`, let `Name` be the identifier of the instance variable/property initializer `Arg`. `Name` must identify a non-`Shared`, writeable, `Public` instance variable or parameterless property on `T` whose type is an attribute type. If `T` has no such instance variable or property, a compile-time error occurs.
 
 For example:
 
