@@ -123,3 +123,7 @@ __Version 11__
     * [ID Strings](documentation-comments.md#id-strings)
     * [Documentation comments example](documentation-comments.md#documentation-comments-example)
 * Grammar: [vb.html](http://ljw1004.github.io/vbspec/vb.html). Or download in ANTLR format: [vb.g4](vb.g4?raw=true).
+
+
+> Copyright (c) Microsoft. All Rights Reserved. Licensed under the Apache License, Version 2.0.  See [License.txt](https://github.com/dotnet/roslyn/blob/master/License.txt) for license information. 
+ 
