@@ -1,65 +1,24 @@
 ﻿' This "driver" project aims to provide a within-VS IDE for working on the spec.
 '
-' Run this driver in DEBUG mode to regenerate the spec docx and quickly see how it looks:
-'    mdspec2docx.exe *.md *.g4 template.docx -o vb.html -o "Visual Basic Language Specification.docx"
+' As a pre-build step it regenerates the spec docx and opens it up in Word.
+' What's useful here is that errors are reported in the VS Error List,
+' and you can double-click them to jump to the relevant line in the .md file.
+'    mdspec2docx.exe *.md *.g4 template.docx -o vb.html -o "Visual Basic Language Specification.docx" -td vs\obj
 '
-' Run it in RELEASE mode to automate updating the docx and pdf for final publication:
+' Then you can run this console app to do the final packaging:
 '    * launches Word to update the TOC with page numbers
 '    * launch esWord to export it as PDF
 
-
-' TODO:
-' (1) Change license preamble in readme.md and template.docx to match the rest of Roslyn,
-'     and change license.txt to match Roslyn
-' (2) Error if the readme.md headings fail to contain every level1+level2 heading
-'     and consider adding OverloadResolution + TypeInference
-' (3) obj directory
-' (4) Prepare PR for Roslyn
-
-' Rebuild this project to run the "mdspec2docx" tool.
-' Any errors will be shown in the Error List.
-' If no errors, then it will pop up the new vb.html and language specification.docx files.
 
 Imports System.IO
 Imports Microsoft.Office.Interop.Word
 
 Module Module1
     Function Main() As Integer
-        Return MainAsync().GetAwaiter().GetResult()
-    End Function
-
-    Async Function MainAsync() As Task(Of Integer)
-        If Not File.Exists("readme.md") Then Directory.SetCurrentDirectory("..\..\..")
-        If Not File.Exists("readme.md") Then Console.Error.WriteLine("Can't find 'readme.md'") : Return 1
-
-        Dim md2docx = "vs\packages\mdspec2docx.1.0.0\tools\mdspec2docx.exe"
-        If Not File.Exists(md2docx) Then Console.Error.WriteLine($"Can't find '{Path.GetFileName(md2docx)}'") : Return 1
-
-#If DEBUG Then
-        Console.WriteLine("DEBUG build - will only preview the docx")
-        Console.WriteLine("(if you want to update TOC and generate PDF, switch to RELEASE)")
-#End If
-
-        Dim p As New Process
-        p.StartInfo.UseShellExecute = False
-        p.StartInfo.RedirectStandardOutput = True
-        p.StartInfo.RedirectStandardError = True
-        p.StartInfo.FileName = md2docx
-        p.StartInfo.Arguments = "*.md *.g4 template.docx -o vb.html -o ""Visual Basic Language Specification.docx"""
-        p.Start()
-        Dim task1 = CopyStreamAsync(p.StandardError, Console.Error)
-        Dim task2 = CopyStreamAsync(p.StandardOutput, Console.Out)
-        Await Threading.Tasks.Task.WhenAll(task1, task2)
-        p.WaitForExit()
-        If p.ExitCode <> 0 Then Return p.ExitCode
         Dim fn = "Visual Basic Language Specification.docx"
-
-#If DEBUG Then
-        Process.Start(fn)
-        Return 0
-#End If
-
+        If Not File.Exists(fn) Then Directory.SetCurrentDirectory("..\..\..")
         If Not File.Exists(fn) Then Console.Error.WriteLine($"Can't find '{fn}'") : Return 1
+
         fn = Path.GetFullPath(fn)
         Try
             Console.WriteLine("Launching Word")
@@ -100,14 +59,6 @@ Module Module1
             Console.WriteLine($"ERROR - {ex.Message}")
             Return 1
         End Try
-    End Function
-
-    Async Function CopyStreamAsync(read As StreamReader, write As TextWriter) As Threading.Tasks.Task
-        While True
-            Dim s = Await read.ReadLineAsync()
-            If s Is Nothing Then Return
-            Await write.WriteLineAsync(s)
-        End While
     End Function
 
 End Module
