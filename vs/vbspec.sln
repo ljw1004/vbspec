@@ -5,10 +5,10 @@ VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6CF161FC-FD19-4359-A997-56BC560F7F86}"
 	ProjectSection(SolutionItems) = preProject
-		LICENSE = LICENSE
-		template.docx = template.docx
-		vb.html = vb.html
-		Visual Basic Language Specification.docx = Visual Basic Language Specification.docx
+		..\LICENSE = ..\LICENSE
+		..\template.docx = ..\template.docx
+		..\vb.html = ..\vb.html
+		..\Visual Basic Language Specification.docx = ..\Visual Basic Language Specification.docx
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vb", "vb", "{3293C606-6E40-485A-9542-07EAA4EC9953}"
@@ -29,7 +29,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vb", "vb", "{3293C606-6E40-
 		..\vb.g4 = ..\vb.g4
 	EndProjectSection
 EndProject
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "DummyProject", "DummyProject.vbproj", "{D6822709-0E4D-4A7F-A693-760547D8A553}"
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "DriverProject", "DriverProject.vbproj", "{D6822709-0E4D-4A7F-A693-760547D8A553}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
